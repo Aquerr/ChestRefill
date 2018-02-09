@@ -1,0 +1,14 @@
+plugins {
+    id 'org.spongepowered.plugin' version '0.8.1'
+    id 'idea'
+    id 'eclipse'
+    id 'java'
+}
+
+group = 'io.github.aquerr.chestrestock'
+version = '1.0-SNAPSHOT'
+description = 'Plugin for restoring contents of a chest after the specified time.'
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:7.0.0'
+}
