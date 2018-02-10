@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.HelpCommand;
+import io.github.aquerr.chestrefill.listeners.LeftClickListener;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -35,15 +36,21 @@ public class ChestRefill
     private void onGameInitialization(GameInitializationEvent event)
     {
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializating commands..."));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
 
         initCommands();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Commands are ready!"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing listeners..."));
+
+        initListeners();
+
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
     }
 
     private void initCommands()
     {
+
         //Help Command
         Subcommands.put(Arrays.asList("help"), CommandSpec.builder()
         .description(Text.of("Displays all available commands"))
@@ -60,5 +67,10 @@ public class ChestRefill
 
         //Register commands
         Sponge.getCommandManager().register(this, mainCommand, "chestrefill", "cr");
+    }
+
+    private void initListeners()
+    {
+        Sponge.getEventManager().registerListeners(this, new LeftClickListener());
     }
 }
