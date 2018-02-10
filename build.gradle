@@ -5,7 +5,7 @@ plugins {
     id 'java'
 }
 
-group = 'io.github.aquerr.chestrestock'
+group = 'io.github.aquerr.chestrefill'
 version = '1.0-SNAPSHOT'
 description = 'Plugin for restoring contents of a chest after the specified time.'
 

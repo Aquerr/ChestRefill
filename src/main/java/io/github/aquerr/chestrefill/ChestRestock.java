@@ -1,4 +1,4 @@
-package io.github.aquerr.chestrestock;
+package io.github.aquerr.chestrefill;
 
 import org.spongepowered.api.plugin.Plugin;
 
