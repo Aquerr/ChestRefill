@@ -33,7 +33,7 @@ public class ChestRefill
     public Logger getLogger() {return _logger;}
 
     @Listener
-    private void onGameInitialization(GameInitializationEvent event)
+    public void onGameInitialization(GameInitializationEvent event)
     {
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
