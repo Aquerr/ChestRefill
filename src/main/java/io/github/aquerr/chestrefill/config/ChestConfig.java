@@ -1,20 +1,14 @@
 package io.github.aquerr.chestrefill.config;
 
 import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.transformation.ConfigurationTransformation;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.item.inventory.ItemStack;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +22,7 @@ import java.util.List;
 public class ChestConfig
 {
     private static Path chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
+    private static GsonConfigurationLoader configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
 
     public static boolean addChest(Chest chest)
     {
@@ -39,11 +34,7 @@ public class ChestConfig
         {
             if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
 
-            GsonConfigurationLoader configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
-
             ConfigurationNode node = configurationLoader.load();
-
-            //Gson gson = new Gson();
 
             //Iritate over items in chest inventory
             List<ItemStack> items = new ArrayList<>();
@@ -58,9 +49,24 @@ public class ChestConfig
 
             RefillingChest refillingChest = new RefillingChest(chest.getLocation(), items);
 
-            node.getNode("chestrefill", "chests", refillingChest.getChestLocation().toString());
-            node.getNode("chestrefill", "chests", refillingChest.getChestLocation().toString()).setValue(refillingChest.getItems().toString());
 
+            //Set chest's items
+            int i = 0;
+            for (ItemStack itemStack : refillingChest.getItems())
+            {
+                try
+                {
+                    node.getNode("chestrefill", "chests", refillingChest.getChestLocation(), "item" + i).setValue(TypeToken.of(ItemStack.class), itemStack);
+                    i++;
+                }
+                catch (ObjectMappingException exception)
+                {
+                    exception.printStackTrace();
+                }
+            }
+
+            //Set chest's regeneration time (in seconds)
+            node.getNode("chestrefill", "chests", refillingChest.getChestLocation(), "time").setValue(120);
 
             configurationLoader.save(node);
 
