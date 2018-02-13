@@ -10,22 +10,43 @@ import java.util.List;
  */
 public class RefillingChest
 {
-    private Location _chestLocation;
-    private List<ItemStack> _items;
+    private Location chestLocation;
+    private List<ItemStack> items;
 
     public RefillingChest(Location location, List<ItemStack> itemsList)
     {
-        _chestLocation = location;
-        _items = itemsList;
+        chestLocation = location;
+        items = itemsList;
     }
 
     public Location getChestLocation()
     {
-        return _chestLocation;
+        return chestLocation;
     }
 
     public List<ItemStack> getItems()
     {
-        return _items;
+        return items;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof RefillingChest))
+        {
+            return false;
+        }
+        if (obj == this)
+        {
+            return true;
+        }
+
+        return this.chestLocation.equals(((RefillingChest)obj).chestLocation) && this.items.equals(((RefillingChest)obj).items);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return chestLocation.hashCode();
     }
 }
