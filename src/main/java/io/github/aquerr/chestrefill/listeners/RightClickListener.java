@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import io.github.aquerr.chestrefill.storage.JSONChestStorage;
@@ -30,7 +31,8 @@ public class RightClickListener
                 Chest chest = (Chest) event.getTargetBlock().getLocation().get().getTileEntity().get();
 
                 //TODO: This is bad. Change location to coordinates and world UUID.
-                RefillingChest refillingChest = ChestManager.toRefillingChest(chest);
+
+                RefillingChest refillingChest = ChestManager.toRefillingChest(chest, player.getWorld().getUniqueId());
 
                 if (!ChestManager.getChests().contains(refillingChest))
                 {

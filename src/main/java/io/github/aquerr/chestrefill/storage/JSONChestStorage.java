@@ -1,14 +1,21 @@
 package io.github.aquerr.chestrefill.storage;
 
+import com.flowpowered.math.vector.Vector3i;
 import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.ChestRefill;
+import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.Extent;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -18,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -43,11 +51,14 @@ public class JSONChestStorage
 
             //TODO: Try to deserialize and save Refilling chest class here instead of List and Time separately.
 
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID();
+
             //Set chest's items
-            node.getNode("chestrefill", "chests", refillingChest.getChestLocation(), "items").setValue(new TypeToken<List<ItemStack>>(){}, refillingChest.getItems());
+            node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillingChest.getItems());
 
             //Set chest's regeneration time (in seconds)
-            node.getNode("chestrefill", "chests", refillingChest.getChestLocation(), "time").setValue(120);
+            node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "time").setValue(120);
 
             configurationLoader.save(node);
 
@@ -77,27 +88,32 @@ public class JSONChestStorage
             ConfigurationNode node = configurationLoader.load();
 
             Set<Object> objectList = node.getNode("chestrefill", "chests").getChildrenMap().keySet();
-            List<RefillingChest> refillingChestList = new ArrayList<>();
+            List<RefillingChest> refillingChestsList = new ArrayList<>();
 
             for (Object object: objectList)
             {
                 List<ItemStack> itemStacks = new ArrayList<>();
                 //int time;
 
-                //This cast is safe because all chests' keys are locations.
-                Location chestLocation = (Location) object;
+                String chestPositionAndWorldUUIDString = (String)object;
+                String splitter = "\\|";
+
+                String[] chestPosAndWorldUUID = chestPositionAndWorldUUIDString.split(splitter);
+
+                UUID worldUUID = UUID.fromString(chestPosAndWorldUUID[1]);
+
+                String vectors[] = chestPosAndWorldUUID[0].replace("(", "").replace(")", "").replace(" ", "").split(",");
+
+                int x = Integer.valueOf(vectors[0]);
+                int y = Integer.valueOf(vectors[1]);
+                int z = Integer.valueOf(vectors[2]);
+
+                ChestLocation chestLocation = new ChestLocation(Vector3i.from(x, y, z), worldUUID);
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "chests", chestLocation, "items").getList(objectToItemStackTransformer);
-
-//                for (Object itemStackObject : itemStacksObjects)
-//                {
-//                    //This cast is safe because all items in chest are itemstacks.
-//                    itemStacks.add((ItemStack)itemStackObject);
-//                }
+                itemStacks = node.getNode("chestrefill", "chests", chestPositionAndWorldUUIDString, "items").getList(objectToItemStackTransformer);
 
                 //TODO: Get chest's refill time.
-
 
             }
         }

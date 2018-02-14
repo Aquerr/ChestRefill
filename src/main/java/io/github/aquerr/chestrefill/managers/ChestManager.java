@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.managers;
 
+import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.storage.JSONChestStorage;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
@@ -7,6 +8,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Aquerr on 2018-02-13.
@@ -23,7 +25,7 @@ public class ChestManager
         return JSONChestStorage.getChests();
     }
 
-    public static RefillingChest toRefillingChest(Chest chest)
+    public static RefillingChest toRefillingChest(Chest chest, UUID worldUUID)
     {
         //Iritate over items in chest inventory
         List<ItemStack> items = new ArrayList<>();
@@ -36,7 +38,7 @@ public class ChestManager
             }
         });
 
-        RefillingChest refillingChest = new RefillingChest(chest.getLocation(), items);
+        RefillingChest refillingChest = new RefillingChest(new ChestLocation(chest.getLocation().getBlockPosition(), worldUUID), items);
 
         return refillingChest;
     }

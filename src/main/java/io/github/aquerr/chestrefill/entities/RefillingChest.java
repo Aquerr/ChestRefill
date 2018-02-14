@@ -10,16 +10,16 @@ import java.util.List;
  */
 public class RefillingChest
 {
-    private Location chestLocation;
+    private ChestLocation chestLocation;
     private List<ItemStack> items;
 
-    public RefillingChest(Location location, List<ItemStack> itemsList)
+    public RefillingChest(ChestLocation chestLocation, List<ItemStack> itemsList)
     {
-        chestLocation = location;
-        items = itemsList;
+        this.chestLocation = chestLocation;
+        this.items = itemsList;
     }
 
-    public Location getChestLocation()
+    public ChestLocation getChestLocation()
     {
         return chestLocation;
     }
