@@ -1,11 +1,10 @@
 package io.github.aquerr.chestrefill.listeners;
 
+import io.github.aquerr.chestrefill.ChestMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
-import io.github.aquerr.chestrefill.storage.JSONChestStorage;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.entity.living.player.Player;
@@ -26,31 +25,49 @@ public class RightClickListener
     {
         if(event.getTargetBlock().getState().getType().equals(BlockTypes.CHEST))
         {
-            if(ChestRefill.ChestCreationPlayers.contains(player.getUniqueId()))
+            if(ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
             {
                 Chest chest = (Chest) event.getTargetBlock().getLocation().get().getTileEntity().get();
-
-                //TODO: This is bad. Change location to coordinates and world UUID.
-
                 RefillingChest refillingChest = RefillingChest.fromChest(chest, player.getWorld().getUniqueId());
 
-                if (!ChestManager.getChests().contains(refillingChest))
+                switch (ChestRefill.PlayersChestMode.get(player.getUniqueId()))
                 {
-                    boolean didSucceed = ChestManager.addChest(refillingChest);
+                    case CREATE:
 
-                    if (didSucceed)
-                    {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling chest!"));
-                    }
-                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
-                }
-                else
-                {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest"));
-                }
+                        if (!ChestManager.getChests().contains(refillingChest))
+                        {
+                            boolean didSucceed = ChestManager.addChest(refillingChest);
 
-                //Turn creation mode off
-                ChestRefill.ChestCreationPlayers.remove(player.getUniqueId());
+                            if (didSucceed)
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling chest!"));
+                            }
+                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        }
+                        else
+                        {
+                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest"));
+                        }
+                        break;
+
+                    case REMOVE:
+
+                        if (ChestManager.getChests().contains(refillingChest))
+                        {
+                            boolean didSucceed = ChestManager.removeChest(refillingChest);
+
+                            if (didSucceed)
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling chest!"));
+                            }
+                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        }
+                        else
+                        {
+                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                        }
+                        break;
+                }
             }
         }
     }

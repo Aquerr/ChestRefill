@@ -15,6 +15,9 @@ import java.util.UUID;
  */
 public class ChestManager
 {
+    //TODO: Add here code for choosing and selecting storage mode.
+    //TODO: Add setup method and instance of JSONChestStorage here.
+
     public static boolean addChest(RefillingChest refillingChest)
     {
         return JSONChestStorage.addChest(refillingChest);
@@ -23,5 +26,10 @@ public class ChestManager
     public static List<RefillingChest> getChests()
     {
         return JSONChestStorage.getChests();
+    }
+
+    public static boolean removeChest(RefillingChest refillingChest)
+    {
+        return JSONChestStorage.removeChest(refillingChest);
     }
 }

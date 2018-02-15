@@ -2,10 +2,10 @@ package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.HelpCommand;
+import io.github.aquerr.chestrefill.commands.RemoveCommand;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
@@ -29,8 +29,8 @@ import java.util.*;
 public class ChestRefill
 {
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
-    public static List<UUID> ChestCreationPlayers = new ArrayList<>();
 
+    public static Map<UUID, ChestMode> PlayersChestMode = new HashMap<>();
 
     private static ChestRefill chestRefill;
     public static ChestRefill getChestRefill() {return chestRefill;}
@@ -77,15 +77,22 @@ public class ChestRefill
         //Help Command
         Subcommands.put(Arrays.asList("help"), CommandSpec.builder()
             .description(Text.of("Displays all available commands"))
-            .permission("chestrefill.help")
+            .permission(PluginPermissions.HELP_COMMAND)
             .executor(new HelpCommand())
             .build());
 
         //Create Command
         Subcommands.put(Arrays.asList("c", "create"), CommandSpec.builder()
             .description(Text.of("Toggles chest creation mode"))
-            .permission("chestrefill.create")
+            .permission(PluginPermissions.CREATE_COMMAND)
             .executor(new CreateCommand())
+            .build());
+
+        //Remove Command
+        Subcommands.put(Arrays.asList("r", "remove"), CommandSpec.builder()
+            .description(Text.of("Toggles chest removal mode"))
+            .permission(PluginPermissions.REMOVE_COMMAND)
+            .executor(new RemoveCommand())
             .build());
 
         //Build all commands

@@ -13,9 +13,9 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 /**
- * Created by Aquerr on 2018-02-12.
+ * Created by Aquerr on 2018-02-15.
  */
-public class CreateCommand implements CommandExecutor
+public class RemoveCommand implements CommandExecutor
 {
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
@@ -26,21 +26,21 @@ public class CreateCommand implements CommandExecutor
 
             if (ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
             {
-                if (ChestMode.CREATE != ChestRefill.PlayersChestMode.get(player.getUniqueId()))
+                if (ChestMode.REMOVE != ChestRefill.PlayersChestMode.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersChestMode.replace(player.getUniqueId(), ChestMode.CREATE);
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
+                    ChestRefill.PlayersChestMode.replace(player.getUniqueId(), ChestMode.REMOVE);
+                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on removal mode"));
                 }
                 else
                 {
                     ChestRefill.PlayersChestMode.remove(player.getUniqueId());
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
+                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off removal mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersChestMode.put(player.getUniqueId(), ChestMode.CREATE);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
+                ChestRefill.PlayersChestMode.put(player.getUniqueId(), ChestMode.REMOVE);
+                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on removal mode"));
             }
         }
 

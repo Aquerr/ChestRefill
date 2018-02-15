@@ -77,6 +77,7 @@ public class RefillingChest
         }
 
 
+        //TODO: Refactor this code if it will be possible...
         //Compare chest location
         if (this.chestLocation.equals(((RefillingChest)obj).getChestLocation()))
         {

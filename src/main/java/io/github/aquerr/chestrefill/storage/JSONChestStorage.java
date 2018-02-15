@@ -62,9 +62,29 @@ public class JSONChestStorage
         return false;
     }
 
-    public static boolean removeChest()
+    public static boolean removeChest(RefillingChest refillingChest)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (!Files.exists(chestsPath)) Files.createFile(chestsPath); //TODO: Move this line of code so that it executes globally.
+
+            ConfigurationNode node = configurationLoader.load();
+
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID();
+
+            node.getNode("chestrefill", "chests").removeChild(blockPositionAndWorldUUID);
+
+            configurationLoader.save(node);
+
+            return true;
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return false;
     }
 
     public static List<RefillingChest> getChests()
