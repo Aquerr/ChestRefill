@@ -8,14 +8,7 @@ import io.github.aquerr.chestrefill.entities.RefillingChest;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.extent.Extent;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -36,20 +29,13 @@ public class JSONChestStorage
     private static Path chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
     private static GsonConfigurationLoader configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
 
-
     public static boolean addChest(RefillingChest refillingChest)
     {
-        //Serialize the chest and add it to the file.
-        //Or
-        //Save chest's location and its contents and save it as a JSON.
-
         try
         {
             if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
 
             ConfigurationNode node = configurationLoader.load();
-
-            //TODO: Try to deserialize and save Refilling chest class here instead of List and Time separately.
 
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID();
@@ -58,7 +44,7 @@ public class JSONChestStorage
             node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillingChest.getItems());
 
             //Set chest's regeneration time (in seconds)
-            node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "time").setValue(120);
+            node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "time").setValue(refillingChest.getRestoreTime());
 
             configurationLoader.save(node);
 
@@ -85,6 +71,8 @@ public class JSONChestStorage
     {
         try
         {
+            if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
+
             ConfigurationNode node = configurationLoader.load();
 
             Set<Object> objectList = node.getNode("chestrefill", "chests").getChildrenMap().keySet();
@@ -92,8 +80,9 @@ public class JSONChestStorage
 
             for (Object object: objectList)
             {
+                //Reset itemstacks List for every chest
                 List<ItemStack> itemStacks = new ArrayList<>();
-                //int time;
+                int time = 0;
 
                 String chestPositionAndWorldUUIDString = (String)object;
                 String splitter = "\\|";
@@ -111,15 +100,23 @@ public class JSONChestStorage
                 ChestLocation chestLocation = new ChestLocation(Vector3i.from(x, y, z), worldUUID);
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "chests", chestPositionAndWorldUUIDString, "items").getList(objectToItemStackTransformer);
+                itemStacks = node.getNode("chestrefill", "chests", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
 
-                //TODO: Get chest's refill time.
+                time = node.getNode("chestrefill", "chests", chestPositionAndWorldUUIDString, "time").getInt();
 
+                RefillingChest refillingChest = new RefillingChest(chestLocation, itemStacks, time);
+
+                refillingChestsList.add(refillingChest);
             }
+
+            return refillingChestsList;
         }
         catch (IOException exception)
         {
             exception.printStackTrace();
+        } catch (ObjectMappingException e)
+        {
+            e.printStackTrace();
         }
 
         return new ArrayList<>();
@@ -127,12 +124,14 @@ public class JSONChestStorage
 
     private static Function<Object, ItemStack> objectToItemStackTransformer = input ->
     {
-        if (input instanceof ItemStack)
+        try
         {
-            return (ItemStack) input;
+            ItemStack test = (ItemStack)input;
+            return test;
         }
-        else
+        catch (ClassCastException exception)
         {
+            exception.printStackTrace();
             return null;
         }
     };

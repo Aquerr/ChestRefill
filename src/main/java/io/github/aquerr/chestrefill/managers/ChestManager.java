@@ -24,22 +24,4 @@ public class ChestManager
     {
         return JSONChestStorage.getChests();
     }
-
-    public static RefillingChest toRefillingChest(Chest chest, UUID worldUUID)
-    {
-        //Iritate over items in chest inventory
-        List<ItemStack> items = new ArrayList<>();
-
-        chest.getInventory().slots().forEach(x->
-        {
-            if (x.peek().isPresent())
-            {
-                items.add(x.peek().get());
-            }
-        });
-
-        RefillingChest refillingChest = new RefillingChest(new ChestLocation(chest.getLocation().getBlockPosition(), worldUUID), items);
-
-        return refillingChest;
-    }
 }

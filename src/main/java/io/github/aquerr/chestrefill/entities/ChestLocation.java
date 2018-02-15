@@ -27,4 +27,25 @@ public class ChestLocation
     {
         return this.worldUUID;
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof ChestLocation))
+        {
+            return false;
+        }
+        if (obj == this)
+        {
+            return true;
+        }
+
+        return this.blockPosition.equals(((ChestLocation)obj).getBlockPosition()) && this.worldUUID.equals(((ChestLocation)obj).getWorldUUID());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.blockPosition.toString().length();
+    }
 }

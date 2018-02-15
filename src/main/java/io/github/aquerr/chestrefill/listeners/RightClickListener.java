@@ -32,7 +32,7 @@ public class RightClickListener
 
                 //TODO: This is bad. Change location to coordinates and world UUID.
 
-                RefillingChest refillingChest = ChestManager.toRefillingChest(chest, player.getWorld().getUniqueId());
+                RefillingChest refillingChest = RefillingChest.fromChest(chest, player.getWorld().getUniqueId());
 
                 if (!ChestManager.getChests().contains(refillingChest))
                 {
@@ -46,7 +46,7 @@ public class RightClickListener
                 }
                 else
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest."));
+                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest"));
                 }
 
                 //Turn creation mode off
