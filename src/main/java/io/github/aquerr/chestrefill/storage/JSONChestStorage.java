@@ -11,6 +11,7 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.item.inventory.ItemStack;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +63,7 @@ public class JSONChestStorage implements Storage
         return false;
     }
 
-    public boolean removeChest(RefillingChest refillingChest)
+    public boolean removeChest(ChestLocation chestLocation)
     {
         try
         {
@@ -71,7 +72,7 @@ public class JSONChestStorage implements Storage
             ConfigurationNode node = configurationLoader.load();
 
             //We are using block position and recreating location on retrieval.
-            String blockPositionAndWorldUUID = refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID();
+            String blockPositionAndWorldUUID = chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID();
 
             node.getNode("chestrefill", "chests").removeChild(blockPositionAndWorldUUID);
 
@@ -140,6 +141,47 @@ public class JSONChestStorage implements Storage
         }
 
         return new ArrayList<>();
+    }
+
+    @Override
+    @Nullable
+    public RefillingChest getChest(ChestLocation chestLocation)
+    {
+        try
+        {
+            if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
+
+            ConfigurationNode node = configurationLoader.load();
+
+            String blockPositionAndWorldUUID = chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID();
+
+            Object chestObject = node.getNode("chestrefill", "chests", blockPositionAndWorldUUID).getValue();
+
+            if (chestObject != null)
+            {
+                List<ItemStack> itemStacks;
+                int time;
+
+                //Let's get chest's items
+                itemStacks = node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
+
+                time = node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "time").getInt();
+
+                RefillingChest refillingChest = new RefillingChest(chestLocation, itemStacks, time);
+
+                return refillingChest;
+            }
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+        catch (ObjectMappingException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return null;
     }
 
     private static Function<Object, ItemStack> objectToItemStackTransformer = input ->

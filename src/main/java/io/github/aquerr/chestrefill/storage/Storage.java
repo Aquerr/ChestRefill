@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.storage;
 
+import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 
 import java.util.List;
@@ -11,8 +12,9 @@ public interface Storage
 {
     boolean addChest(RefillingChest refillingChest);
 
-    boolean removeChest(RefillingChest refillingChest);
+    boolean removeChest(ChestLocation chestLocation);
 
     List<RefillingChest> getChests();
 
+    RefillingChest getChest(ChestLocation chestLocation);
 }

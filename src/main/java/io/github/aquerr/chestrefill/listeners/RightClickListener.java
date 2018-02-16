@@ -54,7 +54,7 @@ public class RightClickListener
 
                         if (ChestManager.getChests().contains(refillingChest))
                         {
-                            boolean didSucceed = ChestManager.removeChest(refillingChest);
+                            boolean didSucceed = ChestManager.removeChest(refillingChest.getChestLocation());
 
                             if (didSucceed)
                             {

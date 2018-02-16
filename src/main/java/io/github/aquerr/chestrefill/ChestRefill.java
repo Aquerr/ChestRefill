@@ -3,6 +3,7 @@ package io.github.aquerr.chestrefill;
 import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.HelpCommand;
 import io.github.aquerr.chestrefill.commands.RemoveCommand;
+import io.github.aquerr.chestrefill.listeners.ChestBreakListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import org.slf4j.Logger;
@@ -65,7 +66,6 @@ public class ChestRefill
 
         initCommands();
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Commands are ready!"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing listeners..."));
 
         initListeners();
@@ -118,5 +118,6 @@ public class ChestRefill
     private void initListeners()
     {
         Sponge.getEventManager().registerListeners(this, new RightClickListener());
+        Sponge.getEventManager().registerListeners(this, new ChestBreakListener());
     }
 }
