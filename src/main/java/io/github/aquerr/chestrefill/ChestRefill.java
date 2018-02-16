@@ -4,12 +4,14 @@ import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.HelpCommand;
 import io.github.aquerr.chestrefill.commands.RemoveCommand;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
+import io.github.aquerr.chestrefill.managers.ChestManager;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GameLoadCompleteEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -69,6 +71,13 @@ public class ChestRefill
         initListeners();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
+    }
+
+    @Listener
+    public void onGameLoad(GameLoadCompleteEvent event)
+    {
+        //Start refilling chests that were created on the server before
+        ChestManager.restoreRefilling();
     }
 
     private void initCommands()

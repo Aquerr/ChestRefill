@@ -24,12 +24,12 @@ import java.util.function.Function;
 /**
  * Created by Aquerr on 2018-02-12.
  */
-public class JSONChestStorage
+public class JSONChestStorage implements Storage
 {
     private static Path chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
     private static GsonConfigurationLoader configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
 
-    public static boolean addChest(RefillingChest refillingChest)
+    public boolean addChest(RefillingChest refillingChest)
     {
         try
         {
@@ -62,7 +62,7 @@ public class JSONChestStorage
         return false;
     }
 
-    public static boolean removeChest(RefillingChest refillingChest)
+    public boolean removeChest(RefillingChest refillingChest)
     {
         try
         {
@@ -87,7 +87,7 @@ public class JSONChestStorage
         return false;
     }
 
-    public static List<RefillingChest> getChests()
+    public List<RefillingChest> getChests()
     {
         try
         {
