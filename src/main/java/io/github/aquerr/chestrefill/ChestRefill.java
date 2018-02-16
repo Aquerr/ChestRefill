@@ -3,6 +3,7 @@ package io.github.aquerr.chestrefill;
 import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.HelpCommand;
 import io.github.aquerr.chestrefill.commands.RemoveCommand;
+import io.github.aquerr.chestrefill.commands.UpdateCommand;
 import io.github.aquerr.chestrefill.listeners.ChestBreakListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ChestManager;
@@ -50,6 +51,8 @@ public class ChestRefill
     @Listener
     public void onGameInitialization(GameInitializationEvent event)
     {
+        chestRefill = this;
+
         try
         {
             Files.createDirectories(_configDir);
@@ -59,7 +62,7 @@ public class ChestRefill
             e.printStackTrace();
         }
 
-        chestRefill = this;
+        ChestManager.setupChestManager();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
@@ -102,6 +105,13 @@ public class ChestRefill
             .description(Text.of("Toggles chest removal mode"))
             .permission(PluginPermissions.REMOVE_COMMAND)
             .executor(new RemoveCommand())
+            .build());
+
+        //Update Command
+        Subcommands.put(Arrays.asList("u", "update"), CommandSpec.builder()
+            .description(Text.of("Toggles chest update mode"))
+            .permission(PluginPermissions.UPDATE_COMMAND)
+            .executor(new UpdateCommand())
             .build());
 
         //Build all commands

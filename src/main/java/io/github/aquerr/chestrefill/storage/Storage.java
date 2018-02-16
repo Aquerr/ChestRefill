@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface Storage
 {
-    boolean addChest(RefillingChest refillingChest);
+    boolean addOrUpdateChest(RefillingChest refillingChest);
 
     boolean removeChest(ChestLocation chestLocation);
 

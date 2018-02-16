@@ -9,7 +9,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.item.inventory.ItemStack;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -27,17 +26,31 @@ import java.util.function.Function;
  */
 public class JSONChestStorage implements Storage
 {
-    private static Path chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
-    private static GsonConfigurationLoader configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
+    private Path chestsPath;
+    private GsonConfigurationLoader configurationLoader;
+    ConfigurationNode node;
 
-    public boolean addChest(RefillingChest refillingChest)
+    public JSONChestStorage()
     {
         try
         {
+            chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
+
             if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
 
-            ConfigurationNode node = configurationLoader.load();
+            configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
+            node = configurationLoader.load();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
+    public boolean addOrUpdateChest(RefillingChest refillingChest)
+    {
+        try
+        {
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID();
 
@@ -67,10 +80,6 @@ public class JSONChestStorage implements Storage
     {
         try
         {
-            if (!Files.exists(chestsPath)) Files.createFile(chestsPath); //TODO: Move this line of code so that it executes globally.
-
-            ConfigurationNode node = configurationLoader.load();
-
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID();
 
@@ -92,18 +101,14 @@ public class JSONChestStorage implements Storage
     {
         try
         {
-            if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
-
-            ConfigurationNode node = configurationLoader.load();
-
             Set<Object> objectList = node.getNode("chestrefill", "chests").getChildrenMap().keySet();
             List<RefillingChest> refillingChestsList = new ArrayList<>();
 
             for (Object object: objectList)
             {
                 //Reset itemstacks List for every chest
-                List<ItemStack> itemStacks = new ArrayList<>();
-                int time = 0;
+                List<ItemStack> itemStacks;
+                int time;
 
                 String chestPositionAndWorldUUIDString = (String)object;
                 String splitter = "\\|";
@@ -132,10 +137,7 @@ public class JSONChestStorage implements Storage
 
             return refillingChestsList;
         }
-        catch (IOException exception)
-        {
-            exception.printStackTrace();
-        } catch (ObjectMappingException e)
+        catch (ObjectMappingException e)
         {
             e.printStackTrace();
         }
@@ -149,10 +151,6 @@ public class JSONChestStorage implements Storage
     {
         try
         {
-            if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
-
-            ConfigurationNode node = configurationLoader.load();
-
             String blockPositionAndWorldUUID = chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID();
 
             Object chestObject = node.getNode("chestrefill", "chests", blockPositionAndWorldUUID).getValue();
@@ -172,10 +170,6 @@ public class JSONChestStorage implements Storage
                 return refillingChest;
             }
         }
-        catch (IOException exception)
-        {
-            exception.printStackTrace();
-        }
         catch (ObjectMappingException exception)
         {
             exception.printStackTrace();
@@ -184,7 +178,7 @@ public class JSONChestStorage implements Storage
         return null;
     }
 
-    private static Function<Object, ItemStack> objectToItemStackTransformer = input ->
+    private Function<Object, ItemStack> objectToItemStackTransformer = input ->
     {
         try
         {

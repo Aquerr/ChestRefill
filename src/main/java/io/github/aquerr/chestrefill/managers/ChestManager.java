@@ -7,18 +7,14 @@ import io.github.aquerr.chestrefill.storage.JSONChestStorage;
 import io.github.aquerr.chestrefill.storage.Storage;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.type.TileEntityInventory;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,16 +22,27 @@ import java.util.concurrent.TimeUnit;
  */
 public class ChestManager
 {
-    private static Storage chestStorage = new JSONChestStorage();
+    private static Storage chestStorage;
+
+    public static void setupChestManager()
+    {
+        chestStorage = new JSONChestStorage();
+    }
 
     public static boolean addChest(RefillingChest refillingChest)
     {
-        if (chestStorage.addChest(refillingChest))
+        if (chestStorage.addOrUpdateChest(refillingChest))
         {
             return startRefillingChest(refillingChest);
         }
 
         return false;
+    }
+
+    public static boolean updateChest(RefillingChest refillingChest)
+    {
+        //We do not need to restart scheduler. New chest content will be loaded from the storage by existing scheduler.
+        return chestStorage.addOrUpdateChest(refillingChest);
     }
 
     public static List<RefillingChest> getChests()

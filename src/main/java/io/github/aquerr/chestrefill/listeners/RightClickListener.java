@@ -1,6 +1,5 @@
 package io.github.aquerr.chestrefill.listeners;
 
-import io.github.aquerr.chestrefill.ChestMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
@@ -34,7 +33,7 @@ public class RightClickListener
                 {
                     case CREATE:
 
-                        if (!ChestManager.getChests().contains(refillingChest))
+                        if (!ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
                         {
                             boolean didSucceed = ChestManager.addChest(refillingChest);
 
@@ -52,13 +51,31 @@ public class RightClickListener
 
                     case REMOVE:
 
-                        if (ChestManager.getChests().contains(refillingChest))
+                        if (ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
                         {
                             boolean didSucceed = ChestManager.removeChest(refillingChest.getChestLocation());
 
                             if (didSucceed)
                             {
                                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling chest!"));
+                            }
+                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        }
+                        else
+                        {
+                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                        }
+                        break;
+
+                    case UPDATE:
+
+                        if (ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
+                        {
+                            boolean didSucceed = ChestManager.updateChest(refillingChest);
+
+                            if (didSucceed)
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling chest!"));
                             }
                             else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                         }

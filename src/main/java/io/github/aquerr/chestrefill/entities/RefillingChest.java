@@ -4,9 +4,7 @@ import io.github.aquerr.chestrefill.ChestRefill;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.world.Location;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -83,7 +81,11 @@ public class RefillingChest
         {
             Inventory tempInventory = Inventory.builder().build(ChestRefill.getChestRefill());
 
-            this.items.forEach(x-> tempInventory.offer(x));
+            this.items.forEach(x-> {
+                //Offer removes items from inventory so we need to build new temp items.
+                ItemStack tempItemStack = ItemStack.builder().fromItemStack(x).build();
+                tempInventory.offer(tempItemStack);
+            });
 
             //Compare items
             for (ItemStack comparedItem : ((RefillingChest) obj).getItems())
