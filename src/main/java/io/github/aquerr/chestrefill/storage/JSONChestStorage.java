@@ -178,6 +178,29 @@ public class JSONChestStorage implements Storage
         return null;
     }
 
+    @Override
+    public boolean updateChestTime(ChestLocation chestLocation, int time)
+    {
+        try
+        {
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID();
+
+            //Set chest's regeneration time (in seconds)
+            node.getNode("chestrefill", "chests", blockPositionAndWorldUUID, "time").setValue(time);
+
+            configurationLoader.save(node);
+
+            return true;
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return false;
+    }
+
     private Function<Object, ItemStack> objectToItemStackTransformer = input ->
     {
         try

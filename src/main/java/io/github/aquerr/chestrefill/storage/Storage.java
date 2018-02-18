@@ -17,4 +17,6 @@ public interface Storage
     List<RefillingChest> getChests();
 
     RefillingChest getChest(ChestLocation chestLocation);
+
+    boolean updateChestTime(ChestLocation chestLocation, int time);
 }

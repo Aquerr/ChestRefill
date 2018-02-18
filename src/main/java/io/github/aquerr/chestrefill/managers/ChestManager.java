@@ -33,7 +33,7 @@ public class ChestManager
     {
         if (chestStorage.addOrUpdateChest(refillingChest))
         {
-            return startRefillingChest(refillingChest);
+            return startRefillingChest(refillingChest.getChestLocation(), refillingChest.getRestoreTime());
         }
 
         return false;
@@ -64,15 +64,18 @@ public class ChestManager
     {
         try
         {
-            Task refillTask = (Task) Sponge.getScheduler().getTasksByName("Chest Refill " + chestLocation.getBlockPosition().toString()
-                    + "|" + chestLocation.getWorldUUID().toString()).toArray()[0];
-            refillTask.cancel();
+            Optional<Task> optionalTask = Sponge.getScheduler().getScheduledTasks().stream().filter(x->x.getName().equals("Chest Refill " + chestLocation.getBlockPosition().toString()
+                    + "|" + chestLocation.getWorldUUID().toString())).findFirst();
 
-            return true;
+            if (optionalTask.isPresent())
+            {
+                optionalTask.get().cancel();
+                return true;
+            }
         }
         catch (Exception exception)
         {
-
+            exception.printStackTrace();
         }
         return false;
     }
@@ -83,14 +86,14 @@ public class ChestManager
         return chestStorage.getChest(chestLocation);
     }
 
-    private static boolean startRefillingChest(RefillingChest refillingChest)
+    private static boolean startRefillingChest(ChestLocation chestLocation, int time)
     {
         try
         {
             Task.Builder refillTask = Sponge.getScheduler().createTaskBuilder();
 
-            refillTask.execute(refillChest(refillingChest.getChestLocation())).interval(refillingChest.getRestoreTime(), TimeUnit.SECONDS)
-                    .name("Chest Refill " + refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID().toString())
+            refillTask.execute(refillChest(chestLocation)).interval(time, TimeUnit.SECONDS)
+                    .name("Chest Refill " + chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID().toString())
                     .submit(ChestRefill.getChestRefill());
 
             return true;
@@ -142,5 +145,14 @@ public class ChestManager
                     .name("Chest Refill " + refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID().toString())
                     .submit(ChestRefill.getChestRefill());
         }
+    }
+
+    public static boolean updateChestTime(ChestLocation chestLocation, int time)
+    {
+        if (stopRefillingChest(chestLocation)
+            && chestStorage.updateChestTime(chestLocation, time)
+            && startRefillingChest(chestLocation, time)) return true;
+
+        return false;
     }
 }

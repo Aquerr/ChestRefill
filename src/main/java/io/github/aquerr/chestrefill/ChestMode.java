@@ -5,5 +5,5 @@ package io.github.aquerr.chestrefill;
  */
 public enum ChestMode
 {
-    SELECT, CREATE, UPDATE, REMOVE
+    SELECT, CREATE, UPDATE, REMOVE, TIME
 }
