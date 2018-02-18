@@ -13,4 +13,5 @@ public abstract class PluginPermissions
     public static final String REMOVE_COMMAND = "chestrefill.remove";
     public static final String UPDATE_COMMAND = "chestrefill.update";
     public static final String TIME_COMMAND = "chestrefill.time";
+    public static final String LIST_COMMAND = "chestrefill.list";
 }

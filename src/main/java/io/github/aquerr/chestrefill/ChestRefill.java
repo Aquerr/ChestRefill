@@ -73,6 +73,7 @@ public class ChestRefill
         initListeners();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GRAY, "Chest Refill is a plugin used for automatic chest restoration "));
     }
 
     @Listener
@@ -121,6 +122,13 @@ public class ChestRefill
             .executor(new TimeCommand())
             .build());
 
+        //List Command
+        Subcommands.put(Arrays.asList("l","list"), CommandSpec.builder()
+                .description(Text.of("Show all refilling chests"))
+                .permission(PluginPermissions.LIST_COMMAND)
+                .executor(new ListCommand())
+                .build());
+
         //Build all commands
         CommandSpec mainCommand = CommandSpec.builder()
                 .description(Text.of("Displays all available commands"))
@@ -130,6 +138,7 @@ public class ChestRefill
 
         //Register commands
         Sponge.getCommandManager().register(this, mainCommand, "chestrefill", "cr");
+
     }
 
     private void initListeners()
