@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.commands;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
+import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import org.spongepowered.api.Sponge;
@@ -65,6 +66,7 @@ public class ListCommand implements CommandExecutor
                 Player player = (Player)source;
 
                 player.setLocation(new Location<World>(player.getWorld(), blockPosition));
+                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the choosen chest!"));
             }
         };
     }
