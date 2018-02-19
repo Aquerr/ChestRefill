@@ -73,7 +73,6 @@ public class ChestRefill
         initListeners();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GRAY, "Chest Refill is a plugin used for automatic chest restoration "));
     }
 
     @Listener
