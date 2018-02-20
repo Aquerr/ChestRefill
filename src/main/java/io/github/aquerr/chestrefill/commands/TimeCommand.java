@@ -12,7 +12,9 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Created by Aquerr on 2018-02-17.
@@ -61,6 +63,14 @@ public class TimeCommand implements CommandExecutor
                     {
                         ChestRefill.ChestTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
                     }
+                }
+            }
+            else
+            {
+                if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
+                {
+                    ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
+                    Map<UUID, ChestMode> test = ChestRefill.ChestTimeChangePlayer; 
                 }
             }
         }
