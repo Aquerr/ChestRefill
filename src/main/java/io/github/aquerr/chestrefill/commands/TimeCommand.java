@@ -65,13 +65,10 @@ public class TimeCommand implements CommandExecutor
                     }
                 }
             }
-            else
+            else if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
             {
-                if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
-                {
-                    ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
-                    Map<UUID, ChestMode> test = ChestRefill.ChestTimeChangePlayer; 
-                }
+                ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
+                Map<UUID, Integer> test = ChestRefill.ChestTimeChangePlayer; //This needs to be tested
             }
         }
 
