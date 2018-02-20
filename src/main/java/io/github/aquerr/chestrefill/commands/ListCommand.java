@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.commands;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
+import io.github.aquerr.chestrefill.ChestMode;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
@@ -37,6 +38,7 @@ public class ListCommand implements CommandExecutor
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in chest: " + "\n"));
             refillingChest.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
+            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Chest cooldown: ",refillingChest.getRestoreTime()));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()
