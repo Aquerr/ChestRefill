@@ -68,7 +68,6 @@ public class TimeCommand implements CommandExecutor
             else if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
             {
                 ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
-                Map<UUID, Integer> test = ChestRefill.ChestTimeChangePlayer; //This needs to be tested
             }
         }
 
