@@ -2,7 +2,6 @@ package io.github.aquerr.chestrefill.commands;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
-import io.github.aquerr.chestrefill.ChestMode;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
@@ -24,6 +23,10 @@ import org.spongepowered.api.world.World;
 
 import java.util.List;
 import java.util.function.Consumer;
+
+/**
+ * Created by Aquerr & vvozny on 2018-02-09.
+ */
 
 public class ListCommand implements CommandExecutor
 {

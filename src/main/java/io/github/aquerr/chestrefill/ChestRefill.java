@@ -4,6 +4,7 @@ import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.listeners.ChestBreakListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ChestManager;
+import io.github.aquerr.chestrefill.version.VersionChecker;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -17,8 +18,6 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -30,6 +29,8 @@ import java.util.*;
 @Plugin(id = PluginInfo.Id, name = PluginInfo.Name, version = PluginInfo.Version, description = PluginInfo.Description, authors = PluginInfo.Authors, url = PluginInfo.Url)
 public class ChestRefill
 {
+    private VersionChecker versionChecker;
+
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
     public static Map<UUID, ChestMode> PlayersChestMode = new HashMap<>();
@@ -51,6 +52,7 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
+        versionChecker = new VersionChecker();
 
         ChestManager.setupChestManager(_configDir);
 
@@ -64,6 +66,16 @@ public class ChestRefill
         initListeners();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
+
+        //TODO: Check if there is a new version available...
+
+
+
+        if (VersionChecker.isLatest(PluginInfo.Version))
+        {
+
+        }
+
     }
 
     @Listener
