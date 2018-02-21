@@ -50,6 +50,10 @@ public class RightClickListener
                         {
                             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest"));
                         }
+
+                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+
                         break;
 
                     case REMOVE:
@@ -68,6 +72,10 @@ public class RightClickListener
                         {
                             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
                         }
+
+                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+
                         break;
 
                     case UPDATE:
@@ -86,6 +94,10 @@ public class RightClickListener
                         {
                             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
                         }
+
+                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+
                         break;
 
                     case TIME:
@@ -114,6 +126,11 @@ public class RightClickListener
                         {
                             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
                         }
+
+                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+                        if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId())) ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
+
                         break;
                 }
             }
