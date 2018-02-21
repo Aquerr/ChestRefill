@@ -73,7 +73,11 @@ public class ChestRefill
 
         if (VersionChecker.isLatest(PluginInfo.Version))
         {
-
+            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You are using the latest version!"));
+        }
+        else
+        {
+            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, "Refilling Chest", TextColors.RED, " is available!"));
         }
 
     }

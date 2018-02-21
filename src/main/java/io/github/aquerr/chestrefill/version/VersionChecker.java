@@ -25,37 +25,31 @@ public class VersionChecker
 
     public static boolean isLatest(String version)
     {
-        //TODO: Check is current version is the latest version
+        String latest = "https://api.github.com/repos/Aquerr/ChestRefill/releases";
+        String currentTag = "https://api.github.com/repos/Aquerr/ChestRefill/releases/tags/" + version;
 
-        //String latest = "http://api.github.com/repos/aquerr/chestrefill/releases/latest";
+        String latestJsonData = sendRequest(latest);
+        String currentJsonData = sendRequest(currentTag);
 
-        //This is just for testing
-        String latest = "https://api.github.com/repos/Aquerr/EagleFactions/releases";
-        String currentTag = "https://api.github.com/repos/Aquerr/EagleFactions/tags/v0.9.10";
-
-        String jsonData = sendRequest(latest);
-
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse(jsonData);
-
-        if (jsonElement.isJsonArray())
+        if (latestJsonData != null && currentJsonData != null)
         {
-            JsonArray jsonArray = jsonElement.getAsJsonArray();
-            JsonElement latestRelease = jsonArray.get(0);
-            Date latestReleaseDate = Date.from(Instant.parse(latestRelease.getAsJsonObject().get("published_at").getAsString()));
+            JsonParser parser = new JsonParser();
+            JsonElement latestJsonElement = parser.parse(latestJsonData);
+            JsonElement currentJsonElement = parser.parse(currentJsonData);
 
-            
+            if (latestJsonElement.isJsonArray())
+            {
+                JsonArray latestJsonArray = latestJsonElement.getAsJsonArray();
+                JsonElement latestRelease = latestJsonArray.get(0);
 
-        }
-        else if(jsonElement.isJsonObject())
-        {
-            JsonObject jsonArray = jsonElement.getAsJsonObject();
+                Date latestReleaseDate = Date.from(Instant.parse(latestRelease.getAsJsonObject().get("published_at").getAsString()));
+                Date currentReleaseDate = Date.from(Instant.parse(currentJsonElement.getAsJsonObject().get("published_at").getAsString()));
 
+                if (currentReleaseDate.before(latestReleaseDate)) return false;
+            }
         }
 
-
-
-        return false;
+        return true;
     }
 
     private static String sendRequest(String request)
