@@ -13,6 +13,9 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -24,9 +27,21 @@ public class ChestManager
 {
     private static Storage chestStorage;
 
-    public static void setupChestManager()
+    public static void setupChestManager(Path configDir)
     {
-        chestStorage = new JSONChestStorage();
+        if (!Files.isDirectory(configDir))
+        {
+            try
+            {
+                Files.createDirectory(configDir);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        chestStorage = new JSONChestStorage(configDir);
     }
 
     public static boolean addChest(RefillingChest refillingChest)

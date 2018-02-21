@@ -30,11 +30,11 @@ public class JSONChestStorage implements Storage
     private GsonConfigurationLoader configurationLoader;
     ConfigurationNode node;
 
-    public JSONChestStorage()
+    public JSONChestStorage(Path configDir)
     {
         try
         {
-            chestsPath = Paths.get(ChestRefill.getChestRefill().getConfigDir() + "/chests.json");
+            chestsPath = Paths.get(configDir + "/chests.json");
 
             if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
 

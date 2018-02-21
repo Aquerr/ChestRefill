@@ -52,16 +52,7 @@ public class ChestRefill
     {
         chestRefill = this;
 
-        try
-        {
-            Files.createDirectories(_configDir);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        ChestManager.setupChestManager();
+        ChestManager.setupChestManager(_configDir);
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
