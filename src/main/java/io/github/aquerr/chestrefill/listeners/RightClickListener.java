@@ -2,7 +2,6 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.PluginPermissions;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import org.spongepowered.api.block.BlockTypes;
@@ -13,8 +12,6 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-
-import java.util.Optional;
 
 /**
  * Created by Aquerr on 2018-02-10.

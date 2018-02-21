@@ -29,8 +29,6 @@ import java.util.*;
 @Plugin(id = PluginInfo.Id, name = PluginInfo.Name, version = PluginInfo.Version, description = PluginInfo.Description, authors = PluginInfo.Authors, url = PluginInfo.Url)
 public class ChestRefill
 {
-    private VersionChecker versionChecker;
-
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
     public static Map<UUID, ChestMode> PlayersChestMode = new HashMap<>();
@@ -52,7 +50,6 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
-        versionChecker = new VersionChecker();
 
         ChestManager.setupChestManager(_configDir);
 
@@ -66,10 +63,6 @@ public class ChestRefill
         initListeners();
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
-
-        //TODO: Check if there is a new version available...
-
-
 
         if (VersionChecker.isLatest(PluginInfo.Version))
         {

@@ -12,9 +12,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Created by Aquerr on 2018-02-17.
