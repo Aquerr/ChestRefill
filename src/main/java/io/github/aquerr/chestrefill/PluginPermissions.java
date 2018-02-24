@@ -14,4 +14,5 @@ public abstract class PluginPermissions
     public static final String UPDATE_COMMAND = "chestrefill.update";
     public static final String TIME_COMMAND = "chestrefill.time";
     public static final String LIST_COMMAND = "chestrefill.list";
+    public static final String VERSION_NOTIFY = "chestrefill.version.notify";
 }
