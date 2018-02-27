@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.listeners.ChestBreakListener;
+import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import io.github.aquerr.chestrefill.version.VersionChecker;
@@ -144,5 +145,6 @@ public class ChestRefill
     {
         Sponge.getEventManager().registerListeners(this, new RightClickListener());
         Sponge.getEventManager().registerListeners(this, new ChestBreakListener());
+        Sponge.getEventManager().registerListeners(this, new PlayerJoinListener());
     }
 }

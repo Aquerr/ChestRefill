@@ -7,7 +7,7 @@ public abstract class PluginPermissions
 {
     public static final String HELP_COMMAND = "chestrefill.help";
 
-    public static final String SELECT_COMMAND = "chestrefill.select";
+    //public static final String SELECT_COMMAND = "chestrefill.select";
 
     public static final String CREATE_COMMAND = "chestrefill.create";
     public static final String REMOVE_COMMAND = "chestrefill.remove";
