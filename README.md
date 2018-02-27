@@ -1,2 +1,19 @@
-# ChestRefill
-Repo for Chest Refill. A plugin for refilling/restocking chests on a Minecraft Server that uses SpongeForge.
+![alt text](https://i.imgur.com/F3S3TVn.png "Banner")
+
+# Chest Refill
+
+Chest Refill is a Minecraft plugin for servers which use SpongeForge. This plugin allows you to create refillable chests
+which regenerate theirs content after a specified time provided by the user.
+
+Check you our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how everything works!
+
+## Links
+
+[Wiki](https://github.com/Aquerr/ChestRefill/wiki)
+
+[Downloads](https://github.com/Aquerr/ChestRefill/releases)
+
+[Permissions](https://github.com/Aquerr/ChestRefill/wiki/Permissions)
+
+## License
+[MIT](https://github.com/Aquerr/ChestRefill/blob/master/LICENSE)
