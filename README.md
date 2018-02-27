@@ -1,4 +1,4 @@
-![alt text](https://i.imgur.com/F3S3TVn.png "Banner")
+<p align="center"><img src ="https://i.imgur.com/F3S3TVn.png" /></p>
 
 # Chest Refill
 
