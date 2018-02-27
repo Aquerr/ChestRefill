@@ -40,7 +40,7 @@ public class ListCommand implements CommandExecutor
             Text.Builder itemsToShow = Text.builder();
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in chest: " + "\n"));
-            refillingChest.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
+            refillingChest.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
             itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Chest cooldown: ",refillingChest.getRestoreTime(),"s\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
