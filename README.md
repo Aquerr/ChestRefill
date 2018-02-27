@@ -5,7 +5,7 @@
 Chest Refill is a Minecraft plugin for servers which use SpongeForge. This plugin allows you to create refillable chests
 which regenerate theirs content after a specified time provided by the user.
 
-Check you our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how everything works!
+Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how everything works!
 
 ## Links
 
