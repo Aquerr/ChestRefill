@@ -107,7 +107,7 @@ public class ChestManager
         {
             Task.Builder refillTask = Sponge.getScheduler().createTaskBuilder();
 
-            refillTask.execute(refillChest(chestLocation)).interval(time, TimeUnit.SECONDS)
+            refillTask.execute(refillChest(chestLocation)).delay(time, TimeUnit.SECONDS)
                     .name("Chest Refill " + chestLocation.getBlockPosition().toString() + "|" + chestLocation.getWorldUUID().toString())
                     .submit(ChestRefill.getChestRefill());
 
@@ -146,6 +146,12 @@ public class ChestManager
                         }
                     }
                 }
+
+                Task.Builder refillTask = Sponge.getScheduler().createTaskBuilder();
+
+                refillTask.execute(refillChest(chestToRefill.getChestLocation())).delay(chestToRefill.getRestoreTime(), TimeUnit.SECONDS)
+                        .name("Chest Refill " + chestToRefill.getChestLocation().getBlockPosition().toString() + "|" + chestToRefill.getChestLocation().getWorldUUID().toString())
+                        .submit(ChestRefill.getChestRefill());
             }
         };
     }
