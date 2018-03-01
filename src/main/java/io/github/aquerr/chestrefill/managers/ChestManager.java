@@ -6,6 +6,7 @@ import io.github.aquerr.chestrefill.entities.RefillingChest;
 import io.github.aquerr.chestrefill.storage.JSONChestStorage;
 import io.github.aquerr.chestrefill.storage.Storage;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
@@ -162,7 +163,7 @@ public class ChestManager
         {
             Task.Builder refilling = Sponge.getScheduler().createTaskBuilder();
 
-            refilling.execute(refillChest(refillingChest.getChestLocation())).interval(refillingChest.getRestoreTime(), TimeUnit.SECONDS)
+            refilling.execute(refillChest(refillingChest.getChestLocation())).delay(refillingChest.getRestoreTime(), TimeUnit.SECONDS)
                     .name("Chest Refill " + refillingChest.getChestLocation().getBlockPosition().toString() + "|" + refillingChest.getChestLocation().getWorldUUID().toString())
                     .submit(ChestRefill.getChestRefill());
         }

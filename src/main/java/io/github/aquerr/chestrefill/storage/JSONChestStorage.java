@@ -8,17 +8,18 @@ import io.github.aquerr.chestrefill.entities.RefillingChest;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.scheduler.Task;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -30,6 +31,8 @@ public class JSONChestStorage implements Storage
     private GsonConfigurationLoader configurationLoader;
     ConfigurationNode node;
 
+    WatchService _watchService;
+
     public JSONChestStorage(Path configDir)
     {
         try
@@ -40,6 +43,14 @@ public class JSONChestStorage implements Storage
 
             configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
             node = configurationLoader.load();
+
+            //Register watcher
+            _watchService = configDir.getFileSystem().newWatchService();
+            WatchKey key =  configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+
+            Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
+            changeTask.async().interval(5, TimeUnit.SECONDS).execute(checkFileUpdate()).submit(ChestRefill.getChestRefill());
+
         }
         catch (IOException e)
         {
@@ -199,6 +210,41 @@ public class JSONChestStorage implements Storage
         }
 
         return false;
+    }
+
+    private Runnable checkFileUpdate()
+    {
+        return new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    final WatchKey watchKey = _watchService.take();
+
+                    for (WatchEvent<?> event : watchKey.pollEvents())
+                    {
+                        final Path changedFilePath = (Path) event.context();
+
+                        if (changedFilePath.toString().contains("chests.json"))
+                        {
+                            node = configurationLoader.load();
+                        }
+                    }
+
+                    watchKey.reset();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
     }
 
     private Function<Object, ItemStack> objectToItemStackTransformer = input ->
