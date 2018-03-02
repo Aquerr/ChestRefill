@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.ChestMode;
+import io.github.aquerr.chestrefill.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import org.spongepowered.api.command.CommandException;
@@ -29,43 +29,43 @@ public class TimeCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
             {
-                if (ChestMode.TIME != ChestRefill.PlayersChestMode.get(player.getUniqueId()))
+                if (SelectionMode.TIME != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersChestMode.replace(player.getUniqueId(), ChestMode.TIME);
+                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.TIME);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off time mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersChestMode.put(player.getUniqueId(), ChestMode.TIME);
+                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.TIME);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
             }
 
-            if (ChestRefill.PlayersChestMode.containsKey(player.getUniqueId())
-                    && ChestRefill.PlayersChestMode.get(player.getUniqueId()) == ChestMode.TIME)
+            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId())
+                    && ChestRefill.PlayersSelectionMode.get(player.getUniqueId()) == SelectionMode.TIME)
             {
                 if (optionalTime.isPresent())
                 {
-                    if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
+                    if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId()))
                     {
-                        ChestRefill.ChestTimeChangePlayer.replace(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.EntityTimeChangePlayer.replace(player.getUniqueId(), optionalTime.get());
                     }
                     else
                     {
-                        ChestRefill.ChestTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.EntityTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
                     }
                 }
             }
-            else if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
+            else if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId()))
             {
-                ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
+                ChestRefill.EntityTimeChangePlayer.remove(player.getUniqueId());
             }
         }
 

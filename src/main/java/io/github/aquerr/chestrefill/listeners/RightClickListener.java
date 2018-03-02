@@ -2,10 +2,9 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.RefillingChest;
+import io.github.aquerr.chestrefill.entities.RefillableTileEntity;
 import io.github.aquerr.chestrefill.managers.ChestManager;
-import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.block.tileentity.carrier.Chest;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
@@ -22,113 +21,117 @@ public class RightClickListener
     @Listener
     public void onRightClick(InteractBlockEvent.Secondary event, @Root Player player)
     {
-        if(event.getTargetBlock().getState().getType().equals(BlockTypes.CHEST))
+        if(event.getTargetBlock().getLocation().get().getTileEntity().isPresent())
         {
-            if(ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
+            if(ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
             {
-                Chest chest = (Chest) event.getTargetBlock().getLocation().get().getTileEntity().get();
-                RefillingChest refillingChest = RefillingChest.fromChest(chest, player.getWorld().getUniqueId());
+                TileEntity tileEntity = event.getTargetBlock().getLocation().get().getTileEntity().get();
 
-                switch (ChestRefill.PlayersChestMode.get(player.getUniqueId()))
+                if (ChestManager.allowedTileEntityTypes.contains(tileEntity.getType()))
                 {
-                    case CREATE:
+                    RefillableTileEntity refillableTileEntity = RefillableTileEntity.fromTileEntity(tileEntity, player.getWorld().getUniqueId());
 
-                        if (!ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
-                        {
-                            boolean didSucceed = ChestManager.addChest(refillingChest);
+                    switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+                    {
+                        case CREATE:
 
-                            if (didSucceed)
+                            if (!ChestManager.getRefillableTileEntities().stream().anyMatch(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())))
                             {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling chest!"));
-                            }
-                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
-                        }
-                        else
-                        {
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is already marked as a refilling chest"));
-                        }
-
-                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
-                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
-
-                        break;
-
-                    case REMOVE:
-
-                        if (ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
-                        {
-                            boolean didSucceed = ChestManager.removeChest(refillingChest.getChestLocation());
-
-                            if (didSucceed)
-                            {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling chest!"));
-                            }
-                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
-                        }
-                        else
-                        {
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
-                        }
-
-                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
-                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
-
-                        break;
-
-                    case UPDATE:
-
-                        if (ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
-                        {
-                            boolean didSucceed = ChestManager.updateChest(refillingChest);
-
-                            if (didSucceed)
-                            {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling chest!"));
-                            }
-                            else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
-                        }
-                        else
-                        {
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
-                        }
-
-                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
-                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
-
-                        break;
-
-                    case TIME:
-
-                        if (ChestManager.getChests().stream().anyMatch(x->x.getChestLocation().equals(refillingChest.getChestLocation())))
-                        {
-                            if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId()))
-                            {
-                                int time = ChestRefill.ChestTimeChangePlayer.get(player.getUniqueId());
-
-                                boolean didSucceed = ChestManager.updateChestTime(refillingChest.getChestLocation(), time);
+                                boolean didSucceed = ChestManager.addRefillableTileEntity(refillableTileEntity);
 
                                 if (didSucceed)
                                 {
-                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated chest's refill time!"));
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling chest!"));
                                 }
                                 else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                             }
                             else
                             {
-                                RefillingChest chestToView = ChestManager.getChests().stream().filter(x->x.getChestLocation().equals(refillingChest.getChestLocation())).findFirst().get();
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This chest refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This entity is already marked as a refilling chest"));
                             }
-                        }
-                        else
-                        {
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
-                        }
 
-                        //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
-                        ChestRefill.PlayersChestMode.remove(player.getUniqueId());
-                        if (ChestRefill.ChestTimeChangePlayer.containsKey(player.getUniqueId())) ChestRefill.ChestTimeChangePlayer.remove(player.getUniqueId());
+                            //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                            ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
 
-                        break;
+                            break;
+
+                        case REMOVE:
+
+                            if (ChestManager.getRefillableTileEntities().stream().anyMatch(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())))
+                            {
+                                boolean didSucceed = ChestManager.removeChest(refillableTileEntity.getTileEntityLocation());
+
+                                if (didSucceed)
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling chest!"));
+                                }
+                                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                            }
+                            else
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                            }
+
+                            //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                            ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+
+                            break;
+
+                        case UPDATE:
+
+                            if (ChestManager.getRefillableTileEntities().stream().anyMatch(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())))
+                            {
+                                boolean didSucceed = ChestManager.updateRefillableEntity(refillableTileEntity);
+
+                                if (didSucceed)
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling chest!"));
+                                }
+                                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                            }
+                            else
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                            }
+
+                            //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                            ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+
+                            break;
+
+                        case TIME:
+
+                            if (ChestManager.getRefillableTileEntities().stream().anyMatch(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())))
+                            {
+                                if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId()))
+                                {
+                                    int time = ChestRefill.EntityTimeChangePlayer.get(player.getUniqueId());
+
+                                    boolean didSucceed = ChestManager.updateRefillingTime(refillableTileEntity.getTileEntityLocation(), time);
+
+                                    if (didSucceed)
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated chest's refill time!"));
+                                    }
+                                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                                }
+                                else
+                                {
+                                    RefillableTileEntity chestToView = ChestManager.getRefillableTileEntities().stream().filter(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())).findFirst().get();
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This chest refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
+                                }
+                            }
+                            else
+                            {
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                            }
+
+                            //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
+                            ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                            if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId())) ChestRefill.EntityTimeChangePlayer.remove(player.getUniqueId());
+
+                            break;
+                    }
                 }
             }
         }
