@@ -32,6 +32,7 @@ public class JSONChestStorage implements Storage
     ConfigurationNode node;
 
     WatchService _watchService;
+    WatchKey _key;
 
     public JSONChestStorage(Path configDir)
     {
@@ -46,10 +47,11 @@ public class JSONChestStorage implements Storage
 
             //Register watcher
             _watchService = configDir.getFileSystem().newWatchService();
-            WatchKey key =  configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+            _key =  configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
             Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
-            changeTask.async().interval(5, TimeUnit.SECONDS).execute(checkFileUpdate()).submit(ChestRefill.getChestRefill());
+            //Run a checkFileUpdate task every 2,5 second
+            changeTask.async().intervalTicks(50L).execute(checkFileUpdate()).submit(ChestRefill.getChestRefill());
 
         }
         catch (IOException e)
@@ -221,9 +223,7 @@ public class JSONChestStorage implements Storage
             {
                 try
                 {
-                    final WatchKey watchKey = _watchService.take();
-
-                    for (WatchEvent<?> event : watchKey.pollEvents())
+                    for (WatchEvent<?> event : _key.pollEvents())
                     {
                         final Path changedFilePath = (Path) event.context();
 
@@ -233,11 +233,7 @@ public class JSONChestStorage implements Storage
                         }
                     }
 
-                    watchKey.reset();
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
+                    _key.reset();
                 }
                 catch (IOException e)
                 {
