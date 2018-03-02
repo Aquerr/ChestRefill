@@ -3,6 +3,7 @@ package io.github.aquerr.chestrefill.storage;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.ChestRefill;
+import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ChestLocation;
 import io.github.aquerr.chestrefill.entities.RefillingChest;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -11,6 +12,8 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -230,6 +233,7 @@ public class JSONChestStorage implements Storage
                         if (changedFilePath.toString().contains("chests.json"))
                         {
                             node = configurationLoader.load();
+                            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in chests.json file. Reloading!"));
                         }
                     }
 
