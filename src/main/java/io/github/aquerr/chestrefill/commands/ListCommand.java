@@ -39,9 +39,9 @@ public class ListCommand implements CommandExecutor
         {
             Text.Builder itemsToShow = Text.builder();
 
-            itemsToShow.append(Text.of(TextColors.GREEN, "Items in chest: " + "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
             refillableTileEntity.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
-            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Chest cooldown: ", refillableTileEntity.getRestoreTime(),"s\n"));
+            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Inventory cooldown: ", refillableTileEntity.getRestoreTime(),"s\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()
@@ -54,7 +54,7 @@ public class ListCommand implements CommandExecutor
         }
 
         PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Chests")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
+        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Entities")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
         paginationBuilder.sendTo(source);
 
 
@@ -71,7 +71,7 @@ public class ListCommand implements CommandExecutor
                 Player player = (Player)source;
 
                 player.setLocation(new Location<World>(player.getWorld(), blockPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the chosen chest!"));
+                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected entity!"));
             }
         };
     }

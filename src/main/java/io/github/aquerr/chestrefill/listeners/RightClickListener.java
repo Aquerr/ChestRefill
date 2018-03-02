@@ -41,13 +41,13 @@ public class RightClickListener
 
                                 if (didSucceed)
                                 {
-                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling chest!"));
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling entity!"));
                                 }
                                 else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                             }
                             else
                             {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This entity is already marked as a refilling chest"));
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This entity is already marked as a refilling entity"));
                             }
 
                             //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
@@ -63,13 +63,13 @@ public class RightClickListener
 
                                 if (didSucceed)
                                 {
-                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling chest!"));
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling entity!"));
                                 }
                                 else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                             }
                             else
                             {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable entity"));
                             }
 
                             //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
@@ -85,13 +85,13 @@ public class RightClickListener
 
                                 if (didSucceed)
                                 {
-                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling chest!"));
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling entity!"));
                                 }
                                 else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                             }
                             else
                             {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable entity"));
                             }
 
                             //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
@@ -111,19 +111,19 @@ public class RightClickListener
 
                                     if (didSucceed)
                                     {
-                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated chest's refill time!"));
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated entity's refill time!"));
                                     }
                                     else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
                                 }
                                 else
                                 {
                                     RefillableTileEntity chestToView = ChestManager.getRefillableTileEntities().stream().filter(x->x.getTileEntityLocation().equals(refillableTileEntity.getTileEntityLocation())).findFirst().get();
-                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This chest refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This entity refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
                                 }
                             }
                             else
                             {
-                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable chest"));
+                                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This chest is not a refillable entity"));
                             }
 
                             //Turn off chest mode. It will be more safe to turn it off and let the player turn it on again.
