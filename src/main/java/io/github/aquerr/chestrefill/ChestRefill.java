@@ -1,7 +1,7 @@
 package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
-import io.github.aquerr.chestrefill.listeners.ChestBreakListener;
+import io.github.aquerr.chestrefill.listeners.TileEntityBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ChestManager;
@@ -32,8 +32,8 @@ public class ChestRefill
 {
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
-    public static Map<UUID, ChestMode> PlayersChestMode = new HashMap<>();
-    public static Map<UUID, Integer> ChestTimeChangePlayer = new HashMap<>();
+    public static Map<UUID, SelectionMode> PlayersSelectionMode = new HashMap<>();
+    public static Map<UUID, Integer> EntityTimeChangePlayer = new HashMap<>();
 
     private static ChestRefill chestRefill;
     public static ChestRefill getChestRefill() {return chestRefill;}
@@ -144,7 +144,7 @@ public class ChestRefill
     private void initListeners()
     {
         Sponge.getEventManager().registerListeners(this, new RightClickListener());
-        Sponge.getEventManager().registerListeners(this, new ChestBreakListener());
+        Sponge.getEventManager().registerListeners(this, new TileEntityBreakListener());
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener());
     }
 }

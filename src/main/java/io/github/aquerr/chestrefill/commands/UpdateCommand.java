@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.ChestMode;
+import io.github.aquerr.chestrefill.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import org.spongepowered.api.command.CommandException;
@@ -24,22 +24,22 @@ public class UpdateCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
             {
-                if (ChestMode.UPDATE != ChestRefill.PlayersChestMode.get(player.getUniqueId()))
+                if (SelectionMode.UPDATE != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersChestMode.replace(player.getUniqueId(), ChestMode.UPDATE);
+                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.UPDATE);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on update mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off update mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersChestMode.put(player.getUniqueId(), ChestMode.UPDATE);
+                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.UPDATE);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on update mode"));
             }
         }

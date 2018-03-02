@@ -3,7 +3,7 @@ package io.github.aquerr.chestrefill.commands;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.RefillingChest;
+import io.github.aquerr.chestrefill.entities.RefillableTileEntity;
 import io.github.aquerr.chestrefill.managers.ChestManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
@@ -35,26 +35,26 @@ public class ListCommand implements CommandExecutor
     {
         List<Text> helpList = Lists.newArrayList();
 
-        for(RefillingChest refillingChest : ChestManager.getChests())
+        for(RefillableTileEntity refillableTileEntity : ChestManager.getRefillableTileEntities())
         {
             Text.Builder itemsToShow = Text.builder();
 
-            itemsToShow.append(Text.of(TextColors.GREEN, "Items in chest: " + "\n"));
-            refillingChest.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
-            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Chest cooldown: ",refillingChest.getRestoreTime(),"s\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
+            refillableTileEntity.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
+            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Inventory cooldown: ", refillableTileEntity.getRestoreTime(),"s\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()
-                    .append(Text.of(TextColors.DARK_GREEN, "Chest at ", TextColors.YELLOW, refillingChest.getChestLocation().getBlockPosition().toString()))
+                    .append(Text.of(TextColors.DARK_GREEN, "Chest at ", TextColors.YELLOW, refillableTileEntity.getTileEntityLocation().getBlockPosition().toString()))
                     .onHover(TextActions.showText(itemsToShow.build()))
-                    .onClick(TextActions.executeCallback(teleportToChest(source, refillingChest.getChestLocation().getBlockPosition())))
+                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableTileEntity.getTileEntityLocation().getBlockPosition())))
                     .build();
 
             helpList.add(chestText);
         }
 
         PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Chests")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
+        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Entities")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
         paginationBuilder.sendTo(source);
 
 
@@ -71,7 +71,7 @@ public class ListCommand implements CommandExecutor
                 Player player = (Player)source;
 
                 player.setLocation(new Location<World>(player.getWorld(), blockPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the chosen chest!"));
+                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected entity!"));
             }
         };
     }

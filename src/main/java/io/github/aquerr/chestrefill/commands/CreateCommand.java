@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.ChestMode;
+import io.github.aquerr.chestrefill.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import org.spongepowered.api.command.CommandException;
@@ -24,22 +24,22 @@ public class CreateCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersChestMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
             {
-                if (ChestMode.CREATE != ChestRefill.PlayersChestMode.get(player.getUniqueId()))
+                if (SelectionMode.CREATE != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersChestMode.replace(player.getUniqueId(), ChestMode.CREATE);
+                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.CREATE);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayersChestMode.remove(player.getUniqueId());
+                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersChestMode.put(player.getUniqueId(), ChestMode.CREATE);
+                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.CREATE);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
             }
         }
