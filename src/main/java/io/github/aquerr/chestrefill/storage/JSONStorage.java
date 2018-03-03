@@ -4,8 +4,8 @@ import com.flowpowered.math.vector.Vector3i;
 import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.TileEntityLocation;
-import io.github.aquerr.chestrefill.entities.RefillableTileEntity;
+import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -29,7 +29,7 @@ import java.util.function.Function;
  */
 public class JSONStorage implements Storage
 {
-    private Path chestsPath;
+    private Path containersPath;
     private GsonConfigurationLoader configurationLoader;
     ConfigurationNode node;
 
@@ -40,11 +40,11 @@ public class JSONStorage implements Storage
     {
         try
         {
-            chestsPath = Paths.get(configDir + "/chests.json");
+            containersPath = Paths.get(configDir + "/containers.json");
 
-            if (!Files.exists(chestsPath)) Files.createFile(chestsPath);
+            if (!Files.exists(containersPath)) Files.createFile(containersPath);
 
-            configurationLoader = GsonConfigurationLoader.builder().setPath(chestsPath).build();
+            configurationLoader = GsonConfigurationLoader.builder().setPath(containersPath).build();
             node = configurationLoader.load();
 
             //Register watcher
@@ -62,18 +62,18 @@ public class JSONStorage implements Storage
         }
     }
 
-    public boolean addOrUpdateRefillableEntity(RefillableTileEntity refillableTileEntity)
+    public boolean addOrUpdateContainer(RefillableContainer refillableContainer)
     {
         try
         {
             //We are using block position and recreating location on retrieval.
-            String blockPositionAndWorldUUID = refillableTileEntity.getTileEntityLocation().getBlockPosition().toString() + "|" + refillableTileEntity.getTileEntityLocation().getWorldUUID();
+            String blockPositionAndWorldUUID = refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID();
 
-            //Set chest's items
-            node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillableTileEntity.getItems());
+            //Set container's items
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillableContainer.getItems());
 
-            //Set chest's regeneration time (in seconds)
-            node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID, "time").setValue(refillableTileEntity.getRestoreTime());
+            //Set container's regeneration time (in seconds)
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
 
             configurationLoader.save(node);
 
@@ -91,14 +91,14 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    public boolean removeRefillableEntity(TileEntityLocation tileEntityLocation)
+    public boolean removeRefillableContainers(ContainerLocation containerLocation)
     {
         try
         {
             //We are using block position and recreating location on retrieval.
-            String blockPositionAndWorldUUID = tileEntityLocation.getBlockPosition().toString() + "|" + tileEntityLocation.getWorldUUID();
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
-            node.getNode("chestrefill", "refillable-entities").removeChild(blockPositionAndWorldUUID);
+            node.getNode("chestrefill", "refillable-containers").removeChild(blockPositionAndWorldUUID);
 
             configurationLoader.save(node);
 
@@ -112,12 +112,12 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    public List<RefillableTileEntity> getRefillableEntities()
+    public List<RefillableContainer> getRefillableContainers()
     {
         try
         {
-            Set<Object> objectList = node.getNode("chestrefill", "refillable-entities").getChildrenMap().keySet();
-            List<RefillableTileEntity> refillingChestsList = new ArrayList<>();
+            Set<Object> objectList = node.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+            List<RefillableContainer> refillingContainersList = new ArrayList<>();
 
             for (Object object: objectList)
             {
@@ -138,19 +138,19 @@ public class JSONStorage implements Storage
                 int y = Integer.valueOf(vectors[1]);
                 int z = Integer.valueOf(vectors[2]);
 
-                TileEntityLocation tileEntityLocation = new TileEntityLocation(Vector3i.from(x, y, z), worldUUID);
+                ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-entities", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
+                itemStacks = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
 
-                time = node.getNode("chestrefill", "refillable-entities", chestPositionAndWorldUUIDString, "time").getInt();
+                time = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "time").getInt();
 
-                RefillableTileEntity refillableTileEntity = new RefillableTileEntity(tileEntityLocation, itemStacks, time);
+                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, itemStacks, time);
 
-                refillingChestsList.add(refillableTileEntity);
+                refillingContainersList.add(refillableContainer);
             }
 
-            return refillingChestsList;
+            return refillingContainersList;
         }
         catch (ObjectMappingException e)
         {
@@ -162,13 +162,13 @@ public class JSONStorage implements Storage
 
     @Override
     @Nullable
-    public RefillableTileEntity getRefillableEntity(TileEntityLocation tileEntityLocation)
+    public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
     {
         try
         {
-            String blockPositionAndWorldUUID = tileEntityLocation.getBlockPosition().toString() + "|" + tileEntityLocation.getWorldUUID();
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
-            Object chestObject = node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID).getValue();
+            Object chestObject = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
 
             if (chestObject != null)
             {
@@ -176,13 +176,13 @@ public class JSONStorage implements Storage
                 int time;
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
+                itemStacks = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
 
-                time = node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID, "time").getInt();
+                time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
 
-                RefillableTileEntity refillableTileEntity = new RefillableTileEntity(tileEntityLocation, itemStacks, time);
+                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, itemStacks, time);
 
-                return refillableTileEntity;
+                return refillableContainer;
             }
         }
         catch (ObjectMappingException exception)
@@ -194,15 +194,15 @@ public class JSONStorage implements Storage
     }
 
     @Override
-    public boolean updateEntityTime(TileEntityLocation tileEntityLocation, int time)
+    public boolean updateContainerTime(ContainerLocation containerLocation, int time)
     {
         try
         {
             //We are using block position and recreating location on retrieval.
-            String blockPositionAndWorldUUID = tileEntityLocation.getBlockPosition().toString() + "|" + tileEntityLocation.getWorldUUID();
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's regeneration time (in seconds)
-            node.getNode("chestrefill", "refillable-entities", blockPositionAndWorldUUID, "time").setValue(time);
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(time);
 
             configurationLoader.save(node);
 
@@ -229,10 +229,10 @@ public class JSONStorage implements Storage
                     {
                         final Path changedFilePath = (Path) event.context();
 
-                        if (changedFilePath.toString().contains("chests.json"))
+                        if (changedFilePath.toString().contains("containers.json"))
                         {
                             node = configurationLoader.load();
-                            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in chests.json file. Reloading!"));
+                            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
                         }
                     }
 

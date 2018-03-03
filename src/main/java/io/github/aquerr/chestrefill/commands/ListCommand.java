@@ -3,8 +3,8 @@ package io.github.aquerr.chestrefill.commands;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.RefillableTileEntity;
-import io.github.aquerr.chestrefill.managers.ChestManager;
+import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -35,26 +35,26 @@ public class ListCommand implements CommandExecutor
     {
         List<Text> helpList = Lists.newArrayList();
 
-        for(RefillableTileEntity refillableTileEntity : ChestManager.getRefillableTileEntities())
+        for(RefillableContainer refillableContainer : ContainerManager.getRefillableContainers())
         {
             Text.Builder itemsToShow = Text.builder();
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
-            refillableTileEntity.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
-            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Inventory cooldown: ", refillableTileEntity.getRestoreTime(),"s\n"));
+            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
+            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()
-                    .append(Text.of(TextColors.DARK_GREEN, "Chest at ", TextColors.YELLOW, refillableTileEntity.getTileEntityLocation().getBlockPosition().toString()))
+                    .append(Text.of(TextColors.DARK_GREEN, "Container at ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
                     .onHover(TextActions.showText(itemsToShow.build()))
-                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableTileEntity.getTileEntityLocation().getBlockPosition())))
+                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableContainer.getContainerLocation().getBlockPosition())))
                     .build();
 
             helpList.add(chestText);
         }
 
         PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Entities")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
+        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Containers")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
         paginationBuilder.sendTo(source);
 
 

@@ -2,7 +2,6 @@ package io.github.aquerr.chestrefill.entities;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -14,29 +13,29 @@ import java.util.UUID;
 /**
  * Created by Aquerr on 2018-02-12.
  */
-public class RefillableTileEntity
+public class RefillableContainer
 {
-    private TileEntityLocation _tileEntityLocation;
+    private ContainerLocation _containerLocation;
     private List<ItemStack> items;
     private int restoreTimeInSeconds;
 
-    public RefillableTileEntity(TileEntityLocation tileEntityLocation, List<ItemStack> itemsList)
+    public RefillableContainer(ContainerLocation containerLocation, List<ItemStack> itemsList)
     {
-        this._tileEntityLocation = tileEntityLocation;
+        this._containerLocation = containerLocation;
         this.items = itemsList;
         this.restoreTimeInSeconds = 120; //Default: 120 sec
     }
 
-    public RefillableTileEntity(TileEntityLocation tileEntityLocation, List<ItemStack> itemsList, int time)
+    public RefillableContainer(ContainerLocation containerLocation, List<ItemStack> itemsList, int time)
     {
-        this._tileEntityLocation = tileEntityLocation;
+        this._containerLocation = containerLocation;
         this.items = itemsList;
         this.restoreTimeInSeconds = time;
     }
 
-    public TileEntityLocation getTileEntityLocation()
+    public ContainerLocation getContainerLocation()
     {
-        return _tileEntityLocation;
+        return _containerLocation;
     }
 
     public List<ItemStack> getItems()
@@ -46,7 +45,7 @@ public class RefillableTileEntity
 
     public int getRestoreTime() { return restoreTimeInSeconds; }
 
-    public static RefillableTileEntity fromTileEntity(TileEntity tileEntity, UUID worldUUID)
+    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<ItemStack> items = new ArrayList<>();
@@ -59,15 +58,15 @@ public class RefillableTileEntity
             }
         });
 
-        RefillableTileEntity refillableTileEntity = new RefillableTileEntity(new TileEntityLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), items);
+        RefillableContainer refillableContainer = new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), items);
 
-        return refillableTileEntity;
+        return refillableContainer;
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof RefillableTileEntity))
+        if (!(obj instanceof RefillableContainer))
         {
             return false;
         }
@@ -78,8 +77,8 @@ public class RefillableTileEntity
 
 
         //TODO: Refactor this code if it will be possible...
-        //Compare chest location
-        if (this._tileEntityLocation.equals(((RefillableTileEntity)obj).getTileEntityLocation()))
+        //Compare container location
+        if (this._containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
         {
             Inventory tempInventory = Inventory.builder().build(ChestRefill.getChestRefill());
 
@@ -90,7 +89,7 @@ public class RefillableTileEntity
             });
 
             //Compare items
-            for (ItemStack comparedItem : ((RefillableTileEntity) obj).getItems())
+            for (ItemStack comparedItem : ((RefillableContainer) obj).getItems())
             {
                 if (!tempInventory.contains(comparedItem))
                 {
@@ -99,7 +98,7 @@ public class RefillableTileEntity
             }
 
             //Compare restore time
-            if (this.restoreTimeInSeconds == ((RefillableTileEntity)obj).getRestoreTime())
+            if (this.restoreTimeInSeconds == ((RefillableContainer)obj).getRestoreTime())
             {
                 return true;
             }
@@ -111,6 +110,6 @@ public class RefillableTileEntity
     @Override
     public int hashCode()
     {
-        return _tileEntityLocation.toString().length();
+        return _containerLocation.toString().length();
     }
 }

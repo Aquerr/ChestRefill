@@ -5,5 +5,5 @@ package io.github.aquerr.chestrefill;
  */
 public enum SelectionMode
 {
-    SELECT, CREATE, UPDATE, REMOVE, TIME
+    CREATE, UPDATE, REMOVE, TIME
 }

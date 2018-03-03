@@ -1,7 +1,7 @@
 package io.github.aquerr.chestrefill.storage;
 
-import io.github.aquerr.chestrefill.entities.TileEntityLocation;
-import io.github.aquerr.chestrefill.entities.RefillableTileEntity;
+import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.List;
 
@@ -10,13 +10,13 @@ import java.util.List;
  */
 public interface Storage
 {
-    boolean addOrUpdateRefillableEntity(RefillableTileEntity refillableTileEntity);
+    boolean addOrUpdateContainer(RefillableContainer refillableContainer);
 
-    boolean removeRefillableEntity(TileEntityLocation tileEntityLocation);
+    boolean removeRefillableContainers(ContainerLocation containerLocation);
 
-    List<RefillableTileEntity> getRefillableEntities();
+    List<RefillableContainer> getRefillableContainers();
 
-    RefillableTileEntity getRefillableEntity(TileEntityLocation tileEntityLocation);
+    RefillableContainer getRefillableContainer(ContainerLocation containerLocation);
 
-    boolean updateEntityTime(TileEntityLocation tileEntityLocation, int time);
+    boolean updateContainerTime(ContainerLocation containerLocation, int time);
 }
