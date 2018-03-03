@@ -22,11 +22,11 @@ public class RightClickListener
     @Listener
     public void onRightClick(InteractBlockEvent.Secondary event, @Root Player player)
     {
-        if (event.getTargetBlock().getLocation().isPresent())
+        if(ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
         {
-            if(event.getTargetBlock().getLocation().get().getTileEntity().isPresent())
+            if (event.getTargetBlock().getLocation().isPresent())
             {
-                if(ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+                if(event.getTargetBlock().getLocation().get().getTileEntity().isPresent())
                 {
                     TileEntity tileEntity = event.getTargetBlock().getLocation().get().getTileEntity().get();
 
