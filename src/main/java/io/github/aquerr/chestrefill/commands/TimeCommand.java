@@ -53,19 +53,19 @@ public class TimeCommand implements CommandExecutor
             {
                 if (optionalTime.isPresent())
                 {
-                    if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId()))
+                    if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
                     {
-                        ChestRefill.EntityTimeChangePlayer.replace(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.ContainerTimeChangePlayer.replace(player.getUniqueId(), optionalTime.get());
                     }
                     else
                     {
-                        ChestRefill.EntityTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.ContainerTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
                     }
                 }
             }
-            else if (ChestRefill.EntityTimeChangePlayer.containsKey(player.getUniqueId()))
+            else if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
             {
-                ChestRefill.EntityTimeChangePlayer.remove(player.getUniqueId());
+                ChestRefill.ContainerTimeChangePlayer.remove(player.getUniqueId());
             }
         }
 

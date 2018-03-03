@@ -6,8 +6,8 @@ plugins {
 }
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.1.0'
-description = 'Plugin for restoring contents of an entity after the specified time.'
+version = '1.2.0'
+description = 'Plugin for restoring contents of a container after the specified time.'
 
 dependencies {
     compile 'org.spongepowered:spongeapi:6.0.0'

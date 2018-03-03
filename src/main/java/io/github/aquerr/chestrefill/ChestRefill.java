@@ -1,10 +1,10 @@
 package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
-import io.github.aquerr.chestrefill.listeners.TileEntityBreakListener;
+import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
-import io.github.aquerr.chestrefill.managers.ChestManager;
+import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.version.VersionChecker;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -33,7 +33,7 @@ public class ChestRefill
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
     public static Map<UUID, SelectionMode> PlayersSelectionMode = new HashMap<>();
-    public static Map<UUID, Integer> EntityTimeChangePlayer = new HashMap<>();
+    public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
 
     private static ChestRefill chestRefill;
     public static ChestRefill getChestRefill() {return chestRefill;}
@@ -52,7 +52,7 @@ public class ChestRefill
     {
         chestRefill = this;
 
-        ChestManager.setupChestManager(_configDir);
+        ContainerManager.setupContainerManager(_configDir);
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
@@ -71,7 +71,7 @@ public class ChestRefill
         }
         else
         {
-            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, "Refilling Chest", TextColors.RED, " is available!"));
+            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.Name, TextColors.RED, " is available online!"));
         }
 
     }
@@ -80,7 +80,7 @@ public class ChestRefill
     public void onGameLoad(GameLoadCompleteEvent event)
     {
         //Start refilling chests that were created on the server before
-        ChestManager.restoreRefilling();
+        ContainerManager.restoreRefilling();
     }
 
     private void initCommands()
@@ -144,7 +144,7 @@ public class ChestRefill
     private void initListeners()
     {
         Sponge.getEventManager().registerListeners(this, new RightClickListener());
-        Sponge.getEventManager().registerListeners(this, new TileEntityBreakListener());
+        Sponge.getEventManager().registerListeners(this, new ContainerBreakListener());
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener());
     }
 }

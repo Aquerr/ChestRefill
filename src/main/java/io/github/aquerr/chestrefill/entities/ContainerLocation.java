@@ -7,12 +7,12 @@ import java.util.UUID;
 /**
  * Created by Aquerr on 2018-02-14.
  */
-public class TileEntityLocation
+public class ContainerLocation
 {
     private Vector3i blockPosition;
     private UUID worldUUID;
 
-    public TileEntityLocation(Vector3i blockPosition, UUID worldUUID)
+    public ContainerLocation(Vector3i blockPosition, UUID worldUUID)
     {
         this.blockPosition = blockPosition;
         this.worldUUID = worldUUID;
@@ -31,7 +31,7 @@ public class TileEntityLocation
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof TileEntityLocation))
+        if (!(obj instanceof ContainerLocation))
         {
             return false;
         }
@@ -40,7 +40,7 @@ public class TileEntityLocation
             return true;
         }
 
-        return this.blockPosition.equals(((TileEntityLocation)obj).getBlockPosition()) && this.worldUUID.equals(((TileEntityLocation)obj).getWorldUUID());
+        return this.blockPosition.equals(((ContainerLocation)obj).getBlockPosition()) && this.worldUUID.equals(((ContainerLocation)obj).getWorldUUID());
     }
 
     @Override
