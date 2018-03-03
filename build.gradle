@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.2.0'
+version = '1.11.2-1.2.1'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
 dependencies {
