@@ -10,6 +10,8 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
@@ -69,8 +71,22 @@ public class JSONStorage implements Storage
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID();
 
+            List<String> test = new ArrayList<>();
+
+
+            //TEST
+            for (ItemStack item : refillableContainer.getItems())
+            {
+                test.add(DataFormats.JSON.write(item.toContainer()));
+                //test.add(item.toContainer());
+
+                DataView view = DataFormats.JSON.read(test.get(test.size() - 1));
+            }
+
+            //TEST
+
             //Set container's items
-            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillableContainer.getItems());
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<String>>(){}, test);
 
             //Set container's regeneration time (in seconds)
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
@@ -122,7 +138,7 @@ public class JSONStorage implements Storage
             for (Object object: objectList)
             {
                 //Reset itemstacks List for every chest
-                List<ItemStack> itemStacks;
+                List<ItemStack> itemStacks = new ArrayList<>();
                 int time;
 
                 String chestPositionAndWorldUUIDString = (String)object;
@@ -141,7 +157,15 @@ public class JSONStorage implements Storage
                 ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
+                List chestItems = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<String>(){});
+
+                for (Object chestItem : chestItems)
+                {
+                    String itemString = (String)chestItem;
+                    DataView itemDataView = DataFormats.JSON.read(itemString);
+                    ItemStack itemStack = Sponge.getDataManager().deserialize(ItemStack.class, itemDataView).get();
+                    itemStacks.add(itemStack);
+                }
 
                 time = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "time").getInt();
 
@@ -152,7 +176,7 @@ public class JSONStorage implements Storage
 
             return refillingContainersList;
         }
-        catch (ObjectMappingException e)
+        catch (ObjectMappingException | IOException e)
         {
             e.printStackTrace();
         }
@@ -172,11 +196,19 @@ public class JSONStorage implements Storage
 
             if (chestObject != null)
             {
-                List<ItemStack> itemStacks;
+                List<ItemStack> itemStacks = new ArrayList<>();
                 int time;
 
                 //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
+                List chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<String>(){});
+
+                for (Object chestItem : chestItems)
+                {
+                    String itemString = (String)chestItem;
+                    DataView itemDataView = DataFormats.JSON.read(itemString);
+                    ItemStack itemStack = Sponge.getDataManager().deserialize(ItemStack.class, itemDataView).get();
+                    itemStacks.add(itemStack);
+                }
 
                 time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
 
@@ -185,7 +217,7 @@ public class JSONStorage implements Storage
                 return refillableContainer;
             }
         }
-        catch (ObjectMappingException exception)
+        catch (ObjectMappingException | IOException exception)
         {
             exception.printStackTrace();
         }
