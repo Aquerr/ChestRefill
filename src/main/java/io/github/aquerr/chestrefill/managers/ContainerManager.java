@@ -3,11 +3,11 @@ package io.github.aquerr.chestrefill.managers;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.JSONStorage;
 import io.github.aquerr.chestrefill.storage.Storage;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -140,10 +140,37 @@ public class ContainerManager
                     {
                         TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
 
-                        chest.getInventory().clear();
-                        for (ItemStack itemStack : chestToRefill.getItems())
+                        if (chestToRefill.shouldReplaceExistingItems())
                         {
-                            chest.getInventory().offer(itemStack);
+                            chest.getInventory().clear();
+                        }
+
+                        if (chestToRefill.isOneItemAtTime())
+                        {
+                            //TODO: Add function for handling item randomization.
+
+//                            int max = 0;
+//
+//                            for (RefillableItem refillableItem : chestToRefill.getItems())
+//                            {
+//                                max += refillableItem.getChance() * 100;
+//                            }
+//
+//                            double number = Math.random();
+//
+//                            //One itemstack at time
+                        }
+                        else
+                        {
+                            for (RefillableItem refillableItem : chestToRefill.getItems())
+                            {
+                                double number = Math.random();
+
+                                if (number <= refillableItem.getChance())
+                                {
+                                    chest.getInventory().offer(refillableItem.getItem());
+                                }
+                            }
                         }
                     }
                 }

@@ -15,46 +15,58 @@ import java.util.UUID;
  */
 public class RefillableContainer
 {
-    private ContainerLocation _containerLocation;
-    private List<ItemStack> items;
+    private ContainerLocation containerLocation;
+    private List<RefillableItem> items;
     private int restoreTimeInSeconds;
+    private boolean oneItemAtTime;
+    private boolean replaceExistingItems;
 
-    public RefillableContainer(ContainerLocation containerLocation, List<ItemStack> itemsList)
+    private RefillableContainer(ContainerLocation containerLocation, List<RefillableItem> refillableItemList)
     {
-        this._containerLocation = containerLocation;
-        this.items = itemsList;
-        this.restoreTimeInSeconds = 120; //Default: 120 sec
+        this(containerLocation, refillableItemList, 120, false, true);
     }
 
-    public RefillableContainer(ContainerLocation containerLocation, List<ItemStack> itemsList, int time)
+    public RefillableContainer(ContainerLocation containerLocation, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems)
     {
-        this._containerLocation = containerLocation;
-        this.items = itemsList;
+        this.containerLocation = containerLocation;
         this.restoreTimeInSeconds = time;
+        this.items = refillableItemList;
+        this.oneItemAtTime = oneItemAtTime;
+        this.replaceExistingItems = replaceExistingItems;
     }
 
     public ContainerLocation getContainerLocation()
     {
-        return _containerLocation;
+        return containerLocation;
     }
 
-    public List<ItemStack> getItems()
+    public List<RefillableItem> getItems()
     {
         return items;
     }
 
     public int getRestoreTime() { return restoreTimeInSeconds; }
 
+    public boolean isOneItemAtTime()
+    {
+        return oneItemAtTime;
+    }
+
+    public boolean shouldReplaceExistingItems()
+    {
+        return replaceExistingItems;
+    }
+
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
-        List<ItemStack> items = new ArrayList<>();
+        List<RefillableItem> items = new ArrayList<>();
 
         carrier.getInventory().slots().forEach(x->
         {
             if (x.peek().isPresent())
             {
-                items.add(x.peek().get());
+                items.add(new RefillableItem(x.peek().get(), 1f));
             }
         });
 
@@ -78,27 +90,39 @@ public class RefillableContainer
 
         //TODO: Refactor this code if it will be possible...
         //Compare container location
-        if (this._containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
+        if (this.containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
         {
             Inventory tempInventory = Inventory.builder().build(ChestRefill.getChestRefill());
 
             this.items.forEach(x-> {
                 //Offer removes items from inventory so we need to build new temp items.
-                ItemStack tempItemStack = ItemStack.builder().fromItemStack(x).build();
+                ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
                 tempInventory.offer(tempItemStack);
             });
 
             //Compare items
-            for (ItemStack comparedItem : ((RefillableContainer) obj).getItems())
+            for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
             {
-                if (!tempInventory.contains(comparedItem))
+                if (!tempInventory.contains(comparedItem.getItem()))
                 {
                     return false;
                 }
             }
 
             //Compare restore time
-            if (this.restoreTimeInSeconds == ((RefillableContainer)obj).getRestoreTime())
+            if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
+            {
+                return false;
+            }
+
+            //Check if randomize is turned on
+            if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
+            {
+                return false;
+            }
+
+            //Check equality of replaceExistingItems property
+            if (this.replaceExistingItems == ((RefillableContainer)obj).replaceExistingItems)
             {
                 return true;
             }
@@ -110,6 +134,6 @@ public class RefillableContainer
     @Override
     public int hashCode()
     {
-        return _containerLocation.toString().length();
+        return containerLocation.toString().length();
     }
 }

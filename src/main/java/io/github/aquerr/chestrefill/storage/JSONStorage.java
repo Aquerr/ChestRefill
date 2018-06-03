@@ -6,6 +6,7 @@ import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -68,13 +69,19 @@ public class JSONStorage implements Storage
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID();
 
-            List<ItemStack> items = new ArrayList<>(refillableContainer.getItems());
+            List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
 
             //Set container's items
-            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, items);
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
 
             //Set container's regeneration time (in seconds)
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
+
+            //Set container's "one itemstack at time"
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").setValue(refillableContainer.isOneItemAtTime());
+
+            //Set container's should-replace-existing-items property
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").setValue(refillableContainer.shouldReplaceExistingItems());
 
             configurationLoader.save(node);
 
@@ -134,11 +141,13 @@ public class JSONStorage implements Storage
                 ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
                 //Let's get chest's items
-                List<ItemStack> chestItems = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
+                List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<RefillableItem>(){});
 
                 int time = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "time").getInt();
+                boolean isOneItemAtTime = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "one-item-at-time").getBoolean();
+                boolean shouldReplaceExistingItems = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "replace-existing-items").getBoolean();
 
-                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, chestItems, time);
+                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems);
 
                 refillingContainersList.add(refillableContainer);
             }
@@ -166,11 +175,13 @@ public class JSONStorage implements Storage
             if (chestObject != null)
             {
                 //Let's get chest's items
-                List<ItemStack> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
+                List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>(){});
 
                 int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
+                boolean isOneItemAtTime = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
+                boolean shouldReplaceExistingItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
 
-                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, chestItems, time);
+                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems);
 
                 return refillableContainer;
             }

@@ -40,8 +40,10 @@ public class ListCommand implements CommandExecutor
             Text.Builder itemsToShow = Text.builder();
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
-            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getType().getName(), TextColors.RESET, " x" + x.getQuantity() + "\n")));
+            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getType().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
             itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s\n"));
+            itemsToShow.append(Text.of(TextColors.BLUE, TextStyles.BOLD, "One item at time: ", refillableContainer.isOneItemAtTime(), "\n"));
+            itemsToShow.append(Text.of(TextColors.BLUE, TextStyles.BOLD, "Replace existing items: ", refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()
@@ -71,7 +73,7 @@ public class ListCommand implements CommandExecutor
                 Player player = (Player)source;
 
                 player.setLocation(new Location<World>(player.getWorld(), blockPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected entity!"));
+                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected container!"));
             }
         };
     }
