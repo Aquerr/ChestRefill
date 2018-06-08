@@ -1,6 +1,8 @@
 package io.github.aquerr.chestrefill.entities;
 
 import io.github.aquerr.chestrefill.ChestRefill;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -17,44 +19,67 @@ public class RefillableContainer
 {
     private ContainerLocation containerLocation;
     private List<RefillableItem> items;
+    private BlockType containerBlockType;
+
     private int restoreTimeInSeconds;
     private boolean oneItemAtTime;
     private boolean replaceExistingItems;
 
-    private RefillableContainer(ContainerLocation containerLocation, List<RefillableItem> refillableItemList)
+    private boolean hiddenIfNoItems;
+    private BlockType hidingBlock;
+
+    private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this(containerLocation, refillableItemList, 120, false, true);
+        this(containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
     }
 
-    public RefillableContainer(ContainerLocation containerLocation, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems)
+    public RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
     {
         this.containerLocation = containerLocation;
         this.restoreTimeInSeconds = time;
         this.items = refillableItemList;
         this.oneItemAtTime = oneItemAtTime;
         this.replaceExistingItems = replaceExistingItems;
+        this.hiddenIfNoItems = hiddenIfNoItems;
+        this.hidingBlock = hidingBlock;
+        this.containerBlockType = containerBlockType;
     }
 
     public ContainerLocation getContainerLocation()
     {
-        return containerLocation;
+        return this.containerLocation;
     }
 
     public List<RefillableItem> getItems()
     {
-        return items;
+        return this.items;
     }
 
-    public int getRestoreTime() { return restoreTimeInSeconds; }
+    public BlockType getContainerBlockType()
+    {
+        return this.containerBlockType;
+    }
+
+    public int getRestoreTime() { return this.restoreTimeInSeconds; }
 
     public boolean isOneItemAtTime()
     {
-        return oneItemAtTime;
+        return this.oneItemAtTime;
     }
 
     public boolean shouldReplaceExistingItems()
     {
-        return replaceExistingItems;
+        return this.replaceExistingItems;
+    }
+
+    public boolean shouldBeHiddenIfNoItems()
+    {
+        return this.hiddenIfNoItems;
+    }
+
+    public BlockType getHidingBlock()
+    {
+        return this.hidingBlock;
     }
 
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
@@ -70,7 +95,7 @@ public class RefillableContainer
             }
         });
 
-        RefillableContainer refillableContainer = new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), items);
+        RefillableContainer refillableContainer = new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
 
         return refillableContainer;
     }

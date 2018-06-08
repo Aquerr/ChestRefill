@@ -12,6 +12,8 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.world.BlockChangeFlag;
+import org.spongepowered.api.world.BlockChangeFlags;
 
 /**
  * Created by Aquerr on 2018-02-10.
@@ -37,7 +39,6 @@ public class RightClickListener
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
                             case CREATE:
-
                                 if (!ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
@@ -103,7 +104,6 @@ public class RightClickListener
                                 break;
 
                             case TIME:
-
                                 if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))

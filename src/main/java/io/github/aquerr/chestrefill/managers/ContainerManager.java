@@ -16,8 +16,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -136,42 +135,58 @@ public class ContainerManager
                 {
                     Location location = new Location(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
 
-                    if (location.getTileEntity().isPresent())
+                    //If chest is hidden the we need to show it
+                    if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
                     {
-                        TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                        location.setBlockType(chestToRefill.getContainerBlockType());
+                    }
 
-                        if (chestToRefill.shouldReplaceExistingItems())
+                    TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+
+                    if (chestToRefill.shouldReplaceExistingItems())
+                    {
+                        chest.getInventory().clear();
+                    }
+
+                    List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
+                    for (RefillableItem refillableItem : chestToRefill.getItems())
+                    {
+                        double number = Math.random();
+
+                        if (number <= refillableItem.getChance())
                         {
-                            chest.getInventory().clear();
+                            achievedItemsFromRandomizer.add(refillableItem);
                         }
+                    }
 
-                        if (chestToRefill.isOneItemAtTime())
+                    if (chestToRefill.isOneItemAtTime())
+                    {
+                        if (achievedItemsFromRandomizer.size() > 0)
                         {
-                            //TODO: Add function for handling item randomization.
-
-//                            int max = 0;
-//
-//                            for (RefillableItem refillableItem : chestToRefill.getItems())
-//                            {
-//                                max += refillableItem.getChance() * 100;
-//                            }
-//
-//                            double number = Math.random();
-//
-//                            //One itemstack at time
-                        }
-                        else
-                        {
-                            for (RefillableItem refillableItem : chestToRefill.getItems())
+                            RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
+                            for (RefillableItem item : achievedItemsFromRandomizer)
                             {
-                                double number = Math.random();
-
-                                if (number <= refillableItem.getChance())
+                                if (item.getChance() < lowestChanceItem.getChance())
                                 {
-                                    chest.getInventory().offer(refillableItem.getItem());
+                                    lowestChanceItem = item;
                                 }
                             }
+
+                            chest.getInventory().offer(lowestChanceItem.getItem());
                         }
+                    }
+                    else
+                    {
+                        for (RefillableItem item : achievedItemsFromRandomizer)
+                        {
+                            chest.getInventory().offer(item.getItem());
+                        }
+                    }
+
+                    if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                    {
+                        //location.removeBlock();
+                        location.setBlockType(chestToRefill.getHidingBlock());
                     }
                 }
 
@@ -204,4 +219,6 @@ public class ContainerManager
 
         return false;
     }
+
+
 }
