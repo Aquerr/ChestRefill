@@ -3,11 +3,13 @@ package io.github.aquerr.chestrefill.managers;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.JSONStorage;
 import io.github.aquerr.chestrefill.storage.Storage;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -16,8 +18,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -136,15 +137,57 @@ public class ContainerManager
                 {
                     Location location = new Location(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
 
-                    if (location.getTileEntity().isPresent())
+                    //If chest is hidden the we need to show it
+                    if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
                     {
-                        TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                        location.setBlockType(chestToRefill.getContainerBlockType(), Cause.builder().named(NamedCause.of("Plugin", ChestRefill.getChestRefill())).build());
+                    }
 
+                    TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+
+                    if (chestToRefill.shouldReplaceExistingItems())
+                    {
                         chest.getInventory().clear();
-                        for (ItemStack itemStack : chestToRefill.getItems())
+                    }
+
+                    List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
+                    for (RefillableItem refillableItem : chestToRefill.getItems())
+                    {
+                        double number = Math.random();
+
+                        if (number <= refillableItem.getChance())
                         {
-                            chest.getInventory().offer(itemStack);
+                            achievedItemsFromRandomizer.add(refillableItem);
                         }
+                    }
+
+                    if (chestToRefill.isOneItemAtTime())
+                    {
+                        if (achievedItemsFromRandomizer.size() > 0)
+                        {
+                            RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
+                            for (RefillableItem item : achievedItemsFromRandomizer)
+                            {
+                                if (item.getChance() < lowestChanceItem.getChance())
+                                {
+                                    lowestChanceItem = item;
+                                }
+                            }
+
+                            chest.getInventory().offer(lowestChanceItem.getItem());
+                        }
+                    }
+                    else
+                    {
+                        for (RefillableItem item : achievedItemsFromRandomizer)
+                        {
+                            chest.getInventory().offer(item.getItem());
+                        }
+                    }
+
+                    if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                    {
+                        location.setBlockType(chestToRefill.getContainerBlockType(), Cause.builder().named(NamedCause.of("Plugin", ChestRefill.getChestRefill())).build());
                     }
                 }
 
@@ -177,4 +220,6 @@ public class ContainerManager
 
         return false;
     }
+
+
 }

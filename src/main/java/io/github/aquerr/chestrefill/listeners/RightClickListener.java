@@ -37,7 +37,6 @@ public class RightClickListener
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
                             case CREATE:
-
                                 if (!ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
@@ -103,7 +102,6 @@ public class RightClickListener
                                 break;
 
                             case TIME:
-
                                 if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))

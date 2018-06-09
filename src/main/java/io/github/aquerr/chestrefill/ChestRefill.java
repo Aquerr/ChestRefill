@@ -146,5 +146,6 @@ public class ChestRefill
         Sponge.getEventManager().registerListeners(this, new RightClickListener());
         Sponge.getEventManager().registerListeners(this, new ContainerBreakListener());
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener());
+//        Sponge.getEventManager().registerListeners(this, new DropItemListener());
     }
 }
