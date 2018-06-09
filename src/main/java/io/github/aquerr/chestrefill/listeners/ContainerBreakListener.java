@@ -25,6 +25,7 @@ public class ContainerBreakListener
 
                 if(ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(containerLocation)))
                 {
+                    //TODO: If player destroyed the container, inform him/she about it.
                     ContainerManager.removeRefillableContainer(containerLocation);
                 }
             }

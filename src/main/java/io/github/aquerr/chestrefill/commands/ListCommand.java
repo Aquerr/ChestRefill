@@ -41,9 +41,11 @@ public class ListCommand implements CommandExecutor
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
             refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getType().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
+            itemsToShow.append(Text.of("\n", TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Replace existing items: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Hidden if no items: ", TextColors.WHITE, refillableContainer.shouldBeHiddenIfNoItems(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Hiding block: ", TextColors.WHITE, refillableContainer.getHidingBlock(), "\n"));
             itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s\n"));
-            itemsToShow.append(Text.of(TextColors.BLUE, TextStyles.BOLD, "One item at time: ", refillableContainer.isOneItemAtTime(), "\n"));
-            itemsToShow.append(Text.of(TextColors.BLUE, TextStyles.BOLD, "Replace existing items: ", refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
             Text chestText = Text.builder()

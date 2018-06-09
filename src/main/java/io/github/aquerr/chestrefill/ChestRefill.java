@@ -2,7 +2,6 @@ package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
-import io.github.aquerr.chestrefill.listeners.DropItemListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
