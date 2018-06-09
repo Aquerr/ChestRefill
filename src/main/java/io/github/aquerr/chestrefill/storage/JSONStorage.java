@@ -6,11 +6,12 @@ import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * Created by Aquerr on 2018-02-12.
@@ -42,14 +42,17 @@ public class JSONStorage implements Storage
         {
             containersPath = Paths.get(configDir + "/containers.json");
 
-            if (!Files.exists(containersPath)) Files.createFile(containersPath);
+            if (!Files.exists(containersPath))
+            {
+                Files.createFile(containersPath);
+            }
 
             configurationLoader = GsonConfigurationLoader.builder().setPath(containersPath).build();
             node = configurationLoader.load();
 
             //Register watcher
             _watchService = configDir.getFileSystem().newWatchService();
-            _key =  configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+            _key = configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
             Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
             //Run a checkFileUpdate task every 2,5 second
@@ -69,23 +72,36 @@ public class JSONStorage implements Storage
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID();
 
+            List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
+
+            //Set container's block type
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
+
             //Set container's items
-            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<ItemStack>>(){}, refillableContainer.getItems());
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
 
             //Set container's regeneration time (in seconds)
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
+
+            //Set container's "one itemstack at time"
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").setValue(refillableContainer.isOneItemAtTime());
+
+            //Set container's should-replace-existing-items property
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").setValue(refillableContainer.shouldReplaceExistingItems());
+
+            //Set container's should-be-hidden-if-no-items
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").setValue(refillableContainer.shouldBeHiddenIfNoItems());
+
+            //Set container's hidding block
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").setValue(TypeToken.of(BlockType.class), refillableContainer.getHidingBlock());
 
             configurationLoader.save(node);
 
             return true;
         }
-        catch (IOException exception)
+        catch (IOException | ObjectMappingException exception)
         {
             exception.printStackTrace();
-        }
-        catch (ObjectMappingException e)
-        {
-            e.printStackTrace();
         }
 
         return false;
@@ -114,80 +130,45 @@ public class JSONStorage implements Storage
 
     public List<RefillableContainer> getRefillableContainers()
     {
-        try
+        Set<Object> objectList = node.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+        List<RefillableContainer> refillingContainersList = new ArrayList<>();
+
+        for (Object object : objectList)
         {
-            Set<Object> objectList = node.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
-            List<RefillableContainer> refillingContainersList = new ArrayList<>();
+            String chestPositionAndWorldUUIDString = (String) object;
+            String splitter = "\\|";
 
-            for (Object object: objectList)
-            {
-                //Reset itemstacks List for every chest
-                List<ItemStack> itemStacks;
-                int time;
+            String[] chestPosAndWorldUUID = chestPositionAndWorldUUIDString.split(splitter);
 
-                String chestPositionAndWorldUUIDString = (String)object;
-                String splitter = "\\|";
+            UUID worldUUID = UUID.fromString(chestPosAndWorldUUID[1]);
 
-                String[] chestPosAndWorldUUID = chestPositionAndWorldUUIDString.split(splitter);
+            String vectors[] = chestPosAndWorldUUID[0].replace("(", "").replace(")", "").replace(" ", "").split(",");
 
-                UUID worldUUID = UUID.fromString(chestPosAndWorldUUID[1]);
+            int x = Integer.valueOf(vectors[0]);
+            int y = Integer.valueOf(vectors[1]);
+            int z = Integer.valueOf(vectors[2]);
 
-                String vectors[] = chestPosAndWorldUUID[0].replace("(", "").replace(")", "").replace(" ", "").split(",");
+            ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
-                int x = Integer.valueOf(vectors[0]);
-                int y = Integer.valueOf(vectors[1]);
-                int z = Integer.valueOf(vectors[2]);
+            RefillableContainer refillableContainer = getRefillableContainerFromFile(chestPositionAndWorldUUIDString, containerLocation);
 
-                ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
-
-                //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "items").getList(new TypeToken<ItemStack>(){});
-
-                time = node.getNode("chestrefill", "refillable-containers", chestPositionAndWorldUUIDString, "time").getInt();
-
-                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, itemStacks, time);
-
-                refillingContainersList.add(refillableContainer);
-            }
-
-            return refillingContainersList;
-        }
-        catch (ObjectMappingException e)
-        {
-            e.printStackTrace();
+            refillingContainersList.add(refillableContainer);
         }
 
-        return new ArrayList<>();
+        return refillingContainersList;
     }
 
     @Override
     @Nullable
     public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
     {
-        try
+        String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
+
+        Object chestObject = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
+
+        if (chestObject != null)
         {
-            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
-
-            Object chestObject = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
-
-            if (chestObject != null)
-            {
-                List<ItemStack> itemStacks;
-                int time;
-
-                //Let's get chest's items
-                itemStacks = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<ItemStack>(){});
-
-                time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
-
-                RefillableContainer refillableContainer = new RefillableContainer(containerLocation, itemStacks, time);
-
-                return refillableContainer;
-            }
-        }
-        catch (ObjectMappingException exception)
-        {
-            exception.printStackTrace();
+            return getRefillableContainerFromFile(blockPositionAndWorldUUID, containerLocation);
         }
 
         return null;
@@ -246,17 +227,39 @@ public class JSONStorage implements Storage
         };
     }
 
-    private Function<Object, ItemStack> objectToItemStackTransformer = input ->
+    private RefillableContainer getRefillableContainerFromFile(String blockPositionAndWorldUUID, ContainerLocation containerLocation)
     {
         try
         {
-            ItemStack test = (ItemStack)input;
-            return test;
+            final BlockType containerBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
+            final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
+            final int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
+            final boolean isOneItemAtTime = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
+            final boolean shouldReplaceExistingItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
+            final boolean hiddenIfNoItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
+            final BlockType hidingBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
+
+            return new RefillableContainer(containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
         }
-        catch (ClassCastException exception)
+        catch (ObjectMappingException e)
         {
-            exception.printStackTrace();
-            return null;
+            e.printStackTrace();
         }
-    };
+
+        return null;
+    }
+
+//    private Function<Object, ItemStack> objectToItemStackTransformer = input ->
+//    {
+//        try
+//        {
+//            ItemStack test = (ItemStack)input;
+//            return test;
+//        }
+//        catch (ClassCastException exception)
+//        {
+//            exception.printStackTrace();
+//            return null;
+//        }
+//    };
 }
