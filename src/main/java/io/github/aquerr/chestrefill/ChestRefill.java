@@ -129,6 +129,13 @@ public class ChestRefill
                 .executor(new ListCommand())
                 .build());
 
+        //RefillAll Command
+        Subcommands.put(Arrays.asList("refillall"), CommandSpec.builder()
+                .description(Text.of("Force refill all containers"))
+                .permission(PluginPermissions.REFILLALL_COMMAND)
+                .executor(new RefillAllCommand())
+                .build());
+
         //Build all commands
         CommandSpec mainCommand = CommandSpec.builder()
                 .description(Text.of("Displays all available commands"))

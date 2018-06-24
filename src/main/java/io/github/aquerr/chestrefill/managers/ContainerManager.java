@@ -65,6 +65,11 @@ public class ContainerManager
         return containerStorage.getRefillableContainers();
     }
 
+    public static List<ContainerLocation> getContainerLocations()
+    {
+        return containerStorage.getContainerLocations();
+    }
+
     public static boolean removeRefillableContainer(ContainerLocation containerLocation)
     {
         if (containerStorage.removeRefillableContainers(containerLocation))

@@ -16,6 +16,8 @@ public interface Storage
 
     List<RefillableContainer> getRefillableContainers();
 
+    List<ContainerLocation> getContainerLocations();
+
     RefillableContainer getRefillableContainer(ContainerLocation containerLocation);
 
     boolean updateContainerTime(ContainerLocation containerLocation, int time);

@@ -128,10 +128,11 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    public List<RefillableContainer> getRefillableContainers()
+    @Override
+    public List<ContainerLocation> getContainerLocations()
     {
         Set<Object> objectList = node.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
-        List<RefillableContainer> refillingContainersList = new ArrayList<>();
+        List<ContainerLocation> containerLocations = new ArrayList<>();
 
         for (Object object : objectList)
         {
@@ -150,7 +151,20 @@ public class JSONStorage implements Storage
 
             ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
-            RefillableContainer refillableContainer = getRefillableContainerFromFile(chestPositionAndWorldUUIDString, containerLocation);
+            containerLocations.add(containerLocation);
+        }
+
+        return containerLocations;
+    }
+
+    @Override
+    public List<RefillableContainer> getRefillableContainers()
+    {
+        List<RefillableContainer> refillingContainersList = new ArrayList<>();
+
+        for (ContainerLocation containerLocation : getContainerLocations())
+        {
+            RefillableContainer refillableContainer = getRefillableContainerFromFile(containerLocation);
 
             refillingContainersList.add(refillableContainer);
         }
@@ -168,7 +182,7 @@ public class JSONStorage implements Storage
 
         if (chestObject != null)
         {
-            return getRefillableContainerFromFile(blockPositionAndWorldUUID, containerLocation);
+            return getRefillableContainerFromFile(containerLocation);
         }
 
         return null;
@@ -227,10 +241,12 @@ public class JSONStorage implements Storage
         };
     }
 
-    private RefillableContainer getRefillableContainerFromFile(String blockPositionAndWorldUUID, ContainerLocation containerLocation)
+    private RefillableContainer getRefillableContainerFromFile(ContainerLocation containerLocation)
     {
         try
         {
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
+
             final BlockType containerBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
             final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
             final int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();

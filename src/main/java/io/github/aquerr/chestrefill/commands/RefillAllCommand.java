@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.command.CommandException;
@@ -18,14 +19,9 @@ public class RefillAllCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
     {
-        List<RefillableContainer> refillableContainerList = ContainerManager.getRefillableContainers();
-
-        //Getting all refillable chests is pointless if we are getting them again in the "refillContainer" method.
-        //TODO: Rework refillContainer method, create "getRefillableContainersLocations" or check if it necessary
-        //TODO: to get every chest again in "refillContainer".
-        for (RefillableContainer refillableContainer : refillableContainerList)
+        for (ContainerLocation containerLocation : ContainerManager.getContainerLocations())
         {
-            ContainerManager.refillContainer(refillableContainer.getContainerLocation());
+            ContainerManager.refillContainer(containerLocation);
         }
 
         source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Refilled all containers!"));
