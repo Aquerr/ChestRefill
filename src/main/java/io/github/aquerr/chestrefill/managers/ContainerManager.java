@@ -120,7 +120,7 @@ public class ContainerManager
         }
     }
 
-    private static Runnable refillContainer(ContainerLocation containerLocation)
+    public static Runnable refillContainer(ContainerLocation containerLocation)
     {
         return new Runnable()
         {
