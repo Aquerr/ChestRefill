@@ -26,7 +26,7 @@ public class ContainerBreakListener
     {
         for (Transaction<BlockSnapshot> transaction : event.getTransactions())
         {
-            if(transaction.getOriginal().getLocation().isPresent())
+            if (transaction.getOriginal().getLocation().isPresent())
             {
                 ContainerLocation containerLocation = new ContainerLocation(transaction.getOriginal().getPosition(), transaction.getOriginal().getWorldUniqueId());
 
@@ -44,22 +44,20 @@ public class ContainerBreakListener
         }
     }
 
-        @Listener
-        public void onItemDrop(DropItemEvent event)
+    @Listener
+    public void onItemDrop(DropItemEvent event)
+    {
+        Optional<BlockSnapshot> blockSnapshot = event.getCause().first(BlockSnapshot.class);
+        if (blockSnapshot.isPresent() && blockSnapshot.get().getLocation().isPresent())
         {
-            Optional<BlockSnapshot> blockSnapshot = event.getCause().first(BlockSnapshot.class);
-
-            if (blockSnapshot.isPresent() && blockSnapshot.get().getLocation().isPresent())
+            ContainerLocation containerLocation = new ContainerLocation(blockSnapshot.get().getLocation().get().getBlockPosition(), blockSnapshot.get().getWorldUniqueId());
+            for (RefillableContainer refillableContainer : DESTROYED_CONTAINERS)
             {
-                ContainerLocation containerLocation = new ContainerLocation(blockSnapshot.get().getLocation().get().getBlockPosition(), blockSnapshot.get().getWorldUniqueId());
-
-                for (RefillableContainer refillableContainer : DESTROYED_CONTAINERS)
+                if (refillableContainer.getContainerLocation().equals(containerLocation) && refillableContainer.getHidingBlock().equals(blockSnapshot.get().getState().getType()))
                 {
-                    if (refillableContainer.getContainerLocation().equals(containerLocation) && refillableContainer.getHidingBlock().equals(blockSnapshot.get().getState().getType()))
-                    {
-                        event.setCancelled(true);
-                    }
+                    event.setCancelled(true);
                 }
             }
         }
+    }
 }
