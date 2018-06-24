@@ -74,6 +74,9 @@ public class JSONStorage implements Storage
 
             List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
 
+            //Set container's name
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(refillableContainer.getName());
+
             //Set container's block type
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
 
@@ -247,6 +250,10 @@ public class JSONStorage implements Storage
         {
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
 
+            final Object containersName = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").getValue();
+            String name = null;
+            if (containersName != null) name = (String)containersName;
+
             final BlockType containerBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
             final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
             final int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
@@ -255,7 +262,7 @@ public class JSONStorage implements Storage
             final boolean hiddenIfNoItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
 
-            return new RefillableContainer(containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
+            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
         }
         catch (ObjectMappingException e)
         {

@@ -8,6 +8,7 @@ import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,8 @@ import java.util.UUID;
  */
 public class RefillableContainer
 {
+    private String name;
+
     private ContainerLocation containerLocation;
     private List<RefillableItem> items;
     private BlockType containerBlockType;
@@ -28,13 +31,14 @@ public class RefillableContainer
     private boolean hiddenIfNoItems;
     private BlockType hidingBlock;
 
-    private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
+    private RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this(containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
+        this(name, containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
     }
 
-    public RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
     {
+        this.name = name;
         this.containerLocation = containerLocation;
         this.restoreTimeInSeconds = time;
         this.items = refillableItemList;
@@ -43,6 +47,12 @@ public class RefillableContainer
         this.hiddenIfNoItems = hiddenIfNoItems;
         this.hidingBlock = hidingBlock;
         this.containerBlockType = containerBlockType;
+    }
+
+    @Nullable
+    public String getName()
+    {
+        return this.name;
     }
 
     public ContainerLocation getContainerLocation()
@@ -82,7 +92,7 @@ public class RefillableContainer
         return this.hidingBlock;
     }
 
-    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
+    public static RefillableContainer fromTileEntity(String name, TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<RefillableItem> items = new ArrayList<>();
@@ -95,7 +105,7 @@ public class RefillableContainer
             }
         });
 
-        RefillableContainer refillableContainer = new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
+        RefillableContainer refillableContainer = new RefillableContainer(name, new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
 
         return refillableContainer;
     }

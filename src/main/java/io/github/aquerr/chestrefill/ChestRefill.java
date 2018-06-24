@@ -33,6 +33,7 @@ public class ChestRefill
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
     public static Map<UUID, SelectionMode> PlayersSelectionMode = new HashMap<>();
+    public static Map<UUID, String> PlayerChestName = new HashMap<>();
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
 
     private static ChestRefill chestRefill;
@@ -127,6 +128,14 @@ public class ChestRefill
                 .description(Text.of("Show all refilling chests"))
                 .permission(PluginPermissions.LIST_COMMAND)
                 .executor(new ListCommand())
+                .build());
+
+        //Refill Command
+        Subcommands.put(Arrays.asList("refill"), CommandSpec.builder()
+                .description(Text.of("Force refill a specific container"))
+                .permission(PluginPermissions.REFILL_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("chest name"))))
+                .executor(new RefillCommand())
                 .build());
 
         //RefillAll Command

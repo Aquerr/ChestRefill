@@ -34,7 +34,7 @@ public class RightClickListener
 
                     if (tileEntity instanceof TileEntityCarrier)
                     {
-                        RefillableContainer refillableContainer = RefillableContainer.fromTileEntity(tileEntity, player.getWorld().getUniqueId());
+                        RefillableContainer refillableContainer = RefillableContainer.fromTileEntity(ChestRefill.PlayerChestName.get(player.getUniqueId()) ,tileEntity, player.getWorld().getUniqueId());
 
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
@@ -54,7 +54,7 @@ public class RightClickListener
                                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This container is already marked as a refilling container!"));
                                 }
 
-                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
 
                                 break;
