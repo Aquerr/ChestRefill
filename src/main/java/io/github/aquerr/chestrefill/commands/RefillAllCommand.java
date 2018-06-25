@@ -21,7 +21,8 @@ public class RefillAllCommand implements CommandExecutor
     {
         for (ContainerLocation containerLocation : ContainerManager.getContainerLocations())
         {
-            ContainerManager.refillContainer(containerLocation);
+            Runnable refillContainer = ContainerManager.refillContainer(containerLocation);
+            refillContainer.run();
         }
 
         source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Refilled all containers!"));

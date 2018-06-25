@@ -98,6 +98,7 @@ public class ChestRefill
         Subcommands.put(Arrays.asList("c", "create"), CommandSpec.builder()
             .description(Text.of("Toggles chest creation mode"))
             .permission(PluginPermissions.CREATE_COMMAND)
+            .arguments(GenericArguments.optional(GenericArguments.string(Text.of("chest name"))))
             .executor(new CreateCommand())
             .build());
 
