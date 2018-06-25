@@ -39,6 +39,7 @@ public class ListCommand implements CommandExecutor
         {
             Text.Builder itemsToShow = Text.builder();
 
+            itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
             refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getType().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
             itemsToShow.append(Text.of("\n", TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));

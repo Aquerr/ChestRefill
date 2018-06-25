@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public class ContainerBreakListener
 {
-    private List<RefillableContainer> DESTROYED_CONTAINERS = new ArrayList<>(1);
+    private List<RefillableContainer> destroyedContainers = new ArrayList<>();
 
     @Listener
     public void onRefillableEntityBreak(ChangeBlockEvent.Break event)
@@ -35,7 +35,7 @@ public class ContainerBreakListener
                     if (refillableContainer.getContainerLocation().equals(containerLocation))
                     {
                         //TODO: If player destroyed the container, inform him/she about it.
-                        DESTROYED_CONTAINERS.add(refillableContainer);
+                        destroyedContainers.add(refillableContainer);
                         ContainerManager.removeRefillableContainer(containerLocation);
                         break;
                     }
@@ -51,7 +51,7 @@ public class ContainerBreakListener
         if (blockSnapshot.isPresent() && blockSnapshot.get().getLocation().isPresent())
         {
             ContainerLocation containerLocation = new ContainerLocation(blockSnapshot.get().getLocation().get().getBlockPosition(), blockSnapshot.get().getWorldUniqueId());
-            for (RefillableContainer refillableContainer : DESTROYED_CONTAINERS)
+            for (RefillableContainer refillableContainer : destroyedContainers)
             {
                 if (refillableContainer.getContainerLocation().equals(containerLocation) && refillableContainer.getHidingBlock().equals(blockSnapshot.get().getState().getType()))
                 {
