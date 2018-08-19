@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
+import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
@@ -33,6 +34,7 @@ public class ChestRefill
     public static Map<List<String>, CommandSpec> Subcommands = new HashMap<>();
 
     public static Map<UUID, SelectionMode> PlayersSelectionMode = new HashMap<>();
+    public static Map<UUID, String> PlayerChestName = new HashMap<>();
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
 
     private static ChestRefill chestRefill;
@@ -97,6 +99,7 @@ public class ChestRefill
         Subcommands.put(Arrays.asList("c", "create"), CommandSpec.builder()
             .description(Text.of("Toggles chest creation mode"))
             .permission(PluginPermissions.CREATE_COMMAND)
+            .arguments(GenericArguments.optional(GenericArguments.string(Text.of("chest name"))))
             .executor(new CreateCommand())
             .build());
 
@@ -127,6 +130,28 @@ public class ChestRefill
                 .description(Text.of("Show all refilling chests"))
                 .permission(PluginPermissions.LIST_COMMAND)
                 .executor(new ListCommand())
+                .build());
+
+        //Refill Command
+        Subcommands.put(Arrays.asList("refill"), CommandSpec.builder()
+                .description(Text.of("Force refill a specific container"))
+                .permission(PluginPermissions.REFILL_COMMAND)
+                .arguments(new ContainerNameArgument(Text.of("chest name")))
+                .executor(new RefillCommand())
+                .build());
+
+        //RefillAll Command
+        Subcommands.put(Arrays.asList("refillall"), CommandSpec.builder()
+                .description(Text.of("Force refill all containers"))
+                .permission(PluginPermissions.REFILLALL_COMMAND)
+                .executor(new RefillAllCommand())
+                .build());
+
+        Subcommands.put(Arrays.asList("setname"), CommandSpec.builder()
+                .description(Text.of("Set name for a refillable container"))
+                .permission(PluginPermissions.SETNAME_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
+                .executor(new SetnameCommand())
                 .build());
 
         //Build all commands

@@ -12,6 +12,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.Optional;
+
 /**
  * Created by Aquerr on 2018-02-12.
  */
@@ -20,6 +22,8 @@ public class CreateCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
+        Optional<String> optionalName = context.getOne(Text.of("chest name"));
+
         if (source instanceof Player)
         {
             Player player = (Player)source;
@@ -28,17 +32,21 @@ public class CreateCommand implements CommandExecutor
             {
                 if (SelectionMode.CREATE != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                 {
+                    optionalName.ifPresent(s -> ChestRefill.PlayerChestName.put(player.getUniqueId(), s));
                     ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.CREATE);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
                 }
                 else
                 {
+                    ChestRefill.PlayerChestName.remove(player.getUniqueId());
+
                     ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
                 }
             }
             else
             {
+                optionalName.ifPresent(s -> ChestRefill.PlayerChestName.put(player.getUniqueId(), s));
                 ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.CREATE);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
             }

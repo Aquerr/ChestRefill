@@ -39,6 +39,7 @@ public class ListCommand implements CommandExecutor
         {
             Text.Builder itemsToShow = Text.builder();
 
+            itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
             refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getItem().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
             itemsToShow.append(Text.of("\n", TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
@@ -48,8 +49,20 @@ public class ListCommand implements CommandExecutor
             itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s\n"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
+//            Text chestText = Text.builder()
+//                    .append(Text.of(TextColors.DARK_GREEN, "Container at ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
+//                    .onHover(TextActions.showText(itemsToShow.build()))
+//                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableContainer.getContainerLocation().getBlockPosition())))
+//                    .build();
+
+            Text.Builder chestName = Text.builder();
+            if(refillableContainer.getName().equals(""))
+                chestName.append(Text.of("Not named container"));
+            else
+                chestName.append(Text.of("Container ", TextColors.YELLOW, refillableContainer.getName()));
+
             Text chestText = Text.builder()
-                    .append(Text.of(TextColors.DARK_GREEN, "Container at ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
+                    .append(Text.of(TextColors.YELLOW, " - ", TextColors.DARK_GREEN, chestName.build(), " at location ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
                     .onHover(TextActions.showText(itemsToShow.build()))
                     .onClick(TextActions.executeCallback(teleportToChest(source, refillableContainer.getContainerLocation().getBlockPosition())))
                     .build();

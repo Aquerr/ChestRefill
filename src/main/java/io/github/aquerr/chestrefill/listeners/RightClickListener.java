@@ -29,18 +29,18 @@ public class RightClickListener
                 if(event.getTargetBlock().getLocation().get().getTileEntity().isPresent())
                 {
                     TileEntity tileEntity = event.getTargetBlock().getLocation().get().getTileEntity().get();
-
                     if (tileEntity instanceof TileEntityCarrier)
                     {
                         RefillableContainer refillableContainer = RefillableContainer.fromTileEntity(tileEntity, player.getWorld().getUniqueId());
-
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
                             case CREATE:
                                 if (!ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
+                                    if(ChestRefill.PlayerChestName.containsKey(player.getUniqueId()))
+                                        refillableContainer.setName(ChestRefill.PlayerChestName.get(player.getUniqueId()));
 
+                                    boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
                                     if (didSucceed)
                                     {
                                         player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling container!"));
@@ -52,9 +52,8 @@ public class RightClickListener
                                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This container is already marked as a refilling container!"));
                                 }
 
-                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
-
                                 break;
 
                             case REMOVE:
@@ -76,7 +75,6 @@ public class RightClickListener
 
                                 //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
-
                                 break;
 
                             case UPDATE:
@@ -129,8 +127,28 @@ public class RightClickListener
 
                                 //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
-                                if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId())) ChestRefill.ContainerTimeChangePlayer.remove(player.getUniqueId());
+                                ChestRefill.ContainerTimeChangePlayer.remove(player.getUniqueId());
 
+                                break;
+
+                            case SETNAME:
+                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                {
+                                    boolean didSucceed = ContainerManager.renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
+
+                                    if (didSucceed)
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling container!"));
+                                    }
+                                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                                }
+                                else
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                                }
+
+                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                                 break;
                         }
                     }

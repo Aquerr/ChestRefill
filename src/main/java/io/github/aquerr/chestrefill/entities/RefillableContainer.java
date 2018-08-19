@@ -8,6 +8,7 @@ import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,8 @@ import java.util.UUID;
  */
 public class RefillableContainer
 {
+    private String name;
+
     private ContainerLocation containerLocation;
     private List<RefillableItem> items;
     private BlockType containerBlockType;
@@ -30,11 +33,12 @@ public class RefillableContainer
 
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this(containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
     }
 
-    public RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
     {
+        this.name = name;
         this.containerLocation = containerLocation;
         this.restoreTimeInSeconds = time;
         this.items = refillableItemList;
@@ -43,6 +47,16 @@ public class RefillableContainer
         this.hiddenIfNoItems = hiddenIfNoItems;
         this.hidingBlock = hidingBlock;
         this.containerBlockType = containerBlockType;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getName()
+    {
+        return this.name;
     }
 
     public ContainerLocation getContainerLocation()
@@ -95,9 +109,7 @@ public class RefillableContainer
             }
         });
 
-        RefillableContainer refillableContainer = new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
-
-        return refillableContainer;
+        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
 
     @Override
