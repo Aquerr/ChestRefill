@@ -214,6 +214,28 @@ public class JSONStorage implements Storage
         return false;
     }
 
+    @Override
+    public boolean changeContainerName(ContainerLocation containerLocation, String containerName)
+    {
+        try
+        {
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
+
+            //Set chest's name
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(containerName);
+            configurationLoader.save(node);
+
+            return true;
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return false;
+    }
+
     private Runnable checkFileUpdate()
     {
         return new Runnable()

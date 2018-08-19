@@ -31,9 +31,9 @@ public class RefillableContainer
     private boolean hiddenIfNoItems;
     private BlockType hidingBlock;
 
-    private RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
+    private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this(name, containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
     }
 
     public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
@@ -49,7 +49,11 @@ public class RefillableContainer
         this.containerBlockType = containerBlockType;
     }
 
-    @Nullable
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
     public String getName()
     {
         return this.name;
@@ -92,7 +96,7 @@ public class RefillableContainer
         return this.hidingBlock;
     }
 
-    public static RefillableContainer fromTileEntity(String name, TileEntity tileEntity, UUID worldUUID)
+    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<RefillableItem> items = new ArrayList<>();
@@ -105,9 +109,7 @@ public class RefillableContainer
             }
         });
 
-        RefillableContainer refillableContainer = new RefillableContainer(name, new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
-
-        return refillableContainer;
+        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
 
     @Override

@@ -21,4 +21,6 @@ public interface Storage
     RefillableContainer getRefillableContainer(ContainerLocation containerLocation);
 
     boolean updateContainerTime(ContainerLocation containerLocation, int time);
+
+    boolean changeContainerName(ContainerLocation containerLocation, String containerName);
 }

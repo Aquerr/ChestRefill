@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
+import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
@@ -135,7 +136,7 @@ public class ChestRefill
         Subcommands.put(Arrays.asList("refill"), CommandSpec.builder()
                 .description(Text.of("Force refill a specific container"))
                 .permission(PluginPermissions.REFILL_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("chest name"))))
+                .arguments(new ContainerNameArgument(Text.of("chest name")))
                 .executor(new RefillCommand())
                 .build());
 
@@ -144,6 +145,13 @@ public class ChestRefill
                 .description(Text.of("Force refill all containers"))
                 .permission(PluginPermissions.REFILLALL_COMMAND)
                 .executor(new RefillAllCommand())
+                .build());
+
+        Subcommands.put(Arrays.asList("setname"), CommandSpec.builder()
+                .description(Text.of("Set name for a refillable container"))
+                .permission(PluginPermissions.SETNAME_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
+                .executor(new SetnameCommand())
                 .build());
 
         //Build all commands
