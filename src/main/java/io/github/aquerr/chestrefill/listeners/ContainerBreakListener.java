@@ -56,6 +56,7 @@ public class ContainerBreakListener
                 if (refillableContainer.getContainerLocation().equals(containerLocation) && refillableContainer.getHidingBlock().equals(blockSnapshot.get().getState().getType()))
                 {
                     event.setCancelled(true);
+                    destroyedContainers.clear();
                 }
             }
         }
