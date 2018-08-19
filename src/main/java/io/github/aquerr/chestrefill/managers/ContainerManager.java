@@ -116,7 +116,7 @@ public class ContainerManager
 
             refillTask.execute(refillContainerAndRepeat(containerLocation, time)).delay(time, TimeUnit.SECONDS)
                     .name("Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString())
-                    .async().submit(ChestRefill.getChestRefill());
+                    .submit(ChestRefill.getChestRefill());
 
             return true;
         }
@@ -209,7 +209,7 @@ public class ContainerManager
 
                 refillTask.execute(refillContainerAndRepeat(containerLocation, interval)).delay(interval, TimeUnit.SECONDS)
                         .name("Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString())
-                        .async().submit(ChestRefill.getChestRefill());
+                        .submit(ChestRefill.getChestRefill());
             }
         };
     }
@@ -222,7 +222,7 @@ public class ContainerManager
 
             refilling.execute(refillContainerAndRepeat(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime())).delay(refillableContainer.getRestoreTime(), TimeUnit.SECONDS)
                     .name("Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString())
-                    .async().submit(ChestRefill.getChestRefill());
+                    .submit(ChestRefill.getChestRefill());
         }
     }
 
