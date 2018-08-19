@@ -74,6 +74,9 @@ public class JSONStorage implements Storage
 
             List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
 
+            //Set container's name
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(refillableContainer.getName());
+
             //Set container's block type
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
 
@@ -128,10 +131,11 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    public List<RefillableContainer> getRefillableContainers()
+    @Override
+    public List<ContainerLocation> getContainerLocations()
     {
         Set<Object> objectList = node.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
-        List<RefillableContainer> refillingContainersList = new ArrayList<>();
+        List<ContainerLocation> containerLocations = new ArrayList<>();
 
         for (Object object : objectList)
         {
@@ -150,7 +154,20 @@ public class JSONStorage implements Storage
 
             ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
 
-            RefillableContainer refillableContainer = getRefillableContainerFromFile(chestPositionAndWorldUUIDString, containerLocation);
+            containerLocations.add(containerLocation);
+        }
+
+        return containerLocations;
+    }
+
+    @Override
+    public List<RefillableContainer> getRefillableContainers()
+    {
+        List<RefillableContainer> refillingContainersList = new ArrayList<>();
+
+        for (ContainerLocation containerLocation : getContainerLocations())
+        {
+            RefillableContainer refillableContainer = getRefillableContainerFromFile(containerLocation);
 
             refillingContainersList.add(refillableContainer);
         }
@@ -168,7 +185,7 @@ public class JSONStorage implements Storage
 
         if (chestObject != null)
         {
-            return getRefillableContainerFromFile(blockPositionAndWorldUUID, containerLocation);
+            return getRefillableContainerFromFile(containerLocation);
         }
 
         return null;
@@ -185,6 +202,28 @@ public class JSONStorage implements Storage
             //Set chest's regeneration time (in seconds)
             node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(time);
 
+            configurationLoader.save(node);
+
+            return true;
+        }
+        catch (IOException exception)
+        {
+            exception.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean changeContainerName(ContainerLocation containerLocation, String containerName)
+    {
+        try
+        {
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
+
+            //Set chest's name
+            node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(containerName);
             configurationLoader.save(node);
 
             return true;
@@ -227,10 +266,16 @@ public class JSONStorage implements Storage
         };
     }
 
-    private RefillableContainer getRefillableContainerFromFile(String blockPositionAndWorldUUID, ContainerLocation containerLocation)
+    private RefillableContainer getRefillableContainerFromFile(ContainerLocation containerLocation)
     {
         try
         {
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
+
+            final Object containersName = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").getValue();
+            String name = null;
+            if (containersName != null) name = (String)containersName;
+
             final BlockType containerBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
             final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
             final int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
@@ -239,7 +284,7 @@ public class JSONStorage implements Storage
             final boolean hiddenIfNoItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
 
-            return new RefillableContainer(containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
+            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
         }
         catch (ObjectMappingException e)
         {
