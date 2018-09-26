@@ -110,7 +110,7 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    public boolean removeRefillableContainers(ContainerLocation containerLocation)
+    public boolean removeRefillableContainer(ContainerLocation containerLocation)
     {
         try
         {

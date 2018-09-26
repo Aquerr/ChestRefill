@@ -12,7 +12,7 @@ public interface Storage
 {
     boolean addOrUpdateContainer(RefillableContainer refillableContainer);
 
-    boolean removeRefillableContainers(ContainerLocation containerLocation);
+    boolean removeRefillableContainer(ContainerLocation containerLocation);
 
     List<RefillableContainer> getRefillableContainers();
 

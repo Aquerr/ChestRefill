@@ -1,11 +1,13 @@
 package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
+import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.JSONStorage;
 import io.github.aquerr.chestrefill.storage.Storage;
+import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.scheduler.Task;
@@ -24,7 +26,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContainerManager
 {
-    private static Storage containerStorage;
+    //private static Storage containerStorage;
+    private static StorageHelper storageHelper;
 
     public static void setupContainerManager(Path configDir)
     {
@@ -41,12 +44,13 @@ public class ContainerManager
             }
         }
 
-        containerStorage = new JSONStorage(configDir);
+        //containerStorage = new JSONStorage(configDir);
+        storageHelper = new StorageHelper(configDir);
     }
 
     public static boolean addRefillableContainer(RefillableContainer refillableContainer)
     {
-        if (containerStorage.addOrUpdateContainer(refillableContainer))
+        if (storageHelper.addOrUpdateContainer(refillableContainer))
         {
             return startRefillingContainer(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime());
         }
@@ -57,22 +61,22 @@ public class ContainerManager
     public static boolean updateRefillableContainer(RefillableContainer refillableContainer)
     {
         //We do not need to restart scheduler. New chest content will be loaded from the storage by existing scheduler.
-        return containerStorage.addOrUpdateContainer(refillableContainer);
+        return storageHelper.addOrUpdateContainer(refillableContainer);
     }
 
-    public static List<RefillableContainer> getRefillableContainers()
+    public static Collection<RefillableContainer> getRefillableContainers()
     {
-        return containerStorage.getRefillableContainers();
+        return storageHelper.getRefillableContainers();
     }
 
-    public static List<ContainerLocation> getContainerLocations()
+    public static Set<ContainerLocation> getContainerLocations()
     {
-        return containerStorage.getContainerLocations();
+        return storageHelper.getContainerLocations();
     }
 
     public static boolean removeRefillableContainer(ContainerLocation containerLocation)
     {
-        if (containerStorage.removeRefillableContainers(containerLocation))
+        if (storageHelper.removeContainer(containerLocation))
         {
             return stopRefillingContainer(containerLocation);
         }
@@ -103,7 +107,7 @@ public class ContainerManager
     @Nullable
     private static RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
     {
-        return containerStorage.getRefillableContainer(containerLocation);
+        return storageHelper.getRefillableContainer(containerLocation);
     }
 
     private static boolean startRefillingContainer(ContainerLocation containerLocation, int time)
@@ -227,7 +231,7 @@ public class ContainerManager
     public static boolean updateRefillingTime(ContainerLocation containerLocation, int time)
     {
         if (stopRefillingContainer(containerLocation)
-            && containerStorage.updateContainerTime(containerLocation, time)
+            && storageHelper.updateContainerTime(containerLocation, time)
             && startRefillingContainer(containerLocation, time)) return true;
 
         return false;
@@ -235,6 +239,6 @@ public class ContainerManager
 
     public static boolean renameRefillableContainer(ContainerLocation containerLocation, String containerName)
     {
-        return containerStorage.changeContainerName(containerLocation, containerName);
+        return storageHelper.changeContainerName(containerLocation, containerName);
     }
 }

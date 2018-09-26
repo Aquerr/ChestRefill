@@ -54,6 +54,11 @@ public class RefillableContainer
         this.name = name;
     }
 
+    public void setRestoreTime(int seconds)
+    {
+        this.restoreTimeInSeconds = seconds;
+    }
+
     public String getName()
     {
         return this.name;
@@ -171,6 +176,7 @@ public class RefillableContainer
     @Override
     public int hashCode()
     {
+        //TODO: This is bad... rework it with some prime number.
         return containerLocation.toString().length();
     }
 }

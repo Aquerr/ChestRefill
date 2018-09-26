@@ -11,6 +11,7 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class RefillCommand implements CommandExecutor
         {
             String chestName = optionalChestName.get();
 
-            List<RefillableContainer> containerList = ContainerManager.getRefillableContainers();
+            Collection<RefillableContainer> containerList = ContainerManager.getRefillableContainers();
 
             for (RefillableContainer refillableContainer : containerList)
             {
