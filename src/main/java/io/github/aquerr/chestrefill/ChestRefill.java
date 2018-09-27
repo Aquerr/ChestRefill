@@ -6,6 +6,7 @@ import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
+import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
 import io.github.aquerr.chestrefill.version.VersionChecker;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -37,11 +38,23 @@ public class ChestRefill
     public static Map<UUID, String> PlayerChestName = new HashMap<>();
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
 
+    private ContainerScheduler containerScheduler;
+    private ContainerManager containerManager;
+
     private static ChestRefill chestRefill;
-    public static ChestRefill getChestRefill() {return chestRefill;}
+//
+//    public static ChestRefill getChestRefill() {return chestRefill;}
 
     @Inject
     private Logger _logger;
+
+    public static ChestRefill getInstance()
+    {
+        if(chestRefill != null)
+            return chestRefill;
+        return new ChestRefill();
+    }
+
     public Logger getLogger() {return _logger;}
 
     @Inject
@@ -53,8 +66,8 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
-
-        ContainerManager.setupContainerManager(_configDir);
+        this.containerManager = new ContainerManager(this, getConfigDir());
+        this.containerScheduler = new ContainerScheduler(this);
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
@@ -82,7 +95,17 @@ public class ChestRefill
     public void onGameLoad(GameLoadCompleteEvent event)
     {
         //Start refilling chests that were created on the server before
-        ContainerManager.restoreRefilling();
+        this.containerManager.restoreRefilling();
+    }
+
+    public ContainerManager getContainerManager()
+    {
+        return this.containerManager;
+    }
+
+    public ContainerScheduler getContainerScheduler()
+    {
+        return this.containerScheduler;
     }
 
     private void initCommands()
@@ -92,7 +115,7 @@ public class ChestRefill
         Subcommands.put(Arrays.asList("help"), CommandSpec.builder()
             .description(Text.of("Displays all available commands"))
             .permission(PluginPermissions.HELP_COMMAND)
-            .executor(new HelpCommand())
+            .executor(new HelpCommand(this))
             .build());
 
         //Create Command
@@ -100,21 +123,21 @@ public class ChestRefill
             .description(Text.of("Toggles chest creation mode"))
             .permission(PluginPermissions.CREATE_COMMAND)
             .arguments(GenericArguments.optional(GenericArguments.string(Text.of("chest name"))))
-            .executor(new CreateCommand())
+            .executor(new CreateCommand(this))
             .build());
 
         //Remove Command
         Subcommands.put(Arrays.asList("r", "remove"), CommandSpec.builder()
             .description(Text.of("Toggles chest removal mode"))
             .permission(PluginPermissions.REMOVE_COMMAND)
-            .executor(new RemoveCommand())
+            .executor(new RemoveCommand(this))
             .build());
 
         //Update Command
         Subcommands.put(Arrays.asList("u", "update"), CommandSpec.builder()
             .description(Text.of("Toggles chest update mode"))
             .permission(PluginPermissions.UPDATE_COMMAND)
-            .executor(new UpdateCommand())
+            .executor(new UpdateCommand(this))
             .build());
 
         //Time Command
@@ -122,14 +145,14 @@ public class ChestRefill
             .description(Text.of("Change chest's refill time"))
             .permission(PluginPermissions.TIME_COMMAND)
             .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("time"))))
-            .executor(new TimeCommand())
+            .executor(new TimeCommand(this))
             .build());
 
         //List Command
         Subcommands.put(Arrays.asList("l","list"), CommandSpec.builder()
                 .description(Text.of("Show all refilling chests"))
                 .permission(PluginPermissions.LIST_COMMAND)
-                .executor(new ListCommand())
+                .executor(new ListCommand(this))
                 .build());
 
         //Refill Command
@@ -137,27 +160,27 @@ public class ChestRefill
                 .description(Text.of("Force refill a specific container"))
                 .permission(PluginPermissions.REFILL_COMMAND)
                 .arguments(new ContainerNameArgument(Text.of("chest name")))
-                .executor(new RefillCommand())
+                .executor(new RefillCommand(this))
                 .build());
 
         //RefillAll Command
         Subcommands.put(Arrays.asList("refillall"), CommandSpec.builder()
                 .description(Text.of("Force refill all containers"))
                 .permission(PluginPermissions.REFILLALL_COMMAND)
-                .executor(new RefillAllCommand())
+                .executor(new RefillAllCommand(this))
                 .build());
 
         Subcommands.put(Arrays.asList("setname"), CommandSpec.builder()
                 .description(Text.of("Set name for a refillable container"))
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
-                .executor(new SetnameCommand())
+                .executor(new SetnameCommand(this))
                 .build());
 
         //Build all commands
         CommandSpec mainCommand = CommandSpec.builder()
                 .description(Text.of("Displays all available commands"))
-                .executor(new HelpCommand())
+                .executor(new HelpCommand(this))
                 .children(Subcommands)
                 .build();
 
@@ -168,9 +191,9 @@ public class ChestRefill
 
     private void initListeners()
     {
-        Sponge.getEventManager().registerListeners(this, new RightClickListener());
-        Sponge.getEventManager().registerListeners(this, new ContainerBreakListener());
-        Sponge.getEventManager().registerListeners(this, new PlayerJoinListener());
+        Sponge.getEventManager().registerListeners(this, new RightClickListener(this));
+        Sponge.getEventManager().registerListeners(this, new ContainerBreakListener(this));
+        Sponge.getEventManager().registerListeners(this, new PlayerJoinListener(this));
 //        Sponge.getEventManager().registerListeners(this, new DropItemListener());
     }
 }

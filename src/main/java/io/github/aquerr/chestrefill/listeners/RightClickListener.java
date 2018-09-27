@@ -19,8 +19,13 @@ import org.spongepowered.api.world.BlockChangeFlags;
  * Created by Aquerr on 2018-02-10.
  */
 
-public class RightClickListener
+public class RightClickListener extends AbstractListener
 {
+    public RightClickListener(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Listener
     public void onRightClick(InteractBlockEvent.Secondary event, @Root Player player)
     {
@@ -37,12 +42,12 @@ public class RightClickListener
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
                             case CREATE:
-                                if (!ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (!super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if(ChestRefill.PlayerChestName.containsKey(player.getUniqueId()))
                                         refillableContainer.setName(ChestRefill.PlayerChestName.get(player.getUniqueId()));
 
-                                    boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
+                                    boolean didSucceed = super.getPlugin().getContainerManager().addRefillableContainer(refillableContainer);
                                     if (didSucceed)
                                     {
                                         player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling container!"));
@@ -56,13 +61,14 @@ public class RightClickListener
 
                                 //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                ChestRefill.PlayerChestName.remove(player.getUniqueId());
                                 break;
 
                             case REMOVE:
 
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.removeRefillableContainer(refillableContainer.getContainerLocation());
+                                    boolean didSucceed = super.getPlugin().getContainerManager().removeRefillableContainer(refillableContainer.getContainerLocation());
 
                                     if (didSucceed)
                                     {
@@ -81,9 +87,9 @@ public class RightClickListener
 
                             case UPDATE:
 
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.updateRefillableContainer(refillableContainer);
+                                    boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
 
                                     if (didSucceed)
                                     {
@@ -102,13 +108,13 @@ public class RightClickListener
                                 break;
 
                             case TIME:
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
                                     {
                                         int time = ChestRefill.ContainerTimeChangePlayer.get(player.getUniqueId());
 
-                                        boolean didSucceed = ContainerManager.updateRefillingTime(refillableContainer.getContainerLocation(), time);
+                                        boolean didSucceed = super.getPlugin().getContainerManager().updateRefillingTime(refillableContainer.getContainerLocation(), time);
 
                                         if (didSucceed)
                                         {
@@ -118,7 +124,7 @@ public class RightClickListener
                                     }
                                     else
                                     {
-                                        RefillableContainer chestToView = ContainerManager.getRefillableContainers().stream().filter(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())).findFirst().get();
+                                        RefillableContainer chestToView = super.getPlugin().getContainerManager().getRefillableContainers().stream().filter(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())).findFirst().get();
                                         player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This container refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
                                     }
                                 }
@@ -134,9 +140,9 @@ public class RightClickListener
                                 break;
 
                             case SETNAME:
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
+                                    boolean didSucceed = super.getPlugin().getContainerManager().renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
 
                                     if (didSucceed)
                                     {

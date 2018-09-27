@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.listeners;
 
+import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
@@ -17,9 +18,15 @@ import java.util.Optional;
  * Created by Aquerr on 2018-02-16.
  */
 
-public class ContainerBreakListener
+public class ContainerBreakListener extends AbstractListener
 {
-    private List<RefillableContainer> destroyedContainers = new ArrayList<>();
+    private final List<RefillableContainer> destroyedContainers;
+
+    public ContainerBreakListener(ChestRefill plugin)
+    {
+        super(plugin);
+        this.destroyedContainers = new ArrayList<>();
+    }
 
     @Listener
     public void onRefillableEntityBreak(ChangeBlockEvent.Break event)
@@ -30,13 +37,13 @@ public class ContainerBreakListener
             {
                 ContainerLocation containerLocation = new ContainerLocation(transaction.getOriginal().getPosition(), transaction.getOriginal().getWorldUniqueId());
 
-                for (RefillableContainer refillableContainer : ContainerManager.getRefillableContainers())
+                for (RefillableContainer refillableContainer : super.getPlugin().getContainerManager().getRefillableContainers())
                 {
                     if (refillableContainer.getContainerLocation().equals(containerLocation))
                     {
                         //TODO: If player destroyed the container, inform him/she about it.
                         destroyedContainers.add(refillableContainer);
-                        ContainerManager.removeRefillableContainer(containerLocation);
+                        super.getPlugin().getContainerManager().removeRefillableContainer(containerLocation);
                         break;
                     }
                 }

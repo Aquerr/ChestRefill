@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
+import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
@@ -11,15 +12,20 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-public class RefillAllCommand implements CommandExecutor
+public class RefillAllCommand extends AbstractCommand implements CommandExecutor
 {
+    public RefillAllCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
     {
         boolean didSucceed = true;
-        for (ContainerLocation containerLocation : ContainerManager.getContainerLocations())
+        for (ContainerLocation containerLocation : super.getPlugin().getContainerManager().getContainerLocations())
         {
-            boolean refilledContainer = ContainerManager.refillContainer(containerLocation);
+            boolean refilledContainer = super.getPlugin().getContainerManager().refillContainer(containerLocation);
             if(!refilledContainer)
                 didSucceed = false;
         }

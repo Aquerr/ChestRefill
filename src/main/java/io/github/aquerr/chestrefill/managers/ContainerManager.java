@@ -10,6 +10,7 @@ import io.github.aquerr.chestrefill.storage.Storage;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -26,11 +27,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class ContainerManager
 {
-    //private static Storage containerStorage;
-    private static StorageHelper storageHelper;
+    private ChestRefill plugin;
+    private StorageHelper storageHelper;
 
-    public static void setupContainerManager(Path configDir)
+    public ContainerManager(ChestRefill plugin, Path configDir)
     {
+        this.plugin = plugin;
 
         if (!Files.isDirectory(configDir))
         {
@@ -48,7 +50,7 @@ public class ContainerManager
         storageHelper = new StorageHelper(configDir);
     }
 
-    public static boolean addRefillableContainer(RefillableContainer refillableContainer)
+    public boolean addRefillableContainer(RefillableContainer refillableContainer)
     {
         if (storageHelper.addOrUpdateContainer(refillableContainer))
         {
@@ -58,23 +60,23 @@ public class ContainerManager
         return false;
     }
 
-    public static boolean updateRefillableContainer(RefillableContainer refillableContainer)
+    public boolean updateRefillableContainer(RefillableContainer refillableContainer)
     {
         //We do not need to restart scheduler. New chest content will be loaded from the storage by existing scheduler.
         return storageHelper.addOrUpdateContainer(refillableContainer);
     }
 
-    public static Collection<RefillableContainer> getRefillableContainers()
+    public Collection<RefillableContainer> getRefillableContainers()
     {
         return storageHelper.getRefillableContainers();
     }
 
-    public static Set<ContainerLocation> getContainerLocations()
+    public Set<ContainerLocation> getContainerLocations()
     {
         return storageHelper.getContainerLocations();
     }
 
-    public static boolean removeRefillableContainer(ContainerLocation containerLocation)
+    public boolean removeRefillableContainer(ContainerLocation containerLocation)
     {
         if (storageHelper.removeContainer(containerLocation))
         {
@@ -84,18 +86,13 @@ public class ContainerManager
         return false;
     }
 
-    private static boolean stopRefillingContainer(ContainerLocation containerLocation)
+    private boolean stopRefillingContainer(ContainerLocation containerLocation)
     {
         try
         {
-            Optional<Task> optionalTask = Sponge.getScheduler().getScheduledTasks().stream().filter(x->x.getName().equals("Chest Refill " + containerLocation.getBlockPosition().toString()
-                    + "|" + containerLocation.getWorldUUID().toString())).findFirst();
-
-            if (optionalTask.isPresent())
-            {
-                optionalTask.get().cancel();
-                return true;
-            }
+            this.plugin.getContainerScheduler().cancelTask("Chest Refill " + containerLocation.getBlockPosition().toString()
+                    + "|" + containerLocation.getWorldUUID().toString());
+            return true;
         }
         catch (Exception exception)
         {
@@ -105,21 +102,17 @@ public class ContainerManager
     }
 
     @Nullable
-    private static RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
+    private RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
     {
         return storageHelper.getRefillableContainer(containerLocation);
     }
 
-    private static boolean startRefillingContainer(ContainerLocation containerLocation, int time)
+    private boolean startRefillingContainer(ContainerLocation containerLocation, int time)
     {
         try
         {
-            Task.Builder refillTask = Sponge.getScheduler().createTaskBuilder();
-
-            refillTask.execute(refillContainerAndRepeat(containerLocation, time)).delay(time, TimeUnit.SECONDS)
-                    .name("Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString())
-                    .submit(ChestRefill.getChestRefill());
-
+            String name = "Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
+            this.plugin.getContainerScheduler().scheduleWithInterval(name, time, TimeUnit.SECONDS, runRefillContainer(containerLocation));
             return true;
         }
         catch (Exception exception)
@@ -129,76 +122,84 @@ public class ContainerManager
         }
     }
 
-    public static boolean refillContainer(ContainerLocation containerLocation)
+    public boolean refillContainer(ContainerLocation containerLocation)
     {
         RefillableContainer chestToRefill = getRefillableContainer(containerLocation);
-
         Optional<World> world =  Sponge.getServer().getWorld(chestToRefill.getContainerLocation().getWorldUUID());
 
         if (world.isPresent())
         {
-            Location location = new Location<>(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
-
-            //If chest is hidden the we need to show it
-            if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
+            synchronized(world)
             {
-                location.setBlockType(chestToRefill.getContainerBlockType());
-            }
+                Location location = new Location<>(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
 
-            TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
-
-            if (chestToRefill.shouldReplaceExistingItems())
-            {
-                chest.getInventory().clear();
-            }
-
-            List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
-            for (RefillableItem refillableItem : chestToRefill.getItems())
-            {
-                double number = Math.random();
-
-                if (number <= refillableItem.getChance())
+                //If chest is hidden then we need to show it
+                if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
                 {
-                    achievedItemsFromRandomizer.add(refillableItem);
+                    location.setBlockType(chestToRefill.getContainerBlockType());
                 }
-            }
 
-            if (chestToRefill.isOneItemAtTime())
-            {
-                if (achievedItemsFromRandomizer.size() > 0)
+                TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                synchronized(chest)
                 {
-                    RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
-                    for (RefillableItem item : achievedItemsFromRandomizer)
+                    if (chestToRefill.shouldReplaceExistingItems())
                     {
-                        if (item.getChance() < lowestChanceItem.getChance())
+                        chest.getInventory().clear();
+                    }
+
+                    List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
+                    for (RefillableItem refillableItem : chestToRefill.getItems())
+                    {
+                        double number = Math.random();
+
+                        if (number <= refillableItem.getChance())
                         {
-                            lowestChanceItem = item;
+                            achievedItemsFromRandomizer.add(refillableItem);
                         }
                     }
 
-                    chest.getInventory().offer(lowestChanceItem.getItem());
+                    if (chestToRefill.isOneItemAtTime())
+                    {
+                        if (achievedItemsFromRandomizer.size() > 0)
+                        {
+                            RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
+                            for (RefillableItem item : achievedItemsFromRandomizer)
+                            {
+                                if (item.getChance() < lowestChanceItem.getChance())
+                                {
+                                    lowestChanceItem = item;
+                                }
+                            }
+                            //Offer removes items from existing list and that's why we need to build a new itemstack
+                            chest.getInventory().offer(ItemStack.builder().fromItemStack(lowestChanceItem.getItem()).build());
+                        }
+                    }
+                    else
+                    {
+                        for (RefillableItem item : achievedItemsFromRandomizer)
+                        {
+                            //Offer removes items from existing list and that's why we need to build a new itemstack
+                            chest.getInventory().offer(ItemStack.builder().fromItemStack(item.getItem()).build());
+                        }
+                    }
+
+                    if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                    {
+                        location.setBlockType(chestToRefill.getHidingBlock());
+                    }
+                    return true;
                 }
             }
-            else
-            {
-                for (RefillableItem item : achievedItemsFromRandomizer)
-                {
-                    chest.getInventory().offer(item.getItem());
-                }
-            }
-
-            if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
-            {
-                location.setBlockType(chestToRefill.getHidingBlock());
-            }
-
-            return true;
         }
-
         return false;
     }
 
-    public static Runnable refillContainerAndRepeat(ContainerLocation containerLocation, int interval)
+    public Runnable runRefillContainer(ContainerLocation containerLocation)
+    {
+        return () -> refillContainer(containerLocation);
+    }
+
+    public Runnable refillContainerAndRepeat(ContainerLocation containerLocation, int interval)
     {
         return new Runnable()
         {
@@ -207,28 +208,22 @@ public class ContainerManager
             {
                 refillContainer(containerLocation);
 
-                Task.Builder refillTask = Sponge.getScheduler().createTaskBuilder();
-
-                refillTask.execute(refillContainerAndRepeat(containerLocation, interval)).delay(interval, TimeUnit.SECONDS)
-                        .name("Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString())
-                        .submit(ChestRefill.getChestRefill());
+                String name = "Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
+                plugin.getContainerScheduler().runDelayed(name, interval, TimeUnit.SECONDS, this::run);
             }
         };
     }
 
-    public static void restoreRefilling()
+    public void restoreRefilling()
     {
         for (RefillableContainer refillableContainer : getRefillableContainers())
         {
-            Task.Builder refilling = Sponge.getScheduler().createTaskBuilder();
-
-            refilling.execute(refillContainerAndRepeat(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime())).delay(refillableContainer.getRestoreTime(), TimeUnit.SECONDS)
-                    .name("Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString())
-                    .submit(ChestRefill.getChestRefill());
+            String name = "Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString();
+            this.plugin.getContainerScheduler().scheduleWithInterval(name, refillableContainer.getRestoreTime(), TimeUnit.SECONDS, runRefillContainer(refillableContainer.getContainerLocation()));
         }
     }
 
-    public static boolean updateRefillingTime(ContainerLocation containerLocation, int time)
+    public boolean updateRefillingTime(ContainerLocation containerLocation, int time)
     {
         if (stopRefillingContainer(containerLocation)
             && storageHelper.updateContainerTime(containerLocation, time)
@@ -237,8 +232,8 @@ public class ContainerManager
         return false;
     }
 
-    public static boolean renameRefillableContainer(ContainerLocation containerLocation, String containerName)
+    public boolean renameRefillableContainer(ContainerLocation containerLocation, String containerName)
     {
-        return storageHelper.changeContainerName(containerLocation, containerName);
+        return this.storageHelper.changeContainerName(containerLocation, containerName);
     }
 }

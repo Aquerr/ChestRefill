@@ -9,16 +9,15 @@ import java.util.Map;
 
 public class ContainerCache
 {
-    private static Map<ContainerLocation, RefillableContainer> refillableContainerListCache = new HashMap();
+    private static Map<ContainerLocation, RefillableContainer> refillableContainersCache = new HashMap();
 
     public static boolean loadCache(List<RefillableContainer> refillableContainerList)
     {
         try
         {
-            refillableContainerList.clear();
             for(RefillableContainer refillableContainer : refillableContainerList)
             {
-                refillableContainerListCache.put(refillableContainer.getContainerLocation(), refillableContainer);
+                refillableContainersCache.put(refillableContainer.getContainerLocation(), refillableContainer);
             }
         }
         catch(NullPointerException exception)
@@ -29,11 +28,18 @@ public class ContainerCache
         return true;
     }
 
-    public static boolean updateContainerCache(RefillableContainer refillableContainer)
+    public static boolean addOrUpdateContainerCache(RefillableContainer refillableContainer)
     {
         try
         {
-            refillableContainerListCache.replace(refillableContainer.getContainerLocation(), refillableContainer);
+            if(refillableContainersCache.containsKey(refillableContainer.getContainerLocation()))
+            {
+                refillableContainersCache.replace(refillableContainer.getContainerLocation(), refillableContainer);
+            }
+            else
+            {
+                refillableContainersCache.put(refillableContainer.getContainerLocation(), refillableContainer);
+            }
         }
         catch(Exception exception)
         {
@@ -45,14 +51,14 @@ public class ContainerCache
 
     public static Map<ContainerLocation, RefillableContainer> getContainersCache()
     {
-        return refillableContainerListCache;
+        return refillableContainersCache;
     }
 
     public static boolean removeContainer(ContainerLocation containerLocation)
     {
         try
         {
-            refillableContainerListCache.remove(containerLocation);
+            refillableContainersCache.remove(containerLocation);
         }
         catch(Exception exception)
         {
@@ -66,7 +72,7 @@ public class ContainerCache
     {
         try
         {
-            refillableContainerListCache.get(containerLocation).setRestoreTime(time);
+            refillableContainersCache.get(containerLocation).setRestoreTime(time);
         }
         catch(Exception exception)
         {
@@ -80,7 +86,7 @@ public class ContainerCache
     {
         try
         {
-            refillableContainerListCache.get(containerLocation).setName(name);
+            refillableContainersCache.get(containerLocation).setName(name);
         }
         catch(Exception exception)
         {

@@ -62,7 +62,7 @@ public class StorageHelper
 
     public boolean addOrUpdateContainer(RefillableContainer containerToSave)
     {
-        ContainerCache.updateContainerCache(containerToSave);
+        ContainerCache.addOrUpdateContainerCache(containerToSave);
         return this.containersToSave.add(containerToSave);
     }
 

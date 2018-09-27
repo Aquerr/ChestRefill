@@ -15,8 +15,13 @@ import org.spongepowered.api.text.format.TextColors;
 /**
  * Created by Aquerr on 2018-02-16.
  */
-public class UpdateCommand implements CommandExecutor
+public class UpdateCommand extends AbstractCommand implements CommandExecutor
 {
+    public UpdateCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {

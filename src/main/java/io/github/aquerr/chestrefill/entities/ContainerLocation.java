@@ -46,6 +46,10 @@ public class ContainerLocation
     @Override
     public int hashCode()
     {
-        return this.blockPosition.toString().length();
+        int prime = 31;
+        int result = 1;
+        result = prime * result + (this.blockPosition != null ? this.blockPosition.hashCode() : 0);
+        result = prime * result + (this.worldUUID != null ? this.worldUUID.hashCode() : 0);
+        return result;
     }
 }

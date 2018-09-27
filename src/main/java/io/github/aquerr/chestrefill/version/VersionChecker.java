@@ -67,7 +67,7 @@ public class VersionChecker
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charset.forName("UTF-8")));
 
                 String inputLine;
-                StringBuffer response = new StringBuffer();
+                StringBuilder response = new StringBuilder();
 
                 while ((inputLine = bufferedReader.readLine()) != null)
                 {
@@ -78,10 +78,6 @@ public class VersionChecker
                 return response.toString();
             }
 
-        }
-        catch (MalformedURLException e)
-        {
-            e.printStackTrace();
         }
         catch (IOException e)
         {

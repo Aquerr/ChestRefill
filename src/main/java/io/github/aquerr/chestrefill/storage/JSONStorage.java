@@ -56,7 +56,7 @@ public class JSONStorage implements Storage
 
             Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
             //Run a checkFileUpdate task every 2,5 second
-            changeTask.async().intervalTicks(50L).execute(checkFileUpdate()).submit(ChestRefill.getChestRefill());
+            changeTask.async().intervalTicks(50L).execute(checkFileUpdate()).submit(ChestRefill.getInstance());
 
         }
         catch (IOException e)
@@ -175,21 +175,21 @@ public class JSONStorage implements Storage
         return refillingContainersList;
     }
 
-    @Override
-    @Nullable
-    public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
-    {
-        String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
-
-        Object chestObject = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
-
-        if (chestObject != null)
-        {
-            return getRefillableContainerFromFile(containerLocation);
-        }
-
-        return null;
-    }
+//    @Override
+//    @Nullable
+//    public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
+//    {
+//        String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
+//
+//        Object chestObject = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
+//
+//        if (chestObject != null)
+//        {
+//            return getRefillableContainerFromFile(containerLocation);
+//        }
+//
+//        return null;
+//    }
 
     @Override
     public boolean updateContainerTime(ContainerLocation containerLocation, int time)
@@ -277,12 +277,18 @@ public class JSONStorage implements Storage
             if (containersName != null) name = (String)containersName;
 
             final BlockType containerBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
-            final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
+            //final List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
+            List<RefillableItem> chestItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(new TypeToken<List<RefillableItem>>() {});
             final int time = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
             final boolean isOneItemAtTime = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
             final boolean shouldReplaceExistingItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
             final boolean hiddenIfNoItems = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = node.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
+
+            if(chestItems == null)
+            {
+                chestItems = new ArrayList<>();
+            }
 
             return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType);
         }

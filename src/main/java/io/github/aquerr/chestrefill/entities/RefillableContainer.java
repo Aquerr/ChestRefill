@@ -134,7 +134,7 @@ public class RefillableContainer
         //Compare container location
         if (this.containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
         {
-            Inventory tempInventory = Inventory.builder().build(ChestRefill.getChestRefill());
+            Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
 
             this.items.forEach(x-> {
                 //Offer removes items from inventory so we need to build new temp items.
@@ -176,7 +176,16 @@ public class RefillableContainer
     @Override
     public int hashCode()
     {
-        //TODO: This is bad... rework it with some prime number.
-        return containerLocation.toString().length();
+        int prime = 31;
+        int result = 1;
+        result = prime * result + (this.name != null ? this.name.hashCode() : 0);
+        result = prime * result + (this.items != null ? this.items.hashCode() : 0);
+        result = prime * result + (this.oneItemAtTime ? 0 : 1);
+        result = prime * result + (this.hiddenIfNoItems ? 0 : 1);
+        result = prime * result + this.restoreTimeInSeconds;
+        result = prime * result + (this.containerLocation != null ? this.containerLocation.hashCode() : 0);
+        result = prime * result + (this.containerBlockType != null ? this.containerBlockType.hashCode() : 0);
+        result = prime * result + (this.hidingBlock != null ? this.hidingBlock.hashCode() : 0);
+        return result;
     }
 }

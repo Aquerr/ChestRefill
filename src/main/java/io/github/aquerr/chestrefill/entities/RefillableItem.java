@@ -33,7 +33,8 @@ public class RefillableItem
 
     public ItemStack getItem()
     {
-        return item;
+        return this.item;
+//        return ItemStack.builder().fromItemStack(this.item).build();
     }
 
     public float getChance()

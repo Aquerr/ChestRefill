@@ -2,9 +2,9 @@ package io.github.aquerr.chestrefill.commands;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
+import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -28,25 +28,30 @@ import java.util.function.Consumer;
  * Created by Aquerr & vvozny on 2018-02-09.
  */
 
-public class ListCommand implements CommandExecutor
+public class ListCommand extends AbstractCommand implements CommandExecutor
 {
+    public ListCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
     {
         List<Text> helpList = Lists.newArrayList();
 
-        for(RefillableContainer refillableContainer : ContainerManager.getRefillableContainers())
+        for(RefillableContainer refillableContainer : super.getPlugin().getContainerManager().getRefillableContainers())
         {
             Text.Builder itemsToShow = Text.builder();
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
-            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getType().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
+            refillableContainer.getItems().forEach(x -> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getTranslation().get(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
             itemsToShow.append(Text.of("\n", TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Replace existing items: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Hidden if no items: ", TextColors.WHITE, refillableContainer.shouldBeHiddenIfNoItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Hiding block: ", TextColors.WHITE, refillableContainer.getHidingBlock(), "\n"));
-            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s\n"));
+            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
 
 //            Text chestText = Text.builder()

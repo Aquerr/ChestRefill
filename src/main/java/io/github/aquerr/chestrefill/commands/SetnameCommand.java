@@ -14,8 +14,13 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Optional;
 
-public class SetnameCommand implements CommandExecutor
+public class SetnameCommand extends AbstractCommand implements CommandExecutor
 {
+    public SetnameCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
