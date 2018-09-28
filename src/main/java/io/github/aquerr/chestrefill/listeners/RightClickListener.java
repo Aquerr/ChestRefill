@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -153,6 +154,54 @@ public class RightClickListener extends AbstractListener
                                 else
                                 {
                                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                                }
+
+                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                break;
+
+                            case COPY:
+                                if(!ChestRefill.PlayerCopyRefillableContainer.containsKey(player.getUniqueId()))
+                                {
+                                    if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                    {
+                                        ChestRefill.PlayerCopyRefillableContainer.put(player.getUniqueId(), refillableContainer);
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Now select a new container which should behave in the same way!"));
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                                    }
+                                }
+                                else
+                                {
+                                    RefillableContainer copiedContainer = ChestRefill.PlayerCopyRefillableContainer.get(player.getUniqueId());
+
+                                    if(!copiedContainer.getContainerBlockType().equals(refillableContainer.getContainerBlockType()))
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Containers must be of the same type!"));
+                                        break;
+                                    }
+
+                                    copiedContainer.setContainerLocation(refillableContainer.getContainerLocation());
+                                    boolean didSucceed;
+                                    if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                    {
+                                        didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(copiedContainer);
+                                    }
+                                    else
+                                    {
+                                        didSucceed = super.getPlugin().getContainerManager().addRefillableContainer(copiedContainer);
+                                    }
+
+                                    if (didSucceed)
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully copied a refilling container!"));
+                                    }
+                                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+
+                                    ChestRefill.PlayerCopyRefillableContainer.remove(player.getUniqueId());
                                 }
 
                                 //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.

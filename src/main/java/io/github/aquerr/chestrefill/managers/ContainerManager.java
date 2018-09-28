@@ -44,8 +44,6 @@ public class ContainerManager
                 e.printStackTrace();
             }
         }
-
-        //containerStorage = new JSONStorage(configDir);
         storageHelper = new StorageHelper(configDir);
     }
 

@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
+import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
@@ -38,6 +39,7 @@ public class ChestRefill
     public static Map<UUID, SelectionMode> PlayersSelectionMode = new HashMap<>();
     public static Map<UUID, String> PlayerChestName = new HashMap<>();
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
+    public static Map<UUID, RefillableContainer> PlayerCopyRefillableContainer = new HashMap<>();
 
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;

@@ -62,6 +62,11 @@ public class RefillableContainer
         this.restoreTimeInSeconds = seconds;
     }
 
+    public void setContainerLocation(ContainerLocation containerLocation)
+    {
+        this.containerLocation = containerLocation;
+    }
+
     public String getName()
     {
         return this.name;
