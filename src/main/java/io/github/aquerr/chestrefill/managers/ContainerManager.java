@@ -1,17 +1,16 @@
 package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
-import io.github.aquerr.chestrefill.storage.JSONStorage;
-import io.github.aquerr.chestrefill.storage.Storage;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -125,72 +124,91 @@ public class ContainerManager
     public boolean refillContainer(ContainerLocation containerLocation)
     {
         RefillableContainer chestToRefill = getRefillableContainer(containerLocation);
-        Optional<World> world =  Sponge.getServer().getWorld(chestToRefill.getContainerLocation().getWorldUUID());
-
-        if (world.isPresent())
+        try
         {
-            synchronized(world)
+            Optional<World> world =  Sponge.getServer().getWorld(chestToRefill.getContainerLocation().getWorldUUID());
+
+            if (world.isPresent())
             {
-                Location location = new Location<>(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
-
-                //If chest is hidden then we need to show it
-                if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
+                synchronized(world)
                 {
-                    location.setBlockType(chestToRefill.getContainerBlockType());
-                }
+                    Location location = new Location<>(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
 
-                TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
-                synchronized(chest)
-                {
-                    if (chestToRefill.shouldReplaceExistingItems())
+                    //If chest is hidden then we need to show it
+                    if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
                     {
-                        chest.getInventory().clear();
+                        location.setBlockType(chestToRefill.getContainerBlockType());
                     }
 
-                    List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
-                    for (RefillableItem refillableItem : chestToRefill.getItems())
-                    {
-                        double number = Math.random();
+                    Optional<TileEntity> optionalTileEntity = location.getTileEntity();
 
-                        if (number <= refillableItem.getChance())
-                        {
-                            achievedItemsFromRandomizer.add(refillableItem);
-                        }
-                    }
-
-                    if (chestToRefill.isOneItemAtTime())
+                    if(optionalTileEntity.isPresent())
                     {
-                        if (achievedItemsFromRandomizer.size() > 0)
+                        TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                        synchronized(chest)
                         {
-                            RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
-                            for (RefillableItem item : achievedItemsFromRandomizer)
+                            if (chestToRefill.shouldReplaceExistingItems())
                             {
-                                if (item.getChance() < lowestChanceItem.getChance())
+                                chest.getInventory().clear();
+                            }
+
+                            List<RefillableItem> achievedItemsFromRandomizer = new ArrayList<>();
+                            for (RefillableItem refillableItem : chestToRefill.getItems())
+                            {
+                                double number = Math.random();
+
+                                if (number <= refillableItem.getChance())
                                 {
-                                    lowestChanceItem = item;
+                                    achievedItemsFromRandomizer.add(refillableItem);
                                 }
                             }
-                            //Offer removes items from existing list and that's why we need to build a new itemstack
-                            chest.getInventory().offer(ItemStack.builder().fromItemStack(lowestChanceItem.getItem()).build());
-                        }
-                    }
-                    else
-                    {
-                        for (RefillableItem item : achievedItemsFromRandomizer)
-                        {
-                            //Offer removes items from existing list and that's why we need to build a new itemstack
-                            chest.getInventory().offer(ItemStack.builder().fromItemStack(item.getItem()).build());
-                        }
-                    }
 
-                    if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
-                    {
-                        location.setBlockType(chestToRefill.getHidingBlock());
+                            if (chestToRefill.isOneItemAtTime())
+                            {
+                                if (achievedItemsFromRandomizer.size() > 0)
+                                {
+                                    RefillableItem lowestChanceItem = achievedItemsFromRandomizer.get(0);
+                                    for (RefillableItem item : achievedItemsFromRandomizer)
+                                    {
+                                        if (item.getChance() < lowestChanceItem.getChance())
+                                        {
+                                            lowestChanceItem = item;
+                                        }
+                                    }
+                                    //Offer removes items from existing list and that's why we need to build a new itemstack
+                                    chest.getInventory().offer(ItemStack.builder().fromItemStack(lowestChanceItem.getItem()).build());
+                                }
+                            }
+                            else
+                            {
+                                for (RefillableItem item : achievedItemsFromRandomizer)
+                                {
+                                    //Offer removes items from existing list and that's why we need to build a new itemstack
+                                    chest.getInventory().offer(ItemStack.builder().fromItemStack(item.getItem()).build());
+                                }
+                            }
+
+                            if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                            {
+                                location.setBlockType(chestToRefill.getHidingBlock());
+                            }
+                            return true;
+                        }
                     }
-                    return true;
                 }
             }
         }
+        catch(Exception exception)
+        {
+            exception.printStackTrace();
+        }
+
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Couldn't refill : " + chestToRefill.getName()));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block type : " + chestToRefill.getContainerBlockType()));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block position : " + chestToRefill.getContainerLocation().getBlockPosition() + "|" + chestToRefill.getContainerLocation().getWorldUUID().toString()));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container items : " + chestToRefill.getItems()));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.YELLOW, "Suggestion: Remove this container from the containers.json file and restart server."));
+
         return false;
     }
 

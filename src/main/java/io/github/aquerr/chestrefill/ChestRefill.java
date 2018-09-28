@@ -11,6 +11,7 @@ import io.github.aquerr.chestrefill.version.VersionChecker;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.source.ConsoleSource;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
@@ -106,6 +107,11 @@ public class ChestRefill
     public ContainerScheduler getContainerScheduler()
     {
         return this.containerScheduler;
+    }
+
+    public ConsoleSource getConsole()
+    {
+        return Sponge.getServer().getConsole();
     }
 
     private void initCommands()
