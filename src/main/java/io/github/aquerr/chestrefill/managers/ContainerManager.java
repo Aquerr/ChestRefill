@@ -51,6 +51,11 @@ public class ContainerManager
 
     public boolean addRefillableContainer(RefillableContainer refillableContainer)
     {
+//        if(!refillableContainer.getKitName().equals(""))
+//        {
+//            refillableContainer.getItems().clear();
+//        }
+
         if (storageHelper.addOrUpdateContainer(refillableContainer))
         {
             return startRefillingContainer(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime());

@@ -31,12 +31,14 @@ public class RefillableContainer
     private boolean hiddenIfNoItems;
     private BlockType hidingBlock;
 
+    private String kitName;
+
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "");
     }
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName)
     {
         this.name = name;
         this.containerLocation = containerLocation;
@@ -47,6 +49,7 @@ public class RefillableContainer
         this.hiddenIfNoItems = hiddenIfNoItems;
         this.hidingBlock = hidingBlock;
         this.containerBlockType = containerBlockType;
+        this.kitName = kitName;
     }
 
     public void setName(String name)
@@ -99,6 +102,11 @@ public class RefillableContainer
     public BlockType getHidingBlock()
     {
         return this.hidingBlock;
+    }
+
+    public String getKitName()
+    {
+        return this.kitName;
     }
 
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
@@ -168,6 +176,12 @@ public class RefillableContainer
             {
                 return true;
             }
+
+            //Compare kit names
+            if (this.kitName.equals(((RefillableContainer) obj).kitName))
+            {
+                return true;
+            }
         }
 
         return false;
@@ -186,6 +200,7 @@ public class RefillableContainer
         result = prime * result + (this.containerLocation != null ? this.containerLocation.hashCode() : 0);
         result = prime * result + (this.containerBlockType != null ? this.containerBlockType.hashCode() : 0);
         result = prime * result + (this.hidingBlock != null ? this.hidingBlock.hashCode() : 0);
+        result = prime * result + (this.kitName != null ? this.kitName.hashCode() : 0);
         return result;
     }
 }
