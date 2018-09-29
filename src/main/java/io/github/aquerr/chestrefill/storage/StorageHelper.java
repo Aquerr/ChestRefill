@@ -107,4 +107,14 @@ public class StorageHelper
     {
         return this.containerStorage.getKits();
     }
+
+    public boolean createKit(Kit kit)
+    {
+        return this.containerStorage.createKit(kit);
+    }
+
+    public boolean removeKit(String kitName)
+    {
+        return this.containerStorage.removeKit(kitName);
+    }
 }

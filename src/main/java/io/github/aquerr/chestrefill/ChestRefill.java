@@ -3,6 +3,7 @@ package io.github.aquerr.chestrefill;
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
@@ -40,6 +41,7 @@ public class ChestRefill
     public static Map<UUID, String> PlayerChestName = new HashMap<>();
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
     public static Map<UUID, RefillableContainer> PlayerCopyRefillableContainer = new HashMap<>();
+    public static Map<UUID, String> PlayerKitName = new HashMap<>();
 
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;
@@ -184,6 +186,22 @@ public class ChestRefill
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
                 .executor(new SetnameCommand(this))
+                .build());
+
+        //CreateKit Command
+        Subcommands.put(Arrays.asList("createkit"), CommandSpec.builder()
+                .description(Text.of("Toggles kit creation mode"))
+                .permission(PluginPermissions.CREATE_KIT_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .executor(new CreateKitCommand(this))
+                .build());
+
+        //RemoveKit Command
+        Subcommands.put(Arrays.asList("removekit"), CommandSpec.builder()
+                .description(Text.of("Removes a kit"))
+                .permission(PluginPermissions.REMOVE_KIT_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .executor(new RemoveKitCommand(this))
                 .build());
 
         //Kits Command

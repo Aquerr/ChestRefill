@@ -2,9 +2,8 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.entity.living.player.Player;
@@ -13,8 +12,6 @@ import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.BlockChangeFlag;
-import org.spongepowered.api.world.BlockChangeFlags;
 
 /**
  * Created by Aquerr on 2018-02-10.
@@ -140,7 +137,7 @@ public class RightClickListener extends AbstractListener
 
                                 break;
 
-                            case SETNAME:
+                            case SET_NAME:
                                 if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     boolean didSucceed = super.getPlugin().getContainerManager().renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
@@ -206,6 +203,20 @@ public class RightClickListener extends AbstractListener
 
                                 //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                break;
+
+                            case CREATE_KIT:
+                                Kit kit = new Kit(ChestRefill.PlayerKitName.get(player.getUniqueId()), refillableContainer.getItems());
+                                boolean didSucceed = super.getPlugin().getContainerManager().createKit(kit);
+                                if (didSucceed)
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a kit!"));
+                                }
+                                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+
+                                //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                ChestRefill.PlayerKitName.remove(player.getUniqueId());
                                 break;
                         }
                     }

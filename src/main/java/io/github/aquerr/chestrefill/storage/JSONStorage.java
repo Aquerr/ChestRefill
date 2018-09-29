@@ -269,6 +269,42 @@ public class JSONStorage implements Storage
         return new ArrayList<>();
     }
 
+    @Override
+    public boolean createKit(Kit kit)
+    {
+        try
+        {
+            List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            kits.add(kit);
+            kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            return true;
+        }
+        catch(ObjectMappingException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean removeKit(String kitName)
+    {
+        try
+        {
+            List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            kits.removeIf(x->x.getName().equals(kitName));
+            kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            return true;
+        }
+        catch(ObjectMappingException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private Runnable checkFileUpdate()
     {
         return new Runnable()

@@ -2,7 +2,7 @@ package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
-import io.github.aquerr.chestrefill.SelectionMode;
+import io.github.aquerr.chestrefill.entities.SelectionMode;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -43,9 +43,9 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
 
         if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
         {
-            if (SelectionMode.SETNAME != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+            if (SelectionMode.SET_NAME != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
             {
-                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.SETNAME);
+                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.SET_NAME);
                 ChestRefill.PlayerChestName.put(player.getUniqueId(), containerName);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
             }
@@ -58,7 +58,7 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
         }
         else
         {
-            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.SETNAME);
+            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.SET_NAME);
             ChestRefill.PlayerChestName.put(player.getUniqueId(), containerName);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
         }

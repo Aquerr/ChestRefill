@@ -26,4 +26,8 @@ public interface Storage
     boolean changeContainerName(ContainerLocation containerLocation, String containerName);
 
     List<Kit> getKits();
+
+    boolean createKit(Kit kit);
+
+    boolean removeKit(String kitName);
 }

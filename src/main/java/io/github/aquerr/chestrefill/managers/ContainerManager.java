@@ -259,8 +259,18 @@ public class ContainerManager
         return this.storageHelper.changeContainerName(containerLocation, containerName);
     }
 
-    public Kit[] getKits()
+    public List<Kit> getKits()
     {
         return this.storageHelper.getKits();
+    }
+
+    public boolean createKit(Kit kit)
+    {
+        return this.storageHelper.createKit(kit);
+    }
+
+    public boolean removeKit(String kitName)
+    {
+        return this.storageHelper.removeKit(kitName);
     }
 }
