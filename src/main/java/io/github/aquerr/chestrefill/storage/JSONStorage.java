@@ -45,7 +45,7 @@ public class JSONStorage implements Storage
         try
         {
             containersPath = Paths.get(configDir + "/containers.json");
-            kitsPath = Paths.get(configDir + "/kitsPath");
+            kitsPath = Paths.get(configDir + "/kits.json");
 
             if (!Files.exists(containersPath))
             {
@@ -274,12 +274,13 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(new TypeToken<Kit>(){}));
             kits.add(kit);
             kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            kitsLoader.save(kitsNode);
             return true;
         }
-        catch(ObjectMappingException e)
+        catch(ObjectMappingException | IOException e)
         {
             e.printStackTrace();
         }
@@ -292,12 +293,13 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(new TypeToken<Kit>(){}));
             kits.removeIf(x->x.getName().equals(kitName));
             kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            kitsLoader.save(kitsNode);
             return true;
         }
-        catch(ObjectMappingException e)
+        catch(ObjectMappingException | IOException e)
         {
             e.printStackTrace();
         }
@@ -316,6 +318,7 @@ public class JSONStorage implements Storage
             //Set chest's kit
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").setValue(kitName);
             containersLoader.save(containersNode);
+            return true;
         }
         catch(IOException e)
         {

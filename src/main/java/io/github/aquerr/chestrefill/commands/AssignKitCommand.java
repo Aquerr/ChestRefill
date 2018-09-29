@@ -42,7 +42,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         List<Kit> kits = super.getPlugin().getContainerManager().getKits();
         if(kits.stream().noneMatch(x->x.getName().equals(optionalName.get())))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with given name does not exists!"));
+            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();
         }
 

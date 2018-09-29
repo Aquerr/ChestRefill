@@ -9,10 +9,15 @@ import java.util.List;
 public class Kit
 {
     @Setting
-    private final String name;
+    private String name;
 
     @Setting
-    private final List<RefillableItem> items;
+    private List<RefillableItem> items;
+
+    public Kit()
+    {
+
+    }
 
     public Kit(String name, List<RefillableItem> items)
     {

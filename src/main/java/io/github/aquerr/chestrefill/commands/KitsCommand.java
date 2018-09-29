@@ -38,7 +38,7 @@ public class KitsCommand extends AbstractCommand implements CommandExecutor
             kit.getItems().forEach(x -> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getTranslation().get(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
 
             Text kitText = Text.builder()
-                    .append(Text.of(TextColors.YELLOW, " - ", TextColors.DARK_GREEN, kit.getName()))
+                    .append(Text.of(TextColors.YELLOW, " - ", TextColors.YELLOW, kit.getName()))
                     .onHover(TextActions.showText(itemsToShow.build()))
                     .build();
 
