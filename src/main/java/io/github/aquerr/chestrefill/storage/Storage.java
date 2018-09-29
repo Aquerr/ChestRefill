@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill.storage;
 
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface Storage
     boolean updateContainerTime(ContainerLocation containerLocation, int time);
 
     boolean changeContainerName(ContainerLocation containerLocation, String containerName);
+
+    List<Kit> getKits();
 }

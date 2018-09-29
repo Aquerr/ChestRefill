@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
@@ -256,5 +257,10 @@ public class ContainerManager
     public boolean renameRefillableContainer(ContainerLocation containerLocation, String containerName)
     {
         return this.storageHelper.changeContainerName(containerLocation, containerName);
+    }
+
+    public Kit[] getKits()
+    {
+        return this.storageHelper.getKits();
     }
 }

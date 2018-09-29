@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.storage;
 
 import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.nio.file.Path;
@@ -99,5 +100,11 @@ public class StorageHelper
         //TODO: Rework so that the separate thread will take hand of it
         ContainerCache.updateContainerName(containerLocation, containerName);
         return this.containerStorage.changeContainerName(containerLocation, containerName);
+    }
+
+
+    public List<Kit> getKits()
+    {
+        return this.containerStorage.getKits();
     }
 }

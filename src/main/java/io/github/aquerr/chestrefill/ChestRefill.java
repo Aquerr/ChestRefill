@@ -178,11 +178,19 @@ public class ChestRefill
                 .executor(new RefillAllCommand(this))
                 .build());
 
+        //Setname Command
         Subcommands.put(Arrays.asList("setname"), CommandSpec.builder()
                 .description(Text.of("Set name for a refillable container"))
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
                 .executor(new SetnameCommand(this))
+                .build());
+
+        //Kits Command
+        Subcommands.put(Arrays.asList("kits"), CommandSpec.builder()
+                .description(Text.of("Shows available kits"))
+                .permission(PluginPermissions.KITS_COMMAND)
+                .executor(new KitsCommand(this))
                 .build());
 
         //Build all commands

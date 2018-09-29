@@ -253,6 +253,22 @@ public class JSONStorage implements Storage
         return false;
     }
 
+    @Override
+    public List<Kit> getKits()
+    {
+        try
+        {
+            final List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            return kits;
+        }
+        catch(ObjectMappingException e)
+        {
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
+    }
+
     private Runnable checkFileUpdate()
     {
         return new Runnable()
