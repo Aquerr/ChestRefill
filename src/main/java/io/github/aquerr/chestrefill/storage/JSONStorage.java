@@ -305,6 +305,26 @@ public class JSONStorage implements Storage
         return false;
     }
 
+    @Override
+    public boolean assignKit(ContainerLocation containerLocation, String kitName)
+    {
+        try
+        {
+            //We are using block position and recreating location on retrieval.
+            String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
+
+            //Set chest's kit
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").setValue(kitName);
+            containersLoader.save(containersNode);
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private Runnable checkFileUpdate()
     {
         return new Runnable()
@@ -360,7 +380,7 @@ public class JSONStorage implements Storage
                 chestItems = new ArrayList<>();
             }
 
-            //Check if chest is using a kit
+            //Check if chest is using a kit. If it does then override its items.
             if(!kitName.equals(""))
             {
                 chestItems = getKitItems(kitName);

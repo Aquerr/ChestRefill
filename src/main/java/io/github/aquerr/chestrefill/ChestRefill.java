@@ -42,6 +42,7 @@ public class ChestRefill
     public static Map<UUID, Integer> ContainerTimeChangePlayer = new HashMap<>();
     public static Map<UUID, RefillableContainer> PlayerCopyRefillableContainer = new HashMap<>();
     public static Map<UUID, String> PlayerKitName = new HashMap<>();
+    public static Map<UUID, String> PlayerKitAssign = new HashMap<>();
 
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;
@@ -202,6 +203,14 @@ public class ChestRefill
                 .permission(PluginPermissions.REMOVE_KIT_COMMAND)
                 .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
                 .executor(new RemoveKitCommand(this))
+                .build());
+
+        //AssignKit Command
+        Subcommands.put(Arrays.asList("assignkit"), CommandSpec.builder()
+                .description(Text.of("Toggles assign mode"))
+                .permission(PluginPermissions.ASSIGN_KIT_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .executor(new AssignKitCommand(this))
                 .build());
 
         //Kits Command

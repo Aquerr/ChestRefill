@@ -30,4 +30,6 @@ public interface Storage
     boolean createKit(Kit kit);
 
     boolean removeKit(String kitName);
+
+    boolean assignKit(ContainerLocation containerLocation, String kitName);
 }

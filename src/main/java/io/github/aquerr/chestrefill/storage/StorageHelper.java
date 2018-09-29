@@ -117,4 +117,9 @@ public class StorageHelper
     {
         return this.containerStorage.removeKit(kitName);
     }
+
+    public boolean assignKit(ContainerLocation containerLocation, String kitName)
+    {
+        return this.containerStorage.assignKit(containerLocation, kitName);
+    }
 }

@@ -67,6 +67,16 @@ public class RefillableContainer
         this.containerLocation = containerLocation;
     }
 
+    public void setItems(List<RefillableItem> items)
+    {
+        this.items = items;
+    }
+
+    public void setKit(String kitName)
+    {
+        this.kitName = kitName;
+    }
+
     public String getName()
     {
         return this.name;

@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
+import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
@@ -272,5 +273,31 @@ public class ContainerManager
     public boolean removeKit(String kitName)
     {
         return this.storageHelper.removeKit(kitName);
+    }
+
+    public boolean assignKit(ContainerLocation containerLocation, String kitName)
+    {
+        //We need to load items from kit and assign them to the container.
+        final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
+        final List<Kit> kits = getKits();
+        Kit assignedKit = null;
+
+        for(Kit kit : kits)
+        {
+            if(kit.getName().equals(kitName))
+            {
+                assignedKit = kit;
+            }
+        }
+
+        if(assignedKit != null)
+        {
+            //This code modifies cache. This is bad. We should not modify cache outside ContainerCache class.
+            refillableContainer.setItems(assignedKit.getItems());
+            refillableContainer.setKit(assignedKit.getName());
+            return this.storageHelper.assignKit(containerLocation, kitName);
+        }
+
+        return false;
     }
 }
