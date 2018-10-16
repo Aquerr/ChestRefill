@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.SelectionMode;
+import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import org.spongepowered.api.command.CommandException;
@@ -15,8 +15,13 @@ import org.spongepowered.api.text.format.TextColors;
 /**
  * Created by Aquerr on 2018-02-15.
  */
-public class RemoveCommand implements CommandExecutor
+public class RemoveCommand extends AbstractCommand implements CommandExecutor
 {
+    public RemoveCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {

@@ -22,8 +22,13 @@ import java.util.Map;
  * Created by Aquerr on 2018-02-10.
  */
 
-public class HelpCommand implements CommandExecutor
+public class HelpCommand extends AbstractCommand implements CommandExecutor
 {
+    public HelpCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {

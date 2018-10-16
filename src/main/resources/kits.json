@@ -1,0 +1,18 @@
+{
+  "kits": [
+    {
+      "name": "lapiskit",
+      "items": [
+        {
+          "item": {
+            "ContentVersion": 1,
+            "ItemType": "minecraft:lapis_block",
+            "Count": 1,
+            "UnsafeDamage": 0
+          },
+          "chance": 1.0
+        }
+      ]
+    }
+  ]
+}

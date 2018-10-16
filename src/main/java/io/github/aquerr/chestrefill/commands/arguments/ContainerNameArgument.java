@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.commands.arguments;
 
+import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.command.CommandSource;
@@ -10,6 +11,7 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.text.Text;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +37,7 @@ public class ContainerNameArgument extends CommandElement
     @Override
     public List<String> complete(CommandSource src, CommandArgs args, CommandContext context)
     {
-        List<RefillableContainer> refillableContainers = ContainerManager.getRefillableContainers();
+        Collection<RefillableContainer> refillableContainers = ChestRefill.getInstance().getContainerManager().getRefillableContainers();
         List<String> refillableContainersNames = refillableContainers.stream().map(RefillableContainer::getName).collect(Collectors.toList());
 
         if (args.hasNext())

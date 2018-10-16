@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.listeners;
 
+import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.PluginPermissions;
 import io.github.aquerr.chestrefill.version.VersionChecker;
@@ -10,8 +11,13 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-public class PlayerJoinListener
+public class PlayerJoinListener extends AbstractListener
 {
+    public PlayerJoinListener(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event, @Root Player player)
     {
