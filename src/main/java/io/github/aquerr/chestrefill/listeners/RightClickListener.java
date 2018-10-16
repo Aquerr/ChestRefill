@@ -2,8 +2,8 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.entity.living.player.Player;
@@ -17,8 +17,13 @@ import org.spongepowered.api.text.format.TextColors;
  * Created by Aquerr on 2018-02-10.
  */
 
-public class RightClickListener
+public class RightClickListener extends AbstractListener
 {
+    public RightClickListener(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Listener
     public void onRightClick(InteractBlockEvent.Secondary event, @Root Player player)
     {
@@ -35,12 +40,12 @@ public class RightClickListener
                         switch (ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
                         {
                             case CREATE:
-                                if (!ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (!super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if(ChestRefill.PlayerChestName.containsKey(player.getUniqueId()))
                                         refillableContainer.setName(ChestRefill.PlayerChestName.get(player.getUniqueId()));
 
-                                    boolean didSucceed = ContainerManager.addRefillableContainer(refillableContainer);
+                                    boolean didSucceed = super.getPlugin().getContainerManager().addRefillableContainer(refillableContainer);
                                     if (didSucceed)
                                     {
                                         player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling container!"));
@@ -54,13 +59,14 @@ public class RightClickListener
 
                                 //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                ChestRefill.PlayerChestName.remove(player.getUniqueId());
                                 break;
 
                             case REMOVE:
 
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.removeRefillableContainer(refillableContainer.getContainerLocation());
+                                    boolean didSucceed = super.getPlugin().getContainerManager().removeRefillableContainer(refillableContainer.getContainerLocation());
 
                                     if (didSucceed)
                                     {
@@ -79,9 +85,9 @@ public class RightClickListener
 
                             case UPDATE:
 
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.updateRefillableContainer(refillableContainer);
+                                    boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
 
                                     if (didSucceed)
                                     {
@@ -100,13 +106,13 @@ public class RightClickListener
                                 break;
 
                             case TIME:
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
                                     if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
                                     {
                                         int time = ChestRefill.ContainerTimeChangePlayer.get(player.getUniqueId());
 
-                                        boolean didSucceed = ContainerManager.updateRefillingTime(refillableContainer.getContainerLocation(), time);
+                                        boolean didSucceed = super.getPlugin().getContainerManager().updateRefillingTime(refillableContainer.getContainerLocation(), time);
 
                                         if (didSucceed)
                                         {
@@ -116,7 +122,7 @@ public class RightClickListener
                                     }
                                     else
                                     {
-                                        RefillableContainer chestToView = ContainerManager.getRefillableContainers().stream().filter(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())).findFirst().get();
+                                        RefillableContainer chestToView = super.getPlugin().getContainerManager().getRefillableContainers().stream().filter(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())).findFirst().get();
                                         player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This container refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
                                     }
                                 }
@@ -131,10 +137,10 @@ public class RightClickListener
 
                                 break;
 
-                            case SETNAME:
-                                if (ContainerManager.getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                            case SET_NAME:
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
                                 {
-                                    boolean didSucceed = ContainerManager.renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
+                                    boolean didSucceed = super.getPlugin().getContainerManager().renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PlayerChestName.get(player.getUniqueId()));
 
                                     if (didSucceed)
                                     {
@@ -149,6 +155,91 @@ public class RightClickListener
 
                                 //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
                                 ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                break;
+
+                            case COPY:
+                                if(!ChestRefill.PlayerCopyRefillableContainer.containsKey(player.getUniqueId()))
+                                {
+                                    if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                    {
+                                        ChestRefill.PlayerCopyRefillableContainer.put(player.getUniqueId(), refillableContainer);
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Now select a new container which should behave in the same way!"));
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                                    }
+                                }
+                                else
+                                {
+                                    RefillableContainer copiedContainer = ChestRefill.PlayerCopyRefillableContainer.get(player.getUniqueId());
+
+                                    if(!copiedContainer.getContainerBlockType().equals(refillableContainer.getContainerBlockType()))
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Containers must be of the same type!"));
+                                        break;
+                                    }
+
+                                    copiedContainer.setContainerLocation(refillableContainer.getContainerLocation());
+                                    boolean didSucceed;
+                                    if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                    {
+                                        didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(copiedContainer);
+                                    }
+                                    else
+                                    {
+                                        didSucceed = super.getPlugin().getContainerManager().addRefillableContainer(copiedContainer);
+                                    }
+
+                                    if (didSucceed)
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully copied a refilling container!"));
+                                    }
+                                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+
+                                    ChestRefill.PlayerCopyRefillableContainer.remove(player.getUniqueId());
+                                }
+
+                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                break;
+
+                            case CREATE_KIT:
+                            {
+                                Kit kit = new Kit(ChestRefill.PlayerKitName.get(player.getUniqueId()), refillableContainer.getItems());
+                                boolean didSucceed = super.getPlugin().getContainerManager().createKit(kit);
+                                if (didSucceed)
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a kit!"));
+                                }
+                                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+
+                                //Turns off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                ChestRefill.PlayerKitName.remove(player.getUniqueId());
+                                break;
+                            }
+
+                            case ASSIGN_KIT:
+                                if (super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.getContainerLocation().equals(refillableContainer.getContainerLocation())))
+                                {
+                                    boolean didSucceed = super.getPlugin().getContainerManager().assignKit(refillableContainer.getContainerLocation(), ChestRefill.PlayerKitAssign.get(player.getUniqueId()));
+
+                                    if (didSucceed)
+                                    {
+                                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully assigned a kit to the refilling container!"));
+                                    }
+                                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                                }
+                                else
+                                {
+                                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                                }
+
+                                //Turn off selection mode. It will be more safe to turn it off and let the player turn it on again.
+                                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                                ChestRefill.PlayerKitAssign.remove(player.getUniqueId());
                                 break;
                         }
                     }

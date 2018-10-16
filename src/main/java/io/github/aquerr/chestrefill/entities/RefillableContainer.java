@@ -31,12 +31,14 @@ public class RefillableContainer
     private boolean hiddenIfNoItems;
     private BlockType hidingBlock;
 
+    private String kitName;
+
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT);
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "");
     }
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName)
     {
         this.name = name;
         this.containerLocation = containerLocation;
@@ -47,11 +49,32 @@ public class RefillableContainer
         this.hiddenIfNoItems = hiddenIfNoItems;
         this.hidingBlock = hidingBlock;
         this.containerBlockType = containerBlockType;
+        this.kitName = kitName;
     }
 
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public void setRestoreTime(int seconds)
+    {
+        this.restoreTimeInSeconds = seconds;
+    }
+
+    public void setContainerLocation(ContainerLocation containerLocation)
+    {
+        this.containerLocation = containerLocation;
+    }
+
+    public void setItems(List<RefillableItem> items)
+    {
+        this.items = items;
+    }
+
+    public void setKit(String kitName)
+    {
+        this.kitName = kitName;
     }
 
     public String getName()
@@ -96,6 +119,11 @@ public class RefillableContainer
         return this.hidingBlock;
     }
 
+    public String getKitName()
+    {
+        return this.kitName;
+    }
+
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
@@ -129,7 +157,7 @@ public class RefillableContainer
         //Compare container location
         if (this.containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
         {
-            Inventory tempInventory = Inventory.builder().build(ChestRefill.getChestRefill());
+            Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
 
             this.items.forEach(x-> {
                 //Offer removes items from inventory so we need to build new temp items.
@@ -163,6 +191,12 @@ public class RefillableContainer
             {
                 return true;
             }
+
+            //Compare kit names
+            if (this.kitName.equals(((RefillableContainer) obj).kitName))
+            {
+                return true;
+            }
         }
 
         return false;
@@ -171,6 +205,17 @@ public class RefillableContainer
     @Override
     public int hashCode()
     {
-        return containerLocation.toString().length();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (this.name != null ? this.name.hashCode() : 0);
+        result = prime * result + (this.items != null ? this.items.hashCode() : 0);
+        result = prime * result + (this.oneItemAtTime ? 0 : 1);
+        result = prime * result + (this.hiddenIfNoItems ? 0 : 1);
+        result = prime * result + this.restoreTimeInSeconds;
+        result = prime * result + (this.containerLocation != null ? this.containerLocation.hashCode() : 0);
+        result = prime * result + (this.containerBlockType != null ? this.containerBlockType.hashCode() : 0);
+        result = prime * result + (this.hidingBlock != null ? this.hidingBlock.hashCode() : 0);
+        result = prime * result + (this.kitName != null ? this.kitName.hashCode() : 0);
+        return result;
     }
 }

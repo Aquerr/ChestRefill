@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.SelectionMode;
+import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import org.spongepowered.api.command.CommandException;
@@ -17,8 +17,13 @@ import java.util.Optional;
 /**
  * Created by Aquerr on 2018-02-12.
  */
-public class CreateCommand implements CommandExecutor
+public class CreateCommand extends AbstractCommand implements CommandExecutor
 {
+    public CreateCommand(ChestRefill plugin)
+    {
+        super(plugin);
+    }
+
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
@@ -39,7 +44,6 @@ public class CreateCommand implements CommandExecutor
                 else
                 {
                     ChestRefill.PlayerChestName.remove(player.getUniqueId());
-
                     ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
                 }
