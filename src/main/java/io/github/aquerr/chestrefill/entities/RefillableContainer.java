@@ -205,7 +205,7 @@ public class RefillableContainer
     @Override
     public int hashCode()
     {
-        int prime = 31;
+        final int prime = 31;
         int result = 1;
         result = prime * result + (this.name != null ? this.name.hashCode() : 0);
         result = prime * result + (this.items != null ? this.items.hashCode() : 0);
