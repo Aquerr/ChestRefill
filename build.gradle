@@ -1,3 +1,5 @@
+import groovy.util.FileNameFinder
+
 plugins {
     id 'org.spongepowered.plugin' version '0.8.1'
     id 'idea'
@@ -11,4 +13,25 @@ description = 'Plugin for restoring contents of a container after the specified 
 
 dependencies {
     compile 'org.spongepowered:spongeapi:7.1.0'
+}
+
+tasks.create("publishBuildOnDiscord") {
+    group = "Publishing"
+    description = "Task for publishing the jar file to discord's jenkins channel"
+    doLast {
+        String[] jarFiles = new FileNameFinder().getFileNames(project.buildDir.getPath(), "**/*.jar")
+
+        if(jarFiles.length > 0) {
+            println("Found jar files: " + jarFiles)
+
+            String lastCommitDescription = "git log -1 --pretty=%B".execute().getText()
+            if(lastCommitDescription == null || lastCommitDescription == "") {
+                lastCommitDescription = "No changelog provided"
+            }
+
+            exec {
+                commandLine("java", "-jar", "..\\jenkinsdiscordbot-1.0.jar", "ChestRefill", jarFiles[0], lastCommitDescription)
+            }
+        }
+    }
 }
