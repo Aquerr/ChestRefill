@@ -45,25 +45,25 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
         }
 
         Player player = (Player)source;
-        if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
         {
-            if (SelectionMode.CREATE_KIT != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+            if (SelectionMode.CREATE_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                optionalName.ifPresent(s -> ChestRefill.PlayerKitName.put(player.getUniqueId(), s));
-                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.CREATE_KIT);
+                optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.CREATE_KIT);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on kit creation mode"));
             }
             else
             {
-                ChestRefill.PlayerKitName.remove(player.getUniqueId());
-                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                ChestRefill.PLAYER_KIT_NAME.remove(player.getUniqueId());
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off kit creation mode"));
             }
         }
         else
         {
-            optionalName.ifPresent(s -> ChestRefill.PlayerKitName.put(player.getUniqueId(), s));
-            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.CREATE_KIT);
+            optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
+            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.CREATE_KIT);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on kit creation mode"));
         }
 

@@ -47,25 +47,25 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         }
 
         Player player = (Player)source;
-        if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
         {
-            if (SelectionMode.ASSIGN_KIT != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+            if (SelectionMode.ASSIGN_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                optionalName.ifPresent(s -> ChestRefill.PlayerKitAssign.put(player.getUniqueId(), s));
-                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
+                optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), s));
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
             }
             else
             {
-                ChestRefill.PlayerKitAssign.remove(player.getUniqueId());
-                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off assign mode"));
             }
         }
         else
         {
-            optionalName.ifPresent(s -> ChestRefill.PlayerKitAssign.put(player.getUniqueId(), s));
-            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
+            optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), s));
+            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
         }
 
