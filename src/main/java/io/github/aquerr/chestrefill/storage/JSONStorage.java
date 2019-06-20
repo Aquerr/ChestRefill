@@ -192,22 +192,6 @@ public class JSONStorage implements Storage
         return refillingContainersList;
     }
 
-//    @Override
-//    @Nullable
-//    public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
-//    {
-//        String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
-//
-//        Object chestObject = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
-//
-//        if (chestObject != null)
-//        {
-//            return getRefillableContainerFromFile(containerLocation);
-//        }
-//
-//        return null;
-//    }
-
     @Override
     public boolean updateContainerTime(ContainerLocation containerLocation, int time)
     {
@@ -419,18 +403,4 @@ public class JSONStorage implements Storage
 
         return new ArrayList<>();
     }
-
-//    private Function<Object, ItemStack> objectToItemStackTransformer = input ->
-//    {
-//        try
-//        {
-//            ItemStack test = (ItemStack)input;
-//            return test;
-//        }
-//        catch (ClassCastException exception)
-//        {
-//            exception.printStackTrace();
-//            return null;
-//        }
-//    };
 }

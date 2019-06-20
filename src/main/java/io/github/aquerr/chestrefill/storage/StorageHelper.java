@@ -7,69 +7,45 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class StorageHelper
 {
     private final Queue<RefillableContainer> containersToSave;
-    private final Thread storageThread;
     private final Storage containerStorage;
+    private final ExecutorService executorService;
 
     public StorageHelper(Path configDir)
     {
         containersToSave = new LinkedList<>();
-        storageThread = new Thread(startContainerSavingThread());
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(this::startContainerSavingThread);
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
         ContainerCache.loadCache(containerStorage.getRefillableContainers());
-
-        //Start new thread directly
-        storageThread.start();
-    }
-
-    public Runnable startContainerSavingThread()
-    {
-        return () ->
-        {
-            int sleep = 1000;
-            while(true)
-            {
-                if(containersToSave.size() > 0)
-                {
-                    synchronized(containersToSave)
-                    {
-                        this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
-                        sleep = 1000;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        Thread.sleep(sleep);
-                        if(sleep < 16000)
-                        {
-                            sleep *= 2;
-                        }
-                    }
-                    catch(InterruptedException exception)
-                    {
-                        exception.printStackTrace();
-                    }
-                }
-            }
-        };
     }
 
     public boolean addOrUpdateContainer(RefillableContainer containerToSave)
     {
-        ContainerCache.addOrUpdateContainerCache(containerToSave);
-        return this.containersToSave.add(containerToSave);
+        final boolean didSucceed = ContainerCache.addOrUpdateContainerCache(containerToSave);
+        synchronized(this.containersToSave)
+        {
+            this.containersToSave.add(containerToSave);
+            this.containersToSave.notify();
+        }
+        return didSucceed;
     }
 
     public boolean removeContainer(ContainerLocation containerLocation)
     {
         ContainerCache.removeContainer(containerLocation);
+//        synchronized(this.containersToSave)
+//        {
+//            this.containersToSave.add(containerToSave);
+//            this.containersToSave.notify();
+//        }
         return this.containerStorage.removeRefillableContainer(containerLocation);
     }
 
@@ -121,5 +97,33 @@ public class StorageHelper
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
         return this.containerStorage.assignKit(containerLocation, kitName);
+    }
+
+    private Runnable startContainerSavingThread()
+    {
+        return () ->
+        {
+            while(true)
+            {
+                synchronized(containersToSave)
+                {
+                    if(containersToSave.size() > 0)
+                    {
+                        this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            this.containersToSave.wait();
+                        }
+                        catch(InterruptedException exception)
+                        {
+                            exception.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
     }
 }

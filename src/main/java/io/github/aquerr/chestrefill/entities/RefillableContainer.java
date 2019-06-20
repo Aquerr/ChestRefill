@@ -129,13 +129,15 @@ public class RefillableContainer
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<RefillableItem> items = new ArrayList<>();
 
-        carrier.getInventory().slots().forEach(x->
+        int slot = 0;
+        for(final Inventory slotInventory : carrier.getInventory().slots())
         {
-            if (x.peek().isPresent())
+            if (slotInventory.peek().isPresent())
             {
-                items.add(new RefillableItem(x.peek().get(), 1f));
+                items.add(new RefillableItem(slotInventory.peek().get(), slot, 1f));
             }
-        });
+            slot++;
+        }
 
         return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
