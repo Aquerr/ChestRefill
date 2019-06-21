@@ -5,6 +5,7 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 
@@ -134,7 +135,8 @@ public class RefillableContainer
         {
             if (slotInventory.peek().isPresent())
             {
-                items.add(new RefillableItem(slotInventory.peek().get(), slot, 1f));
+                final DataView container = slotInventory.peek().get().toContainer();
+                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
             }
             slot++;
         }

@@ -15,16 +15,20 @@ public class StorageHelper
     private final Queue<RefillableContainer> containersToSave;
     private final Storage containerStorage;
     private final ExecutorService executorService;
+//    private Thread storageThread;
 
     public StorageHelper(Path configDir)
     {
         containersToSave = new LinkedList<>();
         executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(this::startContainerSavingThread);
+        executorService.execute(startContainerSavingThread());
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
         ContainerCache.loadCache(containerStorage.getRefillableContainers());
+
+//        storageThread = new Thread(startContainerSavingThread());
+//        storageThread.start();
     }
 
     public boolean addOrUpdateContainer(RefillableContainer containerToSave)

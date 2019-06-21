@@ -175,7 +175,7 @@ public class ContainerManager
 
                                 //Refill item
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory())
+                                for(final Inventory slot : chest.getInventory().slots())
                                 {
                                     if(lowestChanceItem.getSlot() == i)
                                     {
@@ -193,7 +193,7 @@ public class ContainerManager
                             for (final RefillableItem item : itemsAchievedFromRandomizer)
                             {
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory())
+                                for(final Inventory slot : chest.getInventory().slots())
                                 {
                                     if(item.getSlot() == i)
                                     {
