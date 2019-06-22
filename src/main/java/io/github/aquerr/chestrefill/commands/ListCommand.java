@@ -78,22 +78,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
         return CommandResult.success();
     }
 
-    private Consumer<CommandSource> teleportToChest(CommandSource source, Vector3i blockPosition)
-    {
-        return consumer ->
-        {
-            //Do we need this check? Only in-game players can click on the chat...
-            if (source instanceof Player)
-            {
-                Player player = (Player)source;
-
-                player.setLocation(new Location<World>(player.getWorld(), blockPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected container!"));
-            }
-        };
-    }
-
-    public static class ChestTeleport implements Consumer<CommandSource>
+    private static class ChestTeleport implements Consumer<CommandSource>
     {
         private final Vector3i chestPosition;
 
