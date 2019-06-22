@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.managers;
 
+import com.flowpowered.math.vector.Vector3d;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
@@ -10,18 +11,29 @@ import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.particle.ParticleOptions;
+import org.spongepowered.api.effect.particle.ParticleType;
+import org.spongepowered.api.effect.particle.ParticleTypes;
+import org.spongepowered.api.effect.sound.SoundType;
+import org.spongepowered.api.effect.sound.SoundTypes;
+import org.spongepowered.api.item.FireworkEffect;
+import org.spongepowered.api.item.FireworkShapes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.util.Color;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -114,6 +126,13 @@ public class ContainerManager
         {
             String name = "Chest Refill " + containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
             this.plugin.getContainerScheduler().scheduleWithInterval(name, time, TimeUnit.SECONDS, runRefillContainer(containerLocation));
+
+//            final Optional<World> optionalWorld = Sponge.getServer().getWorld(containerLocation.getWorldUUID());
+//            if(optionalWorld.isPresent())
+//            {
+//                this.plugin.getContainerScheduler().scheduleWithInterval(name + "_particle", 150, TimeUnit.MILLISECONDS, startParticleEffect(containerLocation, optionalWorld.get()));
+//            }
+
             return true;
         }
         catch (Exception exception)
@@ -122,6 +141,46 @@ public class ContainerManager
             return false;
         }
     }
+
+//    private Runnable startParticleEffect(final ContainerLocation containerLocation, final World world)
+//    {
+//        return new Runnable()
+//        {
+//            private World chestWorld = world;
+//            private int maxHeight = 2;
+//            private Vector3d chestLocation = new Vector3d(containerLocation.getBlockPosition().getX(), containerLocation.getBlockPosition().getY(), containerLocation.getBlockPosition().getZ());
+//            private Vector3d lastParticleLocation = new Vector3d(chestLocation);
+//
+//            @Override
+//            public void run()
+//            {
+//                double x = lastParticleLocation.getX();
+//                double y = lastParticleLocation.getY();
+//                double z = lastParticleLocation.getZ();
+//
+//                double newY = 0.5 * Math.sin(20*x) + chestLocation.getY() + 0.5;
+//                double newX = x + 0.1;
+//
+//                if(newX > chestLocation.getX() + 1)
+//                    newX = chestLocation.getX();
+////                if(newY > chestLocation.get)
+//
+//                y = newY;
+//                x = newX;
+//
+//                final Vector3d particleLocation = new Vector3d(x, y, z);
+//                final ParticleEffect.Builder particleEffectBuilder = ParticleEffect.builder();
+//                particleEffectBuilder.type(ParticleTypes.REDSTONE_DUST)
+////                        .option(ParticleOptions.FIREWORK_EFFECTS, Arrays.asList(FireworkEffect.builder().shape(FireworkShapes.LARGE_BALL).color(Color.CYAN).build()))
+//                        .quantity(1)
+//                        .offset(new Vector3d())
+//                        .velocity(new Vector3d(0, 0, 0));
+//                chestWorld.spawnParticles(particleEffectBuilder.build(), particleLocation);
+////                chestWorld.playSound(SoundTypes.BLOCK_ANVIL_USE, particleLocation, 10, 20);
+//                lastParticleLocation = particleLocation;
+//            }
+//        };
+//    }
 
     public boolean refillContainer(final ContainerLocation containerLocation)
     {
@@ -237,8 +296,9 @@ public class ContainerManager
     {
         for (RefillableContainer refillableContainer : getRefillableContainers())
         {
-            String name = "Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString();
-            this.plugin.getContainerScheduler().scheduleWithInterval(name, refillableContainer.getRestoreTime(), TimeUnit.SECONDS, runRefillContainer(refillableContainer.getContainerLocation()));
+            startRefillingContainer(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime());
+//            String name = "Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString();
+//            this.plugin.getContainerScheduler().scheduleWithInterval(name, refillableContainer.getRestoreTime(), TimeUnit.SECONDS, runRefillContainer(refillableContainer.getContainerLocation()));
         }
     }
 

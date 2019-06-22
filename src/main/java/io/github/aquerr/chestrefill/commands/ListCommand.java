@@ -82,7 +82,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
     {
         private final Vector3i chestPosition;
 
-        public ChestTeleport(Vector3i chestPosition)
+        ChestTeleport(Vector3i chestPosition)
         {
             this.chestPosition = chestPosition;
         }

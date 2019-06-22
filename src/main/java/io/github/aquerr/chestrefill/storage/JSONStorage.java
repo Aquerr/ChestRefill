@@ -327,14 +327,12 @@ public class JSONStorage implements Storage
                     for (WatchEvent<?> event : _key.pollEvents())
                     {
                         final Path changedFilePath = (Path) event.context();
-
                         if (changedFilePath.toString().contains("containers.json"))
                         {
-                            containersNode = containersLoader.load();
                             Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                            containersNode = containersLoader.load();
                         }
                     }
-
                     _key.reset();
                 }
                 catch (IOException e)
