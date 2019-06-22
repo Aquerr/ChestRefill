@@ -15,7 +15,6 @@ import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -30,7 +29,7 @@ public class RightClickListener extends AbstractListener
     }
 
     @Listener
-    public void onRefillableChestEdit(InteractBlockEvent.Secondary event, @Root Player player)
+    public void onRefillableChestEdit(final InteractBlockEvent.Secondary event, @Root final Player player)
     {
         if(!ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
             return;
