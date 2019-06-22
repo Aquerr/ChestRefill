@@ -296,4 +296,17 @@ public class ContainerManager
 
         return false;
     }
+
+    public Optional<RefillableContainer> getRefillableContainerAtLocation(ContainerLocation containerLocation)
+    {
+        final RefillableContainer refillableContainer = this.storageHelper.getRefillableContainer(containerLocation);
+        if(refillableContainer == null)
+        {
+            return Optional.empty();
+        }
+        else
+        {
+            return Optional.of(refillableContainer);
+        }
+    }
 }
