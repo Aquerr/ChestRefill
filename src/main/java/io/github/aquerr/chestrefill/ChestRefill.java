@@ -99,6 +99,7 @@ public class ChestRefill
     {
         //Start refilling chests that were created on the server before
         this.containerManager.restoreRefilling();
+        this.containerManager.startLookingForEmptyContainers();
     }
 
     public ContainerManager getContainerManager()

@@ -29,7 +29,7 @@ public class RightClickListener extends AbstractListener
     }
 
     @Listener
-    public void onRefillableChestEdit(final InteractBlockEvent.Secondary event, @Root final Player player)
+    public void onRefillableContainerEdit(final InteractBlockEvent.Secondary event, @Root final Player player)
     {
         if(!ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
             return;
