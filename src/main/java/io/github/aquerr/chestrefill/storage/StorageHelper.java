@@ -25,7 +25,7 @@ public class StorageHelper
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
-        ContainerCache.loadCache(containerStorage.getRefillableContainers());
+        ContainerCache.loadCache(containerStorage.getRefillableContainers(), containerStorage.getKits());
 
 //        storageThread = new Thread(startContainerSavingThread());
 //        storageThread.start();
@@ -83,23 +83,26 @@ public class StorageHelper
     }
 
 
-    public List<Kit> getKits()
+    public Map<String, Kit> getKits()
     {
-        return this.containerStorage.getKits();
+        return ContainerCache.getKitsCache();
     }
 
     public boolean createKit(Kit kit)
     {
+        ContainerCache.addOrUpdateKitCache(kit);
         return this.containerStorage.createKit(kit);
     }
 
     public boolean removeKit(String kitName)
     {
+        ContainerCache.removeKit(kitName);
         return this.containerStorage.removeKit(kitName);
     }
 
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
+        ContainerCache.assignKit(containerLocation, kitName);
         return this.containerStorage.assignKit(containerLocation, kitName);
     }
 

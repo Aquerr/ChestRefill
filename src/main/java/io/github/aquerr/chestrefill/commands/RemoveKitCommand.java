@@ -14,6 +14,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class RemoveKitCommand extends AbstractCommand implements CommandExecutor
@@ -34,9 +35,9 @@ public class RemoveKitCommand extends AbstractCommand implements CommandExecutor
             return CommandResult.empty();
         }
 
-        List<Kit> kits = super.getPlugin().getContainerManager().getKits();
+        Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
 
-        if(!kits.stream().anyMatch(x->x.getName().equals(optionalName.get())))
+        if(!kits.keySet().stream().anyMatch(x->x.equals(optionalName.get())))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with given name does not exists!"));
             return CommandResult.empty();

@@ -32,7 +32,7 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
             return CommandResult.empty();
         }
 
-        if(super.getPlugin().getContainerManager().getKits().stream().anyMatch(x->x.getName().equals(optionalName.get())))
+        if(super.getPlugin().getContainerManager().getKits().keySet().stream().anyMatch(x->x.equals(optionalName.get())))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with given name already exists!"));
             return CommandResult.empty();

@@ -1,8 +1,6 @@
 package io.github.aquerr.chestrefill.managers;
 
-import com.flowpowered.math.vector.Vector3d;
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.caching.ContainerCache;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
@@ -12,29 +10,18 @@ import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.effect.particle.ParticleEffect;
-import org.spongepowered.api.effect.particle.ParticleOptions;
-import org.spongepowered.api.effect.particle.ParticleType;
-import org.spongepowered.api.effect.particle.ParticleTypes;
-import org.spongepowered.api.effect.sound.SoundType;
-import org.spongepowered.api.effect.sound.SoundTypes;
-import org.spongepowered.api.item.FireworkEffect;
-import org.spongepowered.api.item.FireworkShapes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.util.Color;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -211,7 +198,8 @@ public class ContainerManager
                         }
 
                         final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
-                        for (RefillableItem refillableItem : chestToRefill.getItems())
+                        final List<RefillableItem> refillableItems = chestToRefill.getKitName().equals("") ? chestToRefill.getItems() : getKit(chestToRefill.getKitName()).getItems();
+                        for (RefillableItem refillableItem : refillableItems)
                         {
                             double number = Math.random();
                             if (number <= refillableItem.getChance())
@@ -317,7 +305,7 @@ public class ContainerManager
         return this.storageHelper.changeContainerName(containerLocation, containerName);
     }
 
-    public List<Kit> getKits()
+    public Map<String, Kit> getKits()
     {
         return this.storageHelper.getKits();
     }
@@ -336,26 +324,27 @@ public class ContainerManager
     {
         //We need to load items from kit and assign them to the container.
         final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
-        final List<Kit> kits = getKits();
-        Kit assignedKit = null;
-
-        for(Kit kit : kits)
-        {
-            if(kit.getName().equals(kitName))
-            {
-                assignedKit = kit;
-            }
-        }
-
-        if(assignedKit != null)
-        {
+        refillableContainer.setKit(kitName);
+//        final Map<String, Kit> kits = getKits();
+//        Kit assignedKit = null;
+//
+//        for(Kit kit : kits.values())
+//        {
+//            if(kit.getName().equals(kitName))
+//            {
+//                assignedKit = kit;
+//            }
+//        }
+//
+//        if(assignedKit != null)
+//        {
             //This code modifies cache. This is bad. We should not modify cache outside ContainerCache class.
-            refillableContainer.setItems(assignedKit.getItems());
-            refillableContainer.setKit(assignedKit.getName());
+//            refillableContainer.setItems(assignedKit.getItems());
+            refillableContainer.setKit(kitName);
             return this.storageHelper.assignKit(containerLocation, kitName);
-        }
+//        }
 
-        return false;
+//        return false;
     }
 
     public Optional<RefillableContainer> getRefillableContainerAtLocation(ContainerLocation containerLocation)
@@ -374,5 +363,17 @@ public class ContainerManager
     public void startLookingForEmptyContainers()
     {
         this.plugin.getContainerScheduler().scheduleWithInterval("Chest Refill - Scanning for empty containers", 5L, TimeUnit.SECONDS, new ScanForEmptyContainersTask(this));
+    }
+
+    public Kit getKit(final String name)
+    {
+        return getKits().get(name);
+//        final Map<String, Kit> kits = getKits().get(name);
+//        for(final Kit kit : kits)
+//        {
+//            if(kit.getName().equals(name))
+//                return kit;
+//        }
+//        return null;
     }
 }

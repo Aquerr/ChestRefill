@@ -14,6 +14,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class AssignKitCommand extends AbstractCommand implements CommandExecutor
@@ -39,8 +40,8 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
             return CommandResult.empty();
         }
 
-        List<Kit> kits = super.getPlugin().getContainerManager().getKits();
-        if(kits.stream().noneMatch(x->x.getName().equals(optionalName.get())))
+        Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
+        if(kits.keySet().stream().noneMatch(x->x.equals(optionalName.get())))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();

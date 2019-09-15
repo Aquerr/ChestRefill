@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill.caching;
 
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.HashMap;
@@ -9,18 +10,60 @@ import java.util.Map;
 
 public class ContainerCache
 {
-    private static Map<ContainerLocation, RefillableContainer> refillableContainersCache = new HashMap();
+    private static Map<ContainerLocation, RefillableContainer> refillableContainersCache = new HashMap<>();
+    private static Map<String, Kit> kitsCache = new HashMap<>();
 
-    public static boolean loadCache(List<RefillableContainer> refillableContainerList)
+    public static boolean loadCache(List<RefillableContainer> refillableContainerList, List<Kit> kits)
     {
         try
         {
-            for(RefillableContainer refillableContainer : refillableContainerList)
+            for(final RefillableContainer refillableContainer : refillableContainerList)
             {
                 refillableContainersCache.put(refillableContainer.getContainerLocation(), refillableContainer);
             }
+            for(final Kit kit : kits)
+            {
+                kitsCache.put(kit.getName(), kit);
+            }
         }
         catch(NullPointerException exception)
+        {
+            exception.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static Map<String, Kit> getKitsCache()
+    {
+        return kitsCache;
+    }
+
+    public static boolean addOrUpdateKitCache(Kit kit)
+    {
+        try
+        {
+            kitsCache.put(kit.getName(), kit);
+        }
+        catch(final Exception e)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean removeKit(final String name)
+    {
+        try
+        {
+            kitsCache.remove(name);
+            for(final RefillableContainer refillableContainer : refillableContainersCache.values())
+            {
+                if(refillableContainer.getKitName().equals(name))
+                    refillableContainer.setKit("");
+            }
+        }
+        catch(Exception exception)
         {
             exception.printStackTrace();
             return false;
@@ -94,5 +137,10 @@ public class ContainerCache
             return false;
         }
         return true;
+    }
+
+    public static void assignKit(ContainerLocation containerLocation, String kitName)
+    {
+        refillableContainersCache.get(containerLocation).setKit(kitName);
     }
 }

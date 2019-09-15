@@ -19,10 +19,7 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by Aquerr on 2018-02-12.
@@ -284,6 +281,18 @@ public class JSONStorage implements Storage
             kits.removeIf(x->x.getName().equals(kitName));
             kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
             kitsLoader.save(kitsNode);
+
+            //Remove the kit from containers
+            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+            for(final Object blockPositionAndWorldUUID : blockPositionsAndWorldUUIDs)
+            {
+                if(!(blockPositionAndWorldUUID instanceof String))
+                    continue;
+                final String blockPositionAndWorldUUIDString = String.valueOf(blockPositionAndWorldUUID);
+                final Object kitValue = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").getValue();
+                if(kitValue != null && String.valueOf(kitValue).equals(kitName))
+                    containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").setValue("");
+            }
             return true;
         }
         catch(ObjectMappingException | IOException e)
@@ -370,10 +379,10 @@ public class JSONStorage implements Storage
             }
 
             //Check if chest is using a kit. If it does then override its items.
-            if(!kitName.equals(""))
-            {
-                chestItems = getKitItems(kitName);
-            }
+//            if(!kitName.equals(""))
+//            {
+//                chestItems = getKitItems(kitName);
+//            }
 
             return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission);
         }
