@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill;
 
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
+import io.github.aquerr.chestrefill.commands.arguments.KitNameArgument;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
@@ -183,7 +184,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("setname"), CommandSpec.builder()
                 .description(Text.of("Set name for a refillable container"))
                 .permission(PluginPermissions.SETNAME_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("name"))))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))))
                 .executor(new SetnameCommand(this))
                 .build());
 
@@ -191,7 +192,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("createkit"), CommandSpec.builder()
                 .description(Text.of("Toggles kit creation mode"))
                 .permission(PluginPermissions.CREATE_KIT_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
                 .executor(new CreateKitCommand(this))
                 .build());
 
@@ -199,7 +200,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("removekit"), CommandSpec.builder()
                 .description(Text.of("Removes a kit"))
                 .permission(PluginPermissions.REMOVE_KIT_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
                 .executor(new RemoveKitCommand(this))
                 .build());
 
@@ -207,7 +208,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("assignkit"), CommandSpec.builder()
                 .description(Text.of("Toggles assign mode"))
                 .permission(PluginPermissions.ASSIGN_KIT_COMMAND)
-                .arguments(GenericArguments.optional(GenericArguments.string(Text.of("kit name"))))
+                .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
                 .executor(new AssignKitCommand(this))
                 .build());
 

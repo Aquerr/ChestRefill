@@ -27,32 +27,27 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
+        final String kitName = context.requireOne(Text.of("kit name"));
+
         if(!(source instanceof Player))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Only in-game players can use this command!"));
             return CommandResult.empty();
         }
 
-        Optional<String> optionalName = context.getOne(Text.of("kit name"));
-        if(!optionalName.isPresent())
-        {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "You must specify a kit name!"));
-            return CommandResult.empty();
-        }
-
-        Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
-        if(kits.keySet().stream().noneMatch(x->x.equals(optionalName.get())))
+        final Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
+        if(kits.keySet().stream().noneMatch(x->x.equals(kitName)))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();
         }
 
-        Player player = (Player)source;
+        final Player player = (Player)source;
         if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
         {
             if (SelectionMode.ASSIGN_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), s));
+                ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
             }
@@ -65,7 +60,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         }
         else
         {
-            optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), s));
+            ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
             ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
         }
