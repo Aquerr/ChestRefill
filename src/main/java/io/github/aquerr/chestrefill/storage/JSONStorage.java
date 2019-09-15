@@ -99,6 +99,10 @@ public class JSONStorage implements Storage
                 //Set container's items
                 containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
             }
+            else
+            {
+                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new ArrayList<>());
+            }
 
             //Set container's regeneration time (in seconds)
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
