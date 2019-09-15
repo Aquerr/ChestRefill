@@ -340,7 +340,7 @@ public class ContainerManager
 //        {
             //This code modifies cache. This is bad. We should not modify cache outside ContainerCache class.
 //            refillableContainer.setItems(assignedKit.getItems());
-            refillableContainer.setKit(kitName);
+//            refillableContainer.setKit(kitName);
             return this.storageHelper.assignKit(containerLocation, kitName);
 //        }
 

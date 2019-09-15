@@ -46,12 +46,12 @@ public class RightClickListener extends AbstractListener
 
         final RefillableContainer refillableContainer = RefillableContainer.fromTileEntity(tileEntity, player.getWorld().getUniqueId());
         final ContainerLocation containerLocation = new ContainerLocation(tileEntity.getLocatableBlock().getPosition(), player.getWorld().getUniqueId());
-        final boolean containerExistsAtLocation = isRefillableContainer(containerLocation).isPresent();
+        final Optional<RefillableContainer> optionalRefillableContainerAtLocation = super.getPlugin().getContainerManager().getRefillableContainerAtLocation(containerLocation);
 
         switch (ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
         {
             case CREATE:
-                if(containerExistsAtLocation)
+                if(optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This container is already marked as a refilling container!"));
                 }
@@ -71,7 +71,7 @@ public class RightClickListener extends AbstractListener
 
             case REMOVE:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
                 }
@@ -90,13 +90,17 @@ public class RightClickListener extends AbstractListener
 
             case UPDATE:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
 
                 }
                 else
                 {
+                    final RefillableContainer refillableContainerAtLocation = optionalRefillableContainerAtLocation.get();
+                    refillableContainer.setKit(refillableContainerAtLocation.getKitName());
+                    refillableContainer.setRestoreTime(refillableContainerAtLocation.getRestoreTime());
+                    refillableContainer.setName(refillableContainerAtLocation.getKitName());
                     final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
                     if(didSucceed)
                     {
@@ -110,7 +114,7 @@ public class RightClickListener extends AbstractListener
 
             case TIME:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
                 }
@@ -140,7 +144,7 @@ public class RightClickListener extends AbstractListener
 
             case SET_NAME:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
                 }
@@ -159,7 +163,7 @@ public class RightClickListener extends AbstractListener
 
             case COPY:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
                 }
@@ -183,7 +187,7 @@ public class RightClickListener extends AbstractListener
 
                 copiedContainer.setContainerLocation(refillableContainer.getContainerLocation());
                 boolean didSucceed;
-                if(containerExistsAtLocation)
+                if(optionalRefillableContainerAtLocation.isPresent())
                 {
                     didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(copiedContainer);
                 }
@@ -217,7 +221,7 @@ public class RightClickListener extends AbstractListener
 
             case ASSIGN_KIT:
             {
-                if(!containerExistsAtLocation)
+                if(!optionalRefillableContainerAtLocation.isPresent())
                 {
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
                 }
@@ -258,7 +262,7 @@ public class RightClickListener extends AbstractListener
             return;
 
         final ContainerLocation containerLocation = new ContainerLocation(tileEntity.getLocatableBlock().getPosition(), player.getWorld().getUniqueId());
-        final Optional<RefillableContainer> optionalContainerAtLocation = isRefillableContainer(containerLocation);
+        final Optional<RefillableContainer> optionalContainerAtLocation = super.getPlugin().getContainerManager().getRefillableContainerAtLocation(containerLocation);
 
         if(optionalContainerAtLocation.isPresent())
         {
@@ -270,10 +274,5 @@ public class RightClickListener extends AbstractListener
                 return;
             }
         }
-    }
-
-    private Optional<RefillableContainer> isRefillableContainer(final ContainerLocation containerLocation)
-    {
-        return super.getPlugin().getContainerManager().getRefillableContainerAtLocation(containerLocation);
     }
 }
