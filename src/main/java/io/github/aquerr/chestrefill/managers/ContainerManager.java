@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.managers;
 
+import com.flowpowered.math.vector.Vector3d;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
@@ -10,10 +11,14 @@ import io.github.aquerr.chestrefill.storage.StorageHelper;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.particle.ParticleOptions;
+import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.util.Color;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -118,7 +123,7 @@ public class ContainerManager
 //            final Optional<World> optionalWorld = Sponge.getServer().getWorld(containerLocation.getWorldUUID());
 //            if(optionalWorld.isPresent())
 //            {
-//                this.plugin.getContainerScheduler().scheduleWithInterval(name + "_particle", 150, TimeUnit.MILLISECONDS, startParticleEffect(containerLocation, optionalWorld.get()));
+//                this.plugin.getContainerScheduler().scheduleWithInterval(name + "_particle", 50, TimeUnit.MILLISECONDS, startParticleEffect(containerLocation, optionalWorld.get()));
 //            }
 
             return true;
@@ -139,33 +144,58 @@ public class ContainerManager
 //            private Vector3d chestLocation = new Vector3d(containerLocation.getBlockPosition().getX(), containerLocation.getBlockPosition().getY(), containerLocation.getBlockPosition().getZ());
 //            private Vector3d lastParticleLocation = new Vector3d(chestLocation);
 //
+//            private final double d = Math.PI - 2 * Math.acos(0.1 / (2 * 6));
+//            private final double l = (2 * Math.PI) / d;
+//            private int i = 0;
+//
 //            @Override
 //            public void run()
 //            {
-//                double x = lastParticleLocation.getX();
-//                double y = lastParticleLocation.getY();
-//                double z = lastParticleLocation.getZ();
+//                if(i > l)
+//                    i = 0;
 //
-//                double newY = 0.5 * Math.sin(20*x) + chestLocation.getY() + 0.5;
-//                double newX = x + 0.1;
+//                double x = chestLocation.getX() + 0.5;
+//                double z = chestLocation.getZ() + 0.5;
 //
-//                if(newX > chestLocation.getX() + 1)
-//                    newX = chestLocation.getX();
-////                if(newY > chestLocation.get)
+//                double xOffset = 2 * Math.cos(i * d);
+//                double zOffset = 2 * Math.sin(i * d);
 //
-//                y = newY;
-//                x = newX;
+//                double xOffset2 = 2 * Math.cos((i - 50) * d);
+//                double zOffset2 = 2 * Math.sin((i - 50) * d);
 //
-//                final Vector3d particleLocation = new Vector3d(x, y, z);
 //                final ParticleEffect.Builder particleEffectBuilder = ParticleEffect.builder();
 //                particleEffectBuilder.type(ParticleTypes.REDSTONE_DUST)
-////                        .option(ParticleOptions.FIREWORK_EFFECTS, Arrays.asList(FireworkEffect.builder().shape(FireworkShapes.LARGE_BALL).color(Color.CYAN).build()))
-//                        .quantity(1)
-//                        .offset(new Vector3d())
-//                        .velocity(new Vector3d(0, 0, 0));
-//                chestWorld.spawnParticles(particleEffectBuilder.build(), particleLocation);
-////                chestWorld.playSound(SoundTypes.BLOCK_ANVIL_USE, particleLocation, 10, 20);
-//                lastParticleLocation = particleLocation;
+//                        .option(ParticleOptions.COLOR, Color.CYAN)
+//                        .quantity(10);
+//                final ParticleEffect.Builder particleEffectBuilder2 = ParticleEffect.builder();
+//                particleEffectBuilder2.type(ParticleTypes.REDSTONE_DUST)
+//                        .option(ParticleOptions.COLOR, Color.RED)
+//                        .quantity(10);
+//                chestWorld.spawnParticles(particleEffectBuilder.build(), new Vector3d(x + xOffset, chestLocation.getY(), z + zOffset));
+//                chestWorld.spawnParticles(particleEffectBuilder2.build(), new Vector3d(x + xOffset2, chestLocation.getY(), z + zOffset2));
+//                i++;
+//
+////                double x = lastParticleLocation.getX();
+////                double y = lastParticleLocation.getY();
+////                double z = lastParticleLocation.getZ();
+////
+////                double newY = 0.5 * Math.sin(20*x) + chestLocation.getY() + 0.5;
+////                double newX = x + 0.1;
+////
+////                if(newX > chestLocation.getX() + 1)
+////                    newX = chestLocation.getX();
+////
+////                y = newY;
+////                x = newX;
+////
+////                final Vector3d particleLocation = new Vector3d(x, y, z);
+////                final ParticleEffect.Builder particleEffectBuilder = ParticleEffect.builder();
+////                particleEffectBuilder.type(ParticleTypes.REDSTONE_DUST)
+////                        .quantity(1)
+////                        .offset(new Vector3d())
+////                        .velocity(new Vector3d(0, 0, 0));
+////                chestWorld.spawnParticles(particleEffectBuilder.build(), particleLocation);
+////                lastParticleLocation = particleLocation;
 //            }
 //        };
 //    }

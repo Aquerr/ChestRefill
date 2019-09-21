@@ -139,8 +139,10 @@ public class ContainerCache
         return true;
     }
 
-    public static void assignKit(ContainerLocation containerLocation, String kitName)
+    public static boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
-        refillableContainersCache.get(containerLocation).setKit(kitName);
+        final RefillableContainer refillableContainer = refillableContainersCache.get(containerLocation);
+        refillableContainer.setKit(kitName);
+        return refillableContainer.getKitName().equals(kitName);
     }
 }

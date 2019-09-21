@@ -7,6 +7,7 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,21 +15,16 @@ public class StorageHelper
 {
     private final Queue<RefillableContainer> containersToSave;
     private final Storage containerStorage;
-    private final ExecutorService executorService;
-//    private Thread storageThread;
 
     public StorageHelper(Path configDir)
     {
         containersToSave = new LinkedList<>();
-        executorService = Executors.newSingleThreadExecutor();
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(startContainerSavingThread());
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
         ContainerCache.loadCache(containerStorage.getRefillableContainers(), containerStorage.getKits());
-
-//        storageThread = new Thread(startContainerSavingThread());
-//        storageThread.start();
     }
 
     public boolean addOrUpdateContainer(RefillableContainer containerToSave)
@@ -44,13 +40,8 @@ public class StorageHelper
 
     public boolean removeContainer(ContainerLocation containerLocation)
     {
-        ContainerCache.removeContainer(containerLocation);
-//        synchronized(this.containersToSave)
-//        {
-//            this.containersToSave.add(containerToSave);
-//            this.containersToSave.notify();
-//        }
-        return this.containerStorage.removeRefillableContainer(containerLocation);
+        CompletableFuture.runAsync(() -> this.containerStorage.removeRefillableContainer(containerLocation));
+        return ContainerCache.removeContainer(containerLocation);
     }
 
     public Collection<RefillableContainer> getRefillableContainers()
@@ -70,16 +61,14 @@ public class StorageHelper
 
     public boolean updateContainerTime(ContainerLocation containerLocation, int time)
     {
-        //TODO: Rework so that the separate thread will take hand of it
-        ContainerCache.updateContainerTime(containerLocation, time);
-        return this.containerStorage.updateContainerTime(containerLocation, time);
+        CompletableFuture.runAsync(() -> this.containerStorage.updateContainerTime(containerLocation, time));
+        return ContainerCache.updateContainerTime(containerLocation, time);
     }
 
     public boolean changeContainerName(ContainerLocation containerLocation, String containerName)
     {
-        //TODO: Rework so that the separate thread will take hand of it
-        ContainerCache.updateContainerName(containerLocation, containerName);
-        return this.containerStorage.changeContainerName(containerLocation, containerName);
+        CompletableFuture.runAsync(() -> this.containerStorage.changeContainerName(containerLocation, containerName));
+        return ContainerCache.updateContainerName(containerLocation, containerName);
     }
 
 
@@ -90,22 +79,23 @@ public class StorageHelper
 
     public boolean createKit(Kit kit)
     {
-        ContainerCache.addOrUpdateKitCache(kit);
-        return this.containerStorage.createKit(kit);
+        CompletableFuture.runAsync(() -> this.containerStorage.createKit(kit));
+        return ContainerCache.addOrUpdateKitCache(kit);
     }
 
     public boolean removeKit(String kitName)
     {
-        ContainerCache.removeKit(kitName);
-        return this.containerStorage.removeKit(kitName);
+        CompletableFuture.runAsync(() -> this.containerStorage.removeKit(kitName));
+        return ContainerCache.removeKit(kitName);
     }
 
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
-        ContainerCache.assignKit(containerLocation, kitName);
-        return this.containerStorage.assignKit(containerLocation, kitName);
+        CompletableFuture.runAsync(() -> this.containerStorage.assignKit(containerLocation, kitName));
+        return ContainerCache.assignKit(containerLocation, kitName);
     }
 
+    //TODO: Remove this and replace with CompletableFuture
     private Runnable startContainerSavingThread()
     {
         return () ->

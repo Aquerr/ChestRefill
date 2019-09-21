@@ -27,6 +27,7 @@ import org.spongepowered.api.text.format.TextColors;
 import javax.inject.Inject;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 
 /**
@@ -84,15 +85,16 @@ public class ChestRefill
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
 
-        if (VersionChecker.isLatest(PluginInfo.Version))
-        {
-            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You are using the latest version!"));
-        }
-        else
-        {
-            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.Name, TextColors.RED, " is available online!"));
-        }
-
+        CompletableFuture.runAsync(() ->{
+            if (VersionChecker.isLatest(PluginInfo.Version))
+            {
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You are using the latest version!"));
+            }
+            else
+            {
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.Name, TextColors.RED, " is available online!"));
+            }
+        });
     }
 
     @Listener
