@@ -15,6 +15,9 @@ public class RefillableItem
     @Setting
     private ItemStack item;
 
+    @Setting
+    private int slot;
+
     public RefillableItem()
     {
 
@@ -25,16 +28,21 @@ public class RefillableItem
         this.item = itemStack;
     }
 
-    public RefillableItem(ItemStack itemStack, float chance)
+    public RefillableItem(ItemStack itemStack, int slot, float chance)
     {
         this.item = itemStack;
+        this.slot = slot;
         this.chance = chance;
     }
 
     public ItemStack getItem()
     {
         return this.item;
-//        return ItemStack.builder().fromItemStack(this.item).build();
+    }
+
+    public int getSlot()
+    {
+        return slot;
     }
 
     public float getChance()

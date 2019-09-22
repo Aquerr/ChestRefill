@@ -5,6 +5,7 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 
@@ -33,12 +34,14 @@ public class RefillableContainer
 
     private String kitName;
 
+    private String requiredPermission;
+
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "");
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "");
     }
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission)
     {
         this.name = name;
         this.containerLocation = containerLocation;
@@ -50,6 +53,7 @@ public class RefillableContainer
         this.hidingBlock = hidingBlock;
         this.containerBlockType = containerBlockType;
         this.kitName = kitName;
+        this.requiredPermission = requiredPermission;
     }
 
     public void setName(String name)
@@ -75,6 +79,16 @@ public class RefillableContainer
     public void setKit(String kitName)
     {
         this.kitName = kitName;
+    }
+
+    public void setRequiredPermission(final String requiredPermission)
+    {
+        this.requiredPermission = requiredPermission;
+    }
+
+    public void setHidingBlock(final BlockType hidingBlock)
+    {
+        this.hidingBlock = hidingBlock;
     }
 
     public String getName()
@@ -124,18 +138,26 @@ public class RefillableContainer
         return this.kitName;
     }
 
+    public String getRequiredPermission()
+    {
+        return requiredPermission;
+    }
+
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
     {
         TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<RefillableItem> items = new ArrayList<>();
 
-        carrier.getInventory().slots().forEach(x->
+        int slot = 0;
+        for(final Inventory slotInventory : carrier.getInventory().slots())
         {
-            if (x.peek().isPresent())
+            if (slotInventory.peek().isPresent())
             {
-                items.add(new RefillableItem(x.peek().get(), 1f));
+                final DataView container = slotInventory.peek().get().toContainer();
+                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
             }
-        });
+            slot++;
+        }
 
         return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
@@ -152,54 +174,49 @@ public class RefillableContainer
             return true;
         }
 
+        if(!this.containerLocation.equals(((RefillableContainer) obj).containerLocation))
+            return false;
 
-        //TODO: Refactor this code if it will be possible...
-        //Compare container location
-        if (this.containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
+        Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
+
+        this.items.forEach(x-> {
+            //Offer removes items from inventory so we need to build new temp items.
+            ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
+            tempInventory.offer(tempItemStack);
+        });
+
+        //Compare items
+        for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
         {
-            Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
-
-            this.items.forEach(x-> {
-                //Offer removes items from inventory so we need to build new temp items.
-                ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
-                tempInventory.offer(tempItemStack);
-            });
-
-            //Compare items
-            for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
-            {
-                if (!tempInventory.contains(comparedItem.getItem()))
-                {
-                    return false;
-                }
-            }
-
-            //Compare restore time
-            if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
+            if (!tempInventory.contains(comparedItem.getItem()))
             {
                 return false;
-            }
-
-            //Check if randomize is turned on
-            if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
-            {
-                return false;
-            }
-
-            //Check equality of replaceExistingItems property
-            if (this.replaceExistingItems == ((RefillableContainer)obj).replaceExistingItems)
-            {
-                return true;
-            }
-
-            //Compare kit names
-            if (this.kitName.equals(((RefillableContainer) obj).kitName))
-            {
-                return true;
             }
         }
 
-        return false;
+        //Compare restore time
+        if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
+            return false;
+
+        //Check if randomize is turned on
+        if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
+            return false;
+
+        //Check equality of replaceExistingItems property
+        if (this.replaceExistingItems != ((RefillableContainer)obj).replaceExistingItems)
+            return false;
+
+        //Compare kit names
+        if (!this.kitName.equals(((RefillableContainer) obj).kitName))
+            return false;
+
+        if(!this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
+            return false;
+
+        if(!this.name.equals(((RefillableContainer) obj).name))
+            return false;
+
+        return true;
     }
 
     @Override
@@ -216,6 +233,7 @@ public class RefillableContainer
         result = prime * result + (this.containerBlockType != null ? this.containerBlockType.hashCode() : 0);
         result = prime * result + (this.hidingBlock != null ? this.hidingBlock.hashCode() : 0);
         result = prime * result + (this.kitName != null ? this.kitName.hashCode() : 0);
+        result = prime * result + (this.requiredPermission != null ? this.requiredPermission.hashCode() : 0);
         return result;
     }
 }

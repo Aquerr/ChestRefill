@@ -29,7 +29,7 @@ public class ContainerBreakListener extends AbstractListener
     }
 
     @Listener
-    public void onRefillableEntityBreak(ChangeBlockEvent.Break event)
+    public void onRefillableEntityBreak(final ChangeBlockEvent.Break event)
     {
         for (Transaction<BlockSnapshot> transaction : event.getTransactions())
         {

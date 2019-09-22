@@ -10,7 +10,7 @@ public abstract class PluginInfo
 {
     public static final String Id = "chestrefill";
     public static final String Name = "Chest Refill";
-    public static final String Version = "1.4.0";
+    public static final String Version = "1.5.0";
     public static final String Description = "Plugin for restoring contents of a container after the specified time.";
     public static final String Url = "https://github.com/Aquerr/ChestRefill";
     public static final Text PluginPrefix = Text.of(TextColors.GOLD, "[CR] ");

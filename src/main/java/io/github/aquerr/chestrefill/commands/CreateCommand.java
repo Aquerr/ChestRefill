@@ -33,25 +33,25 @@ public class CreateCommand extends AbstractCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
             {
-                if (SelectionMode.CREATE != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+                if (SelectionMode.CREATE != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
                 {
-                    optionalName.ifPresent(s -> ChestRefill.PlayerChestName.put(player.getUniqueId(), s));
-                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.CREATE);
+                    optionalName.ifPresent(s -> ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), s));
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.CREATE);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayerChestName.remove(player.getUniqueId());
-                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                    ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
                 }
             }
             else
             {
-                optionalName.ifPresent(s -> ChestRefill.PlayerChestName.put(player.getUniqueId(), s));
-                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.CREATE);
+                optionalName.ifPresent(s -> ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), s));
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.CREATE);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
             }
         }

@@ -19,10 +19,7 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by Aquerr on 2018-02-12.
@@ -97,8 +94,15 @@ public class JSONStorage implements Storage
             //Set container's kit
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").setValue(refillableContainer.getKitName());
 
-            //Set container's items
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
+            if(refillableContainer.getKitName().equals(""))
+            {
+                //Set container's items
+                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
+            }
+            else
+            {
+                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new ArrayList<>());
+            }
 
             //Set container's regeneration time (in seconds)
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
@@ -114,6 +118,9 @@ public class JSONStorage implements Storage
 
             //Set container's hidding block
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").setValue(TypeToken.of(BlockType.class), refillableContainer.getHidingBlock());
+
+            //Set required permission
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
 
             containersLoader.save(containersNode);
 
@@ -191,22 +198,6 @@ public class JSONStorage implements Storage
 
         return refillingContainersList;
     }
-
-//    @Override
-//    @Nullable
-//    public RefillableContainer getRefillableContainer(ContainerLocation containerLocation)
-//    {
-//        String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
-//
-//        Object chestObject = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID).getValue();
-//
-//        if (chestObject != null)
-//        {
-//            return getRefillableContainerFromFile(containerLocation);
-//        }
-//
-//        return null;
-//    }
 
     @Override
     public boolean updateContainerTime(ContainerLocation containerLocation, int time)
@@ -297,6 +288,18 @@ public class JSONStorage implements Storage
             kits.removeIf(x->x.getName().equals(kitName));
             kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
             kitsLoader.save(kitsNode);
+
+            //Remove the kit from containers
+            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+            for(final Object blockPositionAndWorldUUID : blockPositionsAndWorldUUIDs)
+            {
+                if(!(blockPositionAndWorldUUID instanceof String))
+                    continue;
+                final String blockPositionAndWorldUUIDString = String.valueOf(blockPositionAndWorldUUID);
+                final Object kitValue = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").getValue();
+                if(kitValue != null && String.valueOf(kitValue).equals(kitName))
+                    containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").setValue("");
+            }
             return true;
         }
         catch(ObjectMappingException | IOException e)
@@ -340,14 +343,12 @@ public class JSONStorage implements Storage
                     for (WatchEvent<?> event : _key.pollEvents())
                     {
                         final Path changedFilePath = (Path) event.context();
-
                         if (changedFilePath.toString().contains("containers.json"))
                         {
-                            containersNode = containersLoader.load();
                             Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                            containersNode = containersLoader.load();
                         }
                     }
-
                     _key.reset();
                 }
                 catch (IOException e)
@@ -377,6 +378,7 @@ public class JSONStorage implements Storage
             final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
             final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
+            final String requiredPermission = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").getString("");
 
             if(chestItems == null)
             {
@@ -384,12 +386,12 @@ public class JSONStorage implements Storage
             }
 
             //Check if chest is using a kit. If it does then override its items.
-            if(!kitName.equals(""))
-            {
-                chestItems = getKitItems(kitName);
-            }
+//            if(!kitName.equals(""))
+//            {
+//                chestItems = getKitItems(kitName);
+//            }
 
-            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName);
+            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission);
         }
         catch (ObjectMappingException e)
         {
@@ -419,18 +421,4 @@ public class JSONStorage implements Storage
 
         return new ArrayList<>();
     }
-
-//    private Function<Object, ItemStack> objectToItemStackTransformer = input ->
-//    {
-//        try
-//        {
-//            ItemStack test = (ItemStack)input;
-//            return test;
-//        }
-//        catch (ClassCastException exception)
-//        {
-//            exception.printStackTrace();
-//            return null;
-//        }
-//    };
 }
