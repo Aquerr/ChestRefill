@@ -100,7 +100,9 @@ public class RightClickListener extends AbstractListener
                     final RefillableContainer refillableContainerAtLocation = optionalRefillableContainerAtLocation.get();
                     refillableContainer.setKit(refillableContainerAtLocation.getKitName());
                     refillableContainer.setRestoreTime(refillableContainerAtLocation.getRestoreTime());
-                    refillableContainer.setName(refillableContainerAtLocation.getKitName());
+                    refillableContainer.setName(refillableContainerAtLocation.getName());
+                    refillableContainer.setRequiredPermission(refillableContainerAtLocation.getRequiredPermission());
+                    refillableContainer.setHidingBlock(refillableContainerAtLocation.getHidingBlock());
                     final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
                     if(didSucceed)
                     {

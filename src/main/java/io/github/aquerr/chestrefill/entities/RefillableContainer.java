@@ -81,6 +81,16 @@ public class RefillableContainer
         this.kitName = kitName;
     }
 
+    public void setRequiredPermission(final String requiredPermission)
+    {
+        this.requiredPermission = requiredPermission;
+    }
+
+    public void setHidingBlock(final BlockType hidingBlock)
+    {
+        this.hidingBlock = hidingBlock;
+    }
+
     public String getName()
     {
         return this.name;
@@ -164,59 +174,49 @@ public class RefillableContainer
             return true;
         }
 
+        if(!this.containerLocation.equals(((RefillableContainer) obj).containerLocation))
+            return false;
 
-        //TODO: Refactor this code if it will be possible...
-        //Compare container location
-        if (this.containerLocation.equals(((RefillableContainer)obj).getContainerLocation()))
+        Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
+
+        this.items.forEach(x-> {
+            //Offer removes items from inventory so we need to build new temp items.
+            ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
+            tempInventory.offer(tempItemStack);
+        });
+
+        //Compare items
+        for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
         {
-            Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
-
-            this.items.forEach(x-> {
-                //Offer removes items from inventory so we need to build new temp items.
-                ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
-                tempInventory.offer(tempItemStack);
-            });
-
-            //Compare items
-            for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
-            {
-                if (!tempInventory.contains(comparedItem.getItem()))
-                {
-                    return false;
-                }
-            }
-
-            //Compare restore time
-            if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
+            if (!tempInventory.contains(comparedItem.getItem()))
             {
                 return false;
-            }
-
-            //Check if randomize is turned on
-            if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
-            {
-                return false;
-            }
-
-            //Check equality of replaceExistingItems property
-            if (this.replaceExistingItems == ((RefillableContainer)obj).replaceExistingItems)
-            {
-                return true;
-            }
-
-            //Compare kit names
-            if (this.kitName.equals(((RefillableContainer) obj).kitName))
-            {
-                return true;
-            }
-
-            if(this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
-            {
-                return true;
             }
         }
 
-        return false;
+        //Compare restore time
+        if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
+            return false;
+
+        //Check if randomize is turned on
+        if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
+            return false;
+
+        //Check equality of replaceExistingItems property
+        if (this.replaceExistingItems != ((RefillableContainer)obj).replaceExistingItems)
+            return false;
+
+        //Compare kit names
+        if (!this.kitName.equals(((RefillableContainer) obj).kitName))
+            return false;
+
+        if(!this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
+            return false;
+
+        if(!this.name.equals(((RefillableContainer) obj).name))
+            return false;
+
+        return true;
     }
 
     @Override
