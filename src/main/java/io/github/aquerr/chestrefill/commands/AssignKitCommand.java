@@ -27,7 +27,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
-        final String kitName = context.requireOne(Text.of("kit name"));
+        final Optional<String> kitName = context.getOne(Text.of("kit name"));
 
         if(!(source instanceof Player))
         {
@@ -36,7 +36,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         }
 
         final Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
-        if(kits.keySet().stream().noneMatch(x->x.equals(kitName)))
+        if(kits.keySet().stream().noneMatch(x->x.equals(kitName.get())))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();
@@ -47,7 +47,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         {
             if (SelectionMode.ASSIGN_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
+                ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName.get());
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
             }
@@ -60,7 +60,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
         }
         else
         {
-            ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
+            ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName.get());
             ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
         }
