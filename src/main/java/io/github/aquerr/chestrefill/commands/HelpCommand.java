@@ -32,7 +32,7 @@ public class HelpCommand extends AbstractCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
-        Map<List<String>, CommandSpec> commands = ChestRefill.Subcommands;
+        Map<List<String>, CommandSpec> commands = ChestRefill.SUBCOMMANDS;
         List<Text> helpList = Lists.newArrayList();
 
         for (List<String> aliases: commands.keySet())

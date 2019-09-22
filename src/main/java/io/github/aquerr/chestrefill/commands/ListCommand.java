@@ -47,18 +47,15 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
             itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
             refillableContainer.getItems().forEach(x -> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getTranslation().get(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
-            itemsToShow.append(Text.of("\n", TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
+
+            itemsToShow.append(Text.of("\n", TextColors.GREEN, "Kit: ", TextColors.WHITE, refillableContainer.getKitName(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Replace existing items: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Hidden if no items: ", TextColors.WHITE, refillableContainer.shouldBeHiddenIfNoItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Hiding block: ", TextColors.WHITE, refillableContainer.getHidingBlock(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Permission: ", TextColors.WHITE, refillableContainer.getRequiredPermission(), "\n"));
             itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s"));
             itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
-
-//            Text chestText = Text.builder()
-//                    .append(Text.of(TextColors.DARK_GREEN, "Container at ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
-//                    .onHover(TextActions.showText(itemsToShow.build()))
-//                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableContainer.getContainerLocation().getBlockPosition())))
-//                    .build();
 
             Text.Builder chestName = Text.builder();
             if(refillableContainer.getName().equals(""))
@@ -69,7 +66,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
             Text chestText = Text.builder()
                     .append(Text.of(TextColors.YELLOW, " - ", TextColors.DARK_GREEN, chestName.build(), " at location ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
                     .onHover(TextActions.showText(itemsToShow.build()))
-                    .onClick(TextActions.executeCallback(teleportToChest(source, refillableContainer.getContainerLocation().getBlockPosition())))
+                    .onClick(TextActions.executeCallback(new ChestTeleport(refillableContainer.getContainerLocation().getBlockPosition())))
                     .build();
 
             helpList.add(chestText);
@@ -83,18 +80,25 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
         return CommandResult.success();
     }
 
-    private Consumer<CommandSource> teleportToChest(CommandSource source, Vector3i blockPosition)
+    private static class ChestTeleport implements Consumer<CommandSource>
     {
-        return consumer ->
+        private final Vector3i chestPosition;
+
+        ChestTeleport(Vector3i chestPosition)
+        {
+            this.chestPosition = chestPosition;
+        }
+
+        @Override
+        public void accept(CommandSource source)
         {
             //Do we need this check? Only in-game players can click on the chat...
             if (source instanceof Player)
             {
-                Player player = (Player)source;
-
-                player.setLocation(new Location<World>(player.getWorld(), blockPosition));
+                final Player player = (Player)source;
+                player.setLocation(new Location<>(player.getWorld(), this.chestPosition));
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected container!"));
             }
-        };
+        }
     }
 }

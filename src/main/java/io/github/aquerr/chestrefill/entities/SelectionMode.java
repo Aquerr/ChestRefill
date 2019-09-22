@@ -5,5 +5,5 @@ package io.github.aquerr.chestrefill.entities;
  */
 public enum SelectionMode
 {
-    CREATE, UPDATE, REMOVE, TIME, SET_NAME, COPY, CREATE_KIT, ASSIGN_KIT
+    CREATE, UPDATE, REMOVE, TIME, SET_NAME, COPY, AFTER_COPY, CREATE_KIT, ASSIGN_KIT
 }

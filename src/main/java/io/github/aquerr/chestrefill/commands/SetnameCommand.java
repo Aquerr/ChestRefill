@@ -41,25 +41,25 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
         Player player = (Player)source;
         String containerName = optionalName.get();
 
-        if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
         {
-            if (SelectionMode.SET_NAME != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+            if (SelectionMode.SET_NAME != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.SET_NAME);
-                ChestRefill.PlayerChestName.put(player.getUniqueId(), containerName);
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.SET_NAME);
+                ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), containerName);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
             }
             else
             {
-                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
-                ChestRefill.PlayerChestName.remove(player.getUniqueId());
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
+                ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off setname mode"));
             }
         }
         else
         {
-            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.SET_NAME);
-            ChestRefill.PlayerChestName.put(player.getUniqueId(), containerName);
+            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.SET_NAME);
+            ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), containerName);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
         }
 
