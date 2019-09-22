@@ -14,6 +14,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class AssignKitCommand extends AbstractCommand implements CommandExecutor
@@ -26,46 +27,41 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
     @Override
     public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
     {
+        final Optional<String> kitName = context.getOne(Text.of("kit name"));
+
         if(!(source instanceof Player))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Only in-game players can use this command!"));
             return CommandResult.empty();
         }
 
-        Optional<String> optionalName = context.getOne(Text.of("kit name"));
-        if(!optionalName.isPresent())
-        {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "You must specify a kit name!"));
-            return CommandResult.empty();
-        }
-
-        List<Kit> kits = super.getPlugin().getContainerManager().getKits();
-        if(kits.stream().noneMatch(x->x.getName().equals(optionalName.get())))
+        final Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
+        if(kits.keySet().stream().noneMatch(x->x.equals(kitName.get())))
         {
             source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();
         }
 
-        Player player = (Player)source;
-        if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+        final Player player = (Player)source;
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
         {
-            if (SelectionMode.ASSIGN_KIT != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+            if (SelectionMode.ASSIGN_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
             {
-                optionalName.ifPresent(s -> ChestRefill.PlayerKitAssign.put(player.getUniqueId(), s));
-                ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
+                ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName.get());
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
             }
             else
             {
-                ChestRefill.PlayerKitAssign.remove(player.getUniqueId());
-                ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off assign mode"));
             }
         }
         else
         {
-            optionalName.ifPresent(s -> ChestRefill.PlayerKitAssign.put(player.getUniqueId(), s));
-            ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
+            ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName.get());
+            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
             player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
         }
 

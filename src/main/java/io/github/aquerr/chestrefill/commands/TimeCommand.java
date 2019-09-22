@@ -34,43 +34,43 @@ public class TimeCommand extends AbstractCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
             {
-                if (SelectionMode.TIME != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+                if (SelectionMode.TIME != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.TIME);
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.TIME);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off time mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.TIME);
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.TIME);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
             }
 
-            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId())
-                    && ChestRefill.PlayersSelectionMode.get(player.getUniqueId()) == SelectionMode.TIME)
+            if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId())
+                    && ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()) == SelectionMode.TIME)
             {
                 if (optionalTime.isPresent())
                 {
-                    if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
+                    if (ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.containsKey(player.getUniqueId()))
                     {
-                        ChestRefill.ContainerTimeChangePlayer.replace(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.replace(player.getUniqueId(), optionalTime.get());
                     }
                     else
                     {
-                        ChestRefill.ContainerTimeChangePlayer.put(player.getUniqueId(), optionalTime.get());
+                        ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.put(player.getUniqueId(), optionalTime.get());
                     }
                 }
             }
-            else if (ChestRefill.ContainerTimeChangePlayer.containsKey(player.getUniqueId()))
+            else if (ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.containsKey(player.getUniqueId()))
             {
-                ChestRefill.ContainerTimeChangePlayer.remove(player.getUniqueId());
+                ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.remove(player.getUniqueId());
             }
         }
 

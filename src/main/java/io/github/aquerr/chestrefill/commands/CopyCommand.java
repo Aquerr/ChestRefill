@@ -26,22 +26,22 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
         {
             Player player = (Player)source;
 
-            if (ChestRefill.PlayersSelectionMode.containsKey(player.getUniqueId()))
+            if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
             {
-                if (SelectionMode.COPY != ChestRefill.PlayersSelectionMode.get(player.getUniqueId()))
+                if (SelectionMode.COPY != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
                 {
-                    ChestRefill.PlayersSelectionMode.replace(player.getUniqueId(), SelectionMode.COPY);
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.COPY);
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on copy mode"));
                 }
                 else
                 {
-                    ChestRefill.PlayersSelectionMode.remove(player.getUniqueId());
+                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                     player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off copy mode"));
                 }
             }
             else
             {
-                ChestRefill.PlayersSelectionMode.put(player.getUniqueId(), SelectionMode.COPY);
+                ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.COPY);
                 player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on copy mode"));
             }
         }

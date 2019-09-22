@@ -29,7 +29,7 @@ public class KitsCommand extends AbstractCommand implements CommandExecutor
     {
         List<Text> helpList = Lists.newArrayList();
 
-        for(Kit kit : super.getPlugin().getContainerManager().getKits())
+        for(Kit kit : super.getPlugin().getContainerManager().getKits().values())
         {
             Text.Builder itemsToShow = Text.builder();
 

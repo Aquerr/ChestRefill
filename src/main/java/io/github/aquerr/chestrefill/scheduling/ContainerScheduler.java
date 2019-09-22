@@ -17,7 +17,7 @@ public class ContainerScheduler
     public ContainerScheduler(ChestRefill plugin)
     {
         this.plugin = plugin;
-        this.tasks = new <String, Task>HashMap();
+        this.tasks = new HashMap<>();
     }
 
     public Map<String, Task> getScheduledTasks()
@@ -97,12 +97,6 @@ public class ContainerScheduler
 
     public Task cancelTask(String taskName)
     {
-//        Sponge.getScheduler().getScheduledTasks().forEach(x->
-//        {
-//          if(x.getName().equalsIgnoreCase(taskName))
-//              x.cancel();
-//        });
-
         Task task = this.tasks.remove(taskName);
 
         if(task != null)

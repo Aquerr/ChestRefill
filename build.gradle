@@ -1,14 +1,42 @@
 plugins {
-    id 'org.spongepowered.plugin' version '0.8.1'
+    id 'org.spongepowered.plugin' version '0.9.0'
     id 'idea'
     id 'eclipse'
     id 'java'
 }
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.10.2-1.4.0'
+version = '1.10.2-1.5.0'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
 dependencies {
     compile 'org.spongepowered:spongeapi:5.1.0'
+}
+
+jar {
+    if(System.getenv("JENKINS_HOME")) {
+        version = version + "_" + System.getenv("BUILD_NUMBER")
+        println("File name =>" + baseName)
+    }
+}
+
+tasks.create("publishBuildOnDiscord") {
+    group = "Publishing"
+    description = "Task for publishing the jar file to discord's jenkins channel"
+    doLast {
+        String[] jarFiles = new FileNameFinder().getFileNames(project.buildDir.getPath(), "**/*.jar")
+
+        if(jarFiles.length > 0) {
+            println("Found jar files: " + jarFiles)
+
+            String lastCommitDescription = "git log -1 --pretty=%B".execute().getText()
+            if(lastCommitDescription == null || lastCommitDescription == "") {
+                lastCommitDescription = "No changelog provided"
+            }
+
+            exec {
+                commandLine("java", "-jar", "..\\jenkinsdiscordbot-1.0.jar", "ChestRefill", jarFiles[0], lastCommitDescription)
+            }
+        }
+    }
 }

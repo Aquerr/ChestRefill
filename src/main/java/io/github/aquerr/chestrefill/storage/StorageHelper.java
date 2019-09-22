@@ -7,70 +7,41 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class StorageHelper
 {
     private final Queue<RefillableContainer> containersToSave;
-    private final Thread storageThread;
     private final Storage containerStorage;
 
     public StorageHelper(Path configDir)
     {
         containersToSave = new LinkedList<>();
-        storageThread = new Thread(startContainerSavingThread());
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(startContainerSavingThread());
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
-        ContainerCache.loadCache(containerStorage.getRefillableContainers());
-
-        //Start new thread directly
-        storageThread.start();
-    }
-
-    public Runnable startContainerSavingThread()
-    {
-        return () ->
-        {
-            int sleep = 1000;
-            while(true)
-            {
-                if(containersToSave.size() > 0)
-                {
-                    synchronized(containersToSave)
-                    {
-                        this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
-                        sleep = 1000;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        Thread.sleep(sleep);
-                        if(sleep < 16000)
-                        {
-                            sleep *= 2;
-                        }
-                    }
-                    catch(InterruptedException exception)
-                    {
-                        exception.printStackTrace();
-                    }
-                }
-            }
-        };
+        ContainerCache.loadCache(containerStorage.getRefillableContainers(), containerStorage.getKits());
     }
 
     public boolean addOrUpdateContainer(RefillableContainer containerToSave)
     {
-        ContainerCache.addOrUpdateContainerCache(containerToSave);
-        return this.containersToSave.add(containerToSave);
+        final boolean didSucceed = ContainerCache.addOrUpdateContainerCache(containerToSave);
+        synchronized(this.containersToSave)
+        {
+            this.containersToSave.add(containerToSave);
+            this.containersToSave.notify();
+        }
+        return didSucceed;
     }
 
     public boolean removeContainer(ContainerLocation containerLocation)
     {
-        ContainerCache.removeContainer(containerLocation);
-        return this.containerStorage.removeRefillableContainer(containerLocation);
+        CompletableFuture.runAsync(() -> this.containerStorage.removeRefillableContainer(containerLocation));
+        return ContainerCache.removeContainer(containerLocation);
     }
 
     public Collection<RefillableContainer> getRefillableContainers()
@@ -90,36 +61,66 @@ public class StorageHelper
 
     public boolean updateContainerTime(ContainerLocation containerLocation, int time)
     {
-        //TODO: Rework so that the separate thread will take hand of it
-        ContainerCache.updateContainerTime(containerLocation, time);
-        return this.containerStorage.updateContainerTime(containerLocation, time);
+        CompletableFuture.runAsync(() -> this.containerStorage.updateContainerTime(containerLocation, time));
+        return ContainerCache.updateContainerTime(containerLocation, time);
     }
 
     public boolean changeContainerName(ContainerLocation containerLocation, String containerName)
     {
-        //TODO: Rework so that the separate thread will take hand of it
-        ContainerCache.updateContainerName(containerLocation, containerName);
-        return this.containerStorage.changeContainerName(containerLocation, containerName);
+        CompletableFuture.runAsync(() -> this.containerStorage.changeContainerName(containerLocation, containerName));
+        return ContainerCache.updateContainerName(containerLocation, containerName);
     }
 
 
-    public List<Kit> getKits()
+    public Map<String, Kit> getKits()
     {
-        return this.containerStorage.getKits();
+        return ContainerCache.getKitsCache();
     }
 
     public boolean createKit(Kit kit)
     {
-        return this.containerStorage.createKit(kit);
+        CompletableFuture.runAsync(() -> this.containerStorage.createKit(kit));
+        return ContainerCache.addOrUpdateKitCache(kit);
     }
 
     public boolean removeKit(String kitName)
     {
-        return this.containerStorage.removeKit(kitName);
+        CompletableFuture.runAsync(() -> this.containerStorage.removeKit(kitName));
+        return ContainerCache.removeKit(kitName);
     }
 
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
-        return this.containerStorage.assignKit(containerLocation, kitName);
+        CompletableFuture.runAsync(() -> this.containerStorage.assignKit(containerLocation, kitName));
+        return ContainerCache.assignKit(containerLocation, kitName);
+    }
+
+    //TODO: Remove this and replace with CompletableFuture
+    private Runnable startContainerSavingThread()
+    {
+        return () ->
+        {
+            while(true)
+            {
+                synchronized(containersToSave)
+                {
+                    if(containersToSave.size() > 0)
+                    {
+                        this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            this.containersToSave.wait();
+                        }
+                        catch(InterruptedException exception)
+                        {
+                            exception.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
     }
 }
