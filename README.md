@@ -23,3 +23,7 @@ Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how 
 
 ## License
 [MIT](https://github.com/Aquerr/ChestRefill/blob/master/LICENSE)
+
+## Donation
+
+Creation of this plugin is really a time consuming task. If you would like to support me then you can send me some cookies through [PayPal](https://www.paypal.me/aquerr)
