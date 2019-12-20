@@ -24,8 +24,8 @@ public class VersionChecker
 
     public static boolean isLatest(String version)
     {
-        String latest = "https://api.github.com/repos/Aquerr/ChestRefill/releases";
-        String currentTag = "https://api.github.com/repos/Aquerr/ChestRefill/releases/tags/" + version;
+        String latest = "https://ore.spongepowered.org/api/v1/projects/chestrefill/versions";
+        String currentTag = "https://ore.spongepowered.org/api/v1/projects/chestrefill/versions/" + version;
 
         String latestJsonData = sendRequest(latest);
         String currentJsonData = sendRequest(currentTag);
