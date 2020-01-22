@@ -34,8 +34,8 @@ public class JSONStorage implements Storage
     private GsonConfigurationLoader kitsLoader;
     private ConfigurationNode kitsNode;
 
-    private WatchService _watchService;
-    private WatchKey _key;
+    private WatchService watchService;
+    private WatchKey key;
 
     public JSONStorage(Path configDir)
     {
@@ -62,8 +62,8 @@ public class JSONStorage implements Storage
             kitsNode = kitsLoader.load();
 
             //Register watcher
-            _watchService = configDir.getFileSystem().newWatchService();
-            _key = configDir.register(_watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+            watchService = configDir.getFileSystem().newWatchService();
+            key = configDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
             Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
             //Run a checkFileUpdate task every 2,5 second
@@ -333,28 +333,25 @@ public class JSONStorage implements Storage
 
     private Runnable checkFileUpdate()
     {
-        return new Runnable()
+        return () ->
         {
-            @Override
-            public void run()
+            try
             {
-                try
+                for (WatchEvent<?> event : key.pollEvents())
                 {
-                    for (WatchEvent<?> event : _key.pollEvents())
+                    final Path changedFilePath = (Path) event.context();
+                    if (changedFilePath.getFileName().toString().equals("containers.json"))
                     {
-                        final Path changedFilePath = (Path) event.context();
-                        if (changedFilePath.toString().contains("containers.json"))
-                        {
-                            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
-                            containersNode = containersLoader.load();
-                        }
+                        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                        containersNode = containersLoader.load();
+                        break;
                     }
-                    _key.reset();
                 }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+                key.reset();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
             }
         };
     }
