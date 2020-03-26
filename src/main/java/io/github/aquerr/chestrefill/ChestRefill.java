@@ -1,16 +1,22 @@
 package io.github.aquerr.chestrefill;
 
+import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.commands.arguments.KitNameArgument;
+import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
 import io.github.aquerr.chestrefill.listeners.RightClickListener;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
+import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
+import io.github.aquerr.chestrefill.storage.serializers.RefillableItemTypeSerializer;
 import io.github.aquerr.chestrefill.version.VersionChecker;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -34,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
  * Created by Aquerr on 2018-02-09.
  */
 
-@Plugin(id = PluginInfo.Id, name = PluginInfo.Name, version = PluginInfo.Version, description = PluginInfo.Description, authors = PluginInfo.Authors, url = PluginInfo.Url)
+@Plugin(id = PluginInfo.ID, name = PluginInfo.NAME, version = PluginInfo.VERSION, description = PluginInfo.DESCRIPTION, authors = PluginInfo.AUTHORS, url = PluginInfo.URL)
 public class ChestRefill
 {
     public static final Map<List<String>, CommandSpec> SUBCOMMANDS = new HashMap<>();
@@ -71,28 +77,29 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
+        registerTypeSerializers();
         this.containerManager = new ContainerManager(this, getConfigDir());
         this.containerScheduler = new ContainerScheduler(this);
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Chest Refill is loading... :D"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Initializing commands..."));
 
         initCommands();
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing listeners..."));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Initializing listeners..."));
 
         initListeners();
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Chest Refill is ready!"));
 
         CompletableFuture.runAsync(() ->{
-            if (VersionChecker.isLatest(PluginInfo.Version))
+            if (VersionChecker.isLatest(PluginInfo.VERSION))
             {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You are using the latest version!"));
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You are using the latest version!"));
             }
             else
             {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.Name, TextColors.RED, " is available online!"));
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.NAME, TextColors.RED, " is available online!"));
             }
         });
     }
@@ -239,5 +246,11 @@ public class ChestRefill
         Sponge.getEventManager().registerListeners(this, new ContainerBreakListener(this));
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener(this));
 //        Sponge.getEventManager().registerListeners(this, new DropItemListener());
+    }
+
+    private void registerTypeSerializers()
+    {
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(Kit.class), new KitTypeSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(RefillableItem.class), new RefillableItemTypeSerializer());
     }
 }

@@ -70,7 +70,7 @@ public class HelpCommand extends AbstractCommand implements CommandExecutor
         helpList.sort(Text::compareTo);
 
         PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "Chest Refill v" + PluginInfo.Version)).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(14);
+        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "Chest Refill v" + PluginInfo.VERSION)).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(14);
         paginationBuilder.sendTo(source);
 
         return CommandResult.success();

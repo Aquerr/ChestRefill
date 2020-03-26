@@ -34,4 +34,13 @@ public class Kit
     {
         return items;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Kit{" +
+                "name='" + name + '\'' +
+                ", items=" + items +
+                '}';
+    }
 }

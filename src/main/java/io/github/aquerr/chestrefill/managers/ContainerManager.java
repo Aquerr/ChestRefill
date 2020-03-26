@@ -398,12 +398,5 @@ public class ContainerManager
     public Kit getKit(final String name)
     {
         return getKits().get(name);
-//        final Map<String, Kit> kits = getKits().get(name);
-//        for(final Kit kit : kits)
-//        {
-//            if(kit.getName().equals(name))
-//                return kit;
-//        }
-//        return null;
     }
 }

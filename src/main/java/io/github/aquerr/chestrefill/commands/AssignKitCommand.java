@@ -13,9 +13,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class AssignKitCommand extends AbstractCommand implements CommandExecutor
 {
@@ -31,14 +29,14 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
 
         if(!(source instanceof Player))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Only in-game players can use this command!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
             return CommandResult.empty();
         }
 
         final Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
         if(kits.keySet().stream().noneMatch(x->x.equals(kitName)))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with such name does not exists!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Kit with such name does not exists!"));
             return CommandResult.empty();
         }
 
@@ -49,20 +47,20 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
             {
                 ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on assign mode"));
             }
             else
             {
                 ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off assign mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off assign mode"));
             }
         }
         else
         {
             ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
             ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
-            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on assign mode"));
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on assign mode"));
         }
 
         return CommandResult.success();

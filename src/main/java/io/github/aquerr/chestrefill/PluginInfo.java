@@ -8,11 +8,12 @@ import org.spongepowered.api.text.format.TextColors;
  */
 public abstract class PluginInfo
 {
-    public static final String Id = "chestrefill";
-    public static final String Name = "Chest Refill";
-    public static final String Version = "1.5.0";
-    public static final String Description = "Plugin for restoring contents of a container after the specified time.";
-    public static final String Url = "https://github.com/Aquerr/ChestRefill";
-    public static final Text PluginPrefix = Text.of(TextColors.GOLD, "[CR] ");
-    public static final String Authors = "Aquerr";
+    public static final String ID = "chestrefill";
+    public static final String NAME = "Chest Refill";
+    public static final String VERSION = "1.5.1";
+    public static final String DESCRIPTION = "Plugin for restoring contents of a container after the specified time.";
+    public static final String URL = "https://github.com/Aquerr/ChestRefill";
+    public static final Text PLUGIN_PREFIX = Text.of(TextColors.GOLD, "[CR] ");
+    public static final Text ERROR_PREFIX = Text.of(TextColors.RED, "[CR] ");
+    public static final String AUTHORS = "Aquerr";
 }

@@ -37,6 +37,11 @@ public class JSONStorage implements Storage
     private WatchService watchService;
     private WatchKey key;
 
+    private static final TypeToken<Kit> KIT_TYPE_TOKEN = TypeToken.of(Kit.class);
+//    private static final TypeToken<RefillableItem> REFILLABLE_ITEM_TYPE_TOKEN = TypeToken.of(RefillableItem.class);
+    private static final TypeToken<List<Kit>> KIT_LIST_TYPE_TOKEN = new TypeToken<List<Kit>>(){};
+    private static final TypeToken<List<RefillableItem>> REFILLABLE_TIME_LIST_TYPE_TOKEN = new TypeToken<List<RefillableItem>>(){};
+
     public JSONStorage(Path configDir)
     {
         try
@@ -97,7 +102,7 @@ public class JSONStorage implements Storage
             if(refillableContainer.getKitName().equals(""))
             {
                 //Set container's items
-                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new TypeToken<List<RefillableItem>>(){}, items);
+                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(REFILLABLE_TIME_LIST_TYPE_TOKEN, items);
             }
             else
             {
@@ -129,6 +134,7 @@ public class JSONStorage implements Storage
         catch (IOException | ObjectMappingException exception)
         {
             exception.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add/update container in the storage. Container = " + refillableContainer)));
         }
 
         return false;
@@ -150,6 +156,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not remove container from the storage. Container location = " + containerLocation)));
         }
 
         return false;
@@ -167,17 +174,14 @@ public class JSONStorage implements Storage
             String splitter = "\\|";
 
             String[] chestPosAndWorldUUID = chestPositionAndWorldUUIDString.split(splitter);
-
             UUID worldUUID = UUID.fromString(chestPosAndWorldUUID[1]);
 
-            String vectors[] = chestPosAndWorldUUID[0].replace("(", "").replace(")", "").replace(" ", "").split(",");
-
-            int x = Integer.valueOf(vectors[0]);
-            int y = Integer.valueOf(vectors[1]);
-            int z = Integer.valueOf(vectors[2]);
+            String[] vectors = chestPosAndWorldUUID[0].replace("(", "").replace(")", "").replace(" ", "").split(",");
+            int x = Integer.parseInt(vectors[0]);
+            int y = Integer.parseInt(vectors[1]);
+            int z = Integer.parseInt(vectors[2]);
 
             ContainerLocation containerLocation = new ContainerLocation(Vector3i.from(x, y, z), worldUUID);
-
             containerLocations.add(containerLocation);
         }
 
@@ -192,8 +196,8 @@ public class JSONStorage implements Storage
         for (ContainerLocation containerLocation : getContainerLocations())
         {
             RefillableContainer refillableContainer = getRefillableContainerFromFile(containerLocation);
-
-            refillingContainersList.add(refillableContainer);
+            if (refillableContainer != null)
+                refillingContainersList.add(refillableContainer);
         }
 
         return refillingContainersList;
@@ -217,6 +221,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not update container restore time. Container location = " + containerLocation + " | New time = " + time)));
         }
 
         return false;
@@ -239,6 +244,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not change container name. Container location = " + containerLocation + " | Container name = " + containerName)));
         }
 
         return false;
@@ -249,12 +255,13 @@ public class JSONStorage implements Storage
     {
         try
         {
-            final List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
+            final List<Kit> kits = kitsNode.getNode("kits").getList(KIT_TYPE_TOKEN, new ArrayList<>());
             return kits;
         }
         catch(ObjectMappingException e)
         {
             e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get kits from the storage.")));
         }
 
         return new ArrayList<>();
@@ -265,15 +272,15 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(new TypeToken<Kit>(){}));
-            kits.add(kit);
-            kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            final ConfigurationNode configurationNode = kitsNode.getNode("kits").getAppendedNode();
+            configurationNode.setValue(KIT_TYPE_TOKEN, kit);
             kitsLoader.save(kitsNode);
             return true;
         }
         catch(ObjectMappingException | IOException e)
         {
             e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add kit to the storage. Kit = " + kit)));
         }
 
         return false;
@@ -284,9 +291,9 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(new TypeToken<Kit>(){}));
+            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(KIT_TYPE_TOKEN));
             kits.removeIf(x->x.getName().equals(kitName));
-            kitsNode.getNode("kits").setValue(new TypeToken<List<Kit>>(){}, kits);
+            kitsNode.getNode("kits").setValue(KIT_LIST_TYPE_TOKEN, kits);
             kitsLoader.save(kitsNode);
 
             //Remove the kit from containers
@@ -305,6 +312,7 @@ public class JSONStorage implements Storage
         catch(ObjectMappingException | IOException e)
         {
             e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not remove kit from the storage. Kit name = " + kitName)));
         }
 
         return false;
@@ -326,6 +334,7 @@ public class JSONStorage implements Storage
         catch(IOException e)
         {
             e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not assign kit to the container location. Container location = " + containerLocation + " | Kit name = " + kitName)));
         }
 
         return false;
@@ -342,7 +351,7 @@ public class JSONStorage implements Storage
                     final Path changedFilePath = (Path) event.context();
                     if (changedFilePath.getFileName().toString().equals("containers.json"))
                     {
-                        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
                         containersNode = containersLoader.load();
                         break;
                     }
@@ -367,9 +376,8 @@ public class JSONStorage implements Storage
             if (containersName != null) name = (String)containersName;
 
             final BlockType containerBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
-            //final List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getList(new TypeToken<RefillableItem>() {});
             final String kitName = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").getString("");
-            List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(new TypeToken<List<RefillableItem>>() {});
+            List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(REFILLABLE_TIME_LIST_TYPE_TOKEN);
             final int time = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
             final boolean isOneItemAtTime = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
             final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
@@ -382,40 +390,14 @@ public class JSONStorage implements Storage
                 chestItems = new ArrayList<>();
             }
 
-            //Check if chest is using a kit. If it does then override its items.
-//            if(!kitName.equals(""))
-//            {
-//                chestItems = getKitItems(kitName);
-//            }
-
             return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission);
         }
         catch (ObjectMappingException e)
         {
             e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get a container from the storage. Container location = " + containerLocation)));
         }
 
         return null;
-    }
-
-    private List<RefillableItem> getKitItems(String kitName)
-    {
-        try
-        {
-            final List<Kit> kits = kitsNode.getNode("kits").getList(new TypeToken<Kit>(){});
-            for(Kit kit : kits)
-            {
-                if(kit.getName().equals(kitName))
-                {
-                    return kit.getItems();
-                }
-            }
-        }
-        catch(ObjectMappingException e)
-        {
-            e.printStackTrace();
-        }
-
-        return new ArrayList<>();
     }
 }

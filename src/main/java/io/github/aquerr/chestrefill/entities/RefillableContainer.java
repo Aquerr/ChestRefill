@@ -236,4 +236,22 @@ public class RefillableContainer
         result = prime * result + (this.requiredPermission != null ? this.requiredPermission.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString()
+    {
+        return "RefillableContainer{" +
+                "name='" + name + '\'' +
+                ", containerLocation=" + containerLocation +
+                ", items=" + items +
+                ", containerBlockType=" + containerBlockType +
+                ", restoreTimeInSeconds=" + restoreTimeInSeconds +
+                ", oneItemAtTime=" + oneItemAtTime +
+                ", replaceExistingItems=" + replaceExistingItems +
+                ", hiddenIfNoItems=" + hiddenIfNoItems +
+                ", hidingBlock=" + hidingBlock +
+                ", kitName='" + kitName + '\'' +
+                ", requiredPermission='" + requiredPermission + '\'' +
+                '}';
+    }
 }

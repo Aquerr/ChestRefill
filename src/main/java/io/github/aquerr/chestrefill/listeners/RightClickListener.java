@@ -53,7 +53,7 @@ public class RightClickListener extends AbstractListener
             case CREATE:
                 if(optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This container is already marked as a refilling container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This container is already marked as a refilling container!"));
                 }
                 else
                 {
@@ -63,9 +63,9 @@ public class RightClickListener extends AbstractListener
                     final boolean didSucceed = super.getPlugin().getContainerManager().addRefillableContainer(refillableContainer);
                     if (didSucceed)
                     {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a refilling container!"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully created a refilling container!"));
                     }
-                    else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                    else player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 }
                 break;
 
@@ -73,17 +73,17 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
                 }
                 else
                 {
                     final boolean didSucceed = super.getPlugin().getContainerManager().removeRefillableContainer(refillableContainer.getContainerLocation());
                     if(didSucceed)
                     {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully removed a refilling container!"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully removed a refilling container!"));
                     }
                     else
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 }
                 break;
             }
@@ -92,7 +92,7 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
 
                 }
                 else
@@ -106,10 +106,10 @@ public class RightClickListener extends AbstractListener
                     final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
                     if(didSucceed)
                     {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling container!"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated a refilling container!"));
                     }
                     else
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 }
                 break;
             }
@@ -118,7 +118,7 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
                 }
                 else
                 {
@@ -129,15 +129,15 @@ public class RightClickListener extends AbstractListener
 
                         if(didSucceed)
                         {
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated container's refill time!"));
+                            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated container's refill time!"));
                         }
                         else
-                            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                     }
                     else
                     {
                         RefillableContainer chestToView = super.getPlugin().getContainerManager().getRefillableContainers().stream().filter(x -> x.getContainerLocation().equals(refillableContainer.getContainerLocation())).findFirst().get();
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "This container refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "This container refills every ", TextColors.GREEN, chestToView.getRestoreTime(), TextColors.YELLOW, " seconds"));
                     }
                 }
                 ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.remove(player.getUniqueId());
@@ -148,17 +148,17 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
                 }
                 else
                 {
                     final boolean didSucceed = super.getPlugin().getContainerManager().renameRefillableContainer(refillableContainer.getContainerLocation(), ChestRefill.PLAYER_CHEST_NAME.get(player.getUniqueId()));
                     if(didSucceed)
                     {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully updated a refilling container!"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated a refilling container!"));
                     }
                     else
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 }
                 break;
             }
@@ -167,12 +167,12 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
                 }
                 else
                 {
                     ChestRefill.PLAYER_COPY_REFILLABLE_CONTAINER.put(player.getUniqueId(), refillableContainer);
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Now select a new container which should behave in the same way!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Now select a new container which should behave in the same way!"));
                     break;
                 }
                 break;
@@ -183,7 +183,7 @@ public class RightClickListener extends AbstractListener
                 final RefillableContainer copiedContainer = ChestRefill.PLAYER_COPY_REFILLABLE_CONTAINER.get(player.getUniqueId());
                 if(!copiedContainer.getContainerBlockType().equals(refillableContainer.getContainerBlockType()))
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Containers must be of the same type!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Containers must be of the same type!"));
                     break;
                 }
 
@@ -200,9 +200,9 @@ public class RightClickListener extends AbstractListener
 
                 if (didSucceed)
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully copied a refilling container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully copied a refilling container!"));
                 }
-                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                else player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 ChestRefill.PLAYER_COPY_REFILLABLE_CONTAINER.remove(player.getUniqueId());
                 break;
             }
@@ -213,9 +213,9 @@ public class RightClickListener extends AbstractListener
                 boolean didSucceed = super.getPlugin().getContainerManager().createKit(kit);
                 if (didSucceed)
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully created a kit!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully created a kit!"));
                 }
-                else player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                else player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
 
                 ChestRefill.PLAYER_KIT_NAME.remove(player.getUniqueId());
                 break;
@@ -225,17 +225,17 @@ public class RightClickListener extends AbstractListener
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
                 {
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "This is not a refillable container!"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
                 }
                 else
                 {
                     final boolean didSucceed = super.getPlugin().getContainerManager().assignKit(refillableContainer.getContainerLocation(), ChestRefill.PLAYER_KIT_ASSIGN.get(player.getUniqueId()));
                     if(didSucceed)
                     {
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "Successfully assigned a kit to the refilling container!"));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully assigned a kit to the refilling container!"));
                     }
                     else
-                        player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Something went wrong..."));
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
                 }
                 ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
                 break;
@@ -271,7 +271,7 @@ public class RightClickListener extends AbstractListener
             final RefillableContainer refillableContainer = optionalContainerAtLocation.get();
             if(!refillableContainer.getRequiredPermission().equals("") && !player.hasPermission(refillableContainer.getRequiredPermission()))
             {
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "You don't have permissions to open this chest!"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You don't have permissions to open this chest!"));
                 event.setCancelled(true);
                 return;
             }

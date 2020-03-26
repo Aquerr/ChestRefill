@@ -49,4 +49,14 @@ public class RefillableItem
     {
         return chance;
     }
+
+    @Override
+    public String toString()
+    {
+        return "RefillableItem{" +
+                "chance=" + chance +
+                ", item=" + item +
+                ", slot=" + slot +
+                '}';
+    }
 }

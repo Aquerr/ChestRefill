@@ -19,7 +19,6 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -97,7 +96,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
             {
                 final Player player = (Player)source;
                 player.setLocation(new Location<>(player.getWorld(), this.chestPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected container!"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You were teleported to the selected container!"));
             }
         }
     }
