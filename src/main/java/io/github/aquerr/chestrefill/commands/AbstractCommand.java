@@ -1,8 +1,9 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
+import org.spongepowered.api.command.spec.CommandExecutor;
 
-public abstract class AbstractCommand
+public abstract class AbstractCommand implements CommandExecutor
 {
     private final ChestRefill plugin;
 

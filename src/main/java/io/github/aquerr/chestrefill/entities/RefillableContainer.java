@@ -177,6 +177,9 @@ public class RefillableContainer
         if(!this.containerLocation.equals(((RefillableContainer) obj).containerLocation))
             return false;
 
+        if(!this.name.equals(((RefillableContainer) obj).name))
+            return false;
+
         Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
 
         this.items.forEach(x-> {
@@ -211,9 +214,6 @@ public class RefillableContainer
             return false;
 
         if(!this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
-            return false;
-
-        if(!this.name.equals(((RefillableContainer) obj).name))
             return false;
 
         return true;

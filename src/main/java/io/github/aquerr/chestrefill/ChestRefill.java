@@ -4,13 +4,8 @@ import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.commands.arguments.KitNameArgument;
-import io.github.aquerr.chestrefill.entities.Kit;
-import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.entities.RefillableItem;
-import io.github.aquerr.chestrefill.entities.SelectionMode;
-import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
-import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
-import io.github.aquerr.chestrefill.listeners.RightClickListener;
+import io.github.aquerr.chestrefill.entities.*;
+import io.github.aquerr.chestrefill.listeners.*;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
 import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
@@ -50,6 +45,8 @@ public class ChestRefill
     public static final Map<UUID, RefillableContainer> PLAYER_COPY_REFILLABLE_CONTAINER = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_NAME = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
+
+    public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
 
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;
@@ -228,6 +225,29 @@ public class ChestRefill
                 .executor(new KitsCommand(this))
                 .build());
 
+        //ScanAndCreateCommand
+        SUBCOMMANDS.put(Arrays.asList("searchandcreate"), CommandSpec.builder()
+                .description(Text.of("Scans selected region and converts found containers to refillable containers"))
+                .permission(PluginPermissions.SEARCH_AND_CREATE_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("restoreTime"))),
+                        GenericArguments.optional(GenericArguments.string(Text.of("requiredPermission"))))
+                .executor(new SearchAndCreateCommand(this))
+                .build());
+
+        //Deselect Command
+        SUBCOMMANDS.put(Arrays.asList("deselect", "desel"), CommandSpec.builder()
+                .description(Text.of("Clears selection points marked with ChestRefill's wand"))
+                .permission(PluginPermissions.DESELECT_COMMAND)
+                .executor(new DeselectCommand(this))
+                .build());
+
+        //Wand Command
+        SUBCOMMANDS.put(Arrays.asList("wand"), CommandSpec.builder()
+                .description(Text.of("Gives ChestRefill wand"))
+                .permission(PluginPermissions.WAND_COMMAND)
+                .executor(new WandCommand(this))
+                .build());
+
         //Build all commands
         CommandSpec mainCommand = CommandSpec.builder()
                 .description(Text.of("Displays all available commands"))
@@ -245,6 +265,8 @@ public class ChestRefill
         Sponge.getEventManager().registerListeners(this, new RightClickListener(this));
         Sponge.getEventManager().registerListeners(this, new ContainerBreakListener(this));
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener(this));
+        Sponge.getEventManager().registerListeners(this, new PlayerDisconnectListener(this));
+        Sponge.getEventManager().registerListeners(this, new WandUsageListener(this));
 //        Sponge.getEventManager().registerListeners(this, new DropItemListener());
     }
 

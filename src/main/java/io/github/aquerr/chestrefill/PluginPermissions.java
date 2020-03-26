@@ -15,11 +15,15 @@ public abstract class PluginPermissions
     public static final String REFILLALL_COMMAND = "chestrefill.command.refillall";
     public static final String REFILL_COMMAND = "chestrefill.command.refill";
     public static final String SETNAME_COMMAND = "chestrefill.command.setname";
+    public static final String SEARCH_AND_CREATE_COMMAND = "chestrefill.command.scanandcreate";
 
     public static final String KITS_COMMAND = "chestrefill.command.kit.kits";
     public static final String CREATE_KIT_COMMAND = "chestrefill.command.kit.create";
     public static final String REMOVE_KIT_COMMAND = "chestrefill.command.kit.remove";
     public static final String ASSIGN_KIT_COMMAND = "chestrefill.command.kit.assign";
+
+    public static final String WAND_COMMAND = "chestrefill.command.wand";
+    public static final String DESELECT_COMMAND = "chestrefill.command.deselect";
 
     public static final String VERSION_NOTIFY = "chestrefill.version.notify";
 }
