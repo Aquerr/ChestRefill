@@ -131,7 +131,7 @@ public class JSONStorage implements Storage
 
             return true;
         }
-        catch (IOException | ObjectMappingException exception)
+        catch (Exception exception)
         {
             exception.printStackTrace();
             Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add/update container in the storage. Container = " + refillableContainer)));
@@ -277,7 +277,7 @@ public class JSONStorage implements Storage
             kitsLoader.save(kitsNode);
             return true;
         }
-        catch(ObjectMappingException | IOException e)
+        catch(Exception e)
         {
             e.printStackTrace();
             Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add kit to the storage. Kit = " + kit)));
@@ -309,7 +309,7 @@ public class JSONStorage implements Storage
             }
             return true;
         }
-        catch(ObjectMappingException | IOException e)
+        catch(Exception e)
         {
             e.printStackTrace();
             Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not remove kit from the storage. Kit name = " + kitName)));
@@ -392,7 +392,7 @@ public class JSONStorage implements Storage
 
             return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission);
         }
-        catch (ObjectMappingException e)
+        catch (Exception e)
         {
             e.printStackTrace();
             Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get a container from the storage. Container location = " + containerLocation)));
