@@ -1,21 +1,15 @@
 package io.github.aquerr.chestrefill.entities;
 
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.item.inventory.ItemStack;
 
-@ConfigSerializable
 public class RefillableItem
 {
     //Chance: 1 = 100%
-    @Setting(comment = "Chance for this item to regenerate")
     private float chance = 1f;
 
     //Item
-    @Setting
     private ItemStack item;
 
-    @Setting
     private int slot;
 
     public RefillableItem()

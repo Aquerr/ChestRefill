@@ -9,8 +9,11 @@ import io.github.aquerr.chestrefill.listeners.*;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
 import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
+import io.github.aquerr.chestrefill.storage.serializers.RefillableItemListTypeSerializer;
 import io.github.aquerr.chestrefill.storage.serializers.RefillableItemTypeSerializer;
 import io.github.aquerr.chestrefill.version.VersionChecker;
+import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -272,7 +275,8 @@ public class ChestRefill
 
     private void registerTypeSerializers()
     {
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(Kit.class), new KitTypeSerializer());
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(RefillableItem.class), new RefillableItemTypeSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(Kit.class), new KitTypeSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(new TypeToken<List<RefillableItem>>(){}, new RefillableItemListTypeSerializer());
     }
 }

@@ -30,6 +30,6 @@ public class KitTypeSerializer implements TypeSerializer<Kit>
             return;
 
         value.getNode("name").setValue(obj.getName());
-        value.getNode("items").setValue(obj.getItems());
+        value.getNode("items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, obj.getItems());
     }
 }

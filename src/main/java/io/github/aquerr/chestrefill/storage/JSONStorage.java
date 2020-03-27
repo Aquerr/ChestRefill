@@ -1,6 +1,7 @@
 package io.github.aquerr.chestrefill.storage;
 
 import com.flowpowered.math.vector.Vector3i;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
@@ -8,11 +9,15 @@ import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
+import io.github.aquerr.chestrefill.storage.serializers.ChestRefillTypeSerializers;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.ConfigurationOptions;
+import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -27,20 +32,15 @@ import java.util.*;
 public class JSONStorage implements Storage
 {
     private Path containersPath;
-    private GsonConfigurationLoader containersLoader;
+    private ChestRefillGsonConfigurationLoader containersLoader;
     private ConfigurationNode containersNode;
 
     private Path kitsPath;
-    private GsonConfigurationLoader kitsLoader;
+    private ChestRefillGsonConfigurationLoader kitsLoader;
     private ConfigurationNode kitsNode;
 
     private WatchService watchService;
     private WatchKey key;
-
-    private static final TypeToken<Kit> KIT_TYPE_TOKEN = TypeToken.of(Kit.class);
-//    private static final TypeToken<RefillableItem> REFILLABLE_ITEM_TYPE_TOKEN = TypeToken.of(RefillableItem.class);
-    private static final TypeToken<List<Kit>> KIT_LIST_TYPE_TOKEN = new TypeToken<List<Kit>>(){};
-    private static final TypeToken<List<RefillableItem>> REFILLABLE_TIME_LIST_TYPE_TOKEN = new TypeToken<List<RefillableItem>>(){};
 
     public JSONStorage(Path configDir)
     {
@@ -59,12 +59,14 @@ public class JSONStorage implements Storage
                 Files.createFile(kitsPath);
             }
 
+            containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setPath(containersPath));
+            ConfigurationOptions options = this.containersLoader.getDefaultOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+                    Short.class, Byte.class, Number.class));
 
-            containersLoader = GsonConfigurationLoader.builder().setPath(containersPath).build();
-            containersNode = containersLoader.load();
+            containersNode = containersLoader.load(options);
 
-            kitsLoader = GsonConfigurationLoader.builder().setPath(kitsPath).build();
-            kitsNode = kitsLoader.load();
+            kitsLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(options).setPath(kitsPath));
+            kitsNode = kitsLoader.load(options);
 
             //Register watcher
             watchService = configDir.getFileSystem().newWatchService();
@@ -102,7 +104,7 @@ public class JSONStorage implements Storage
             if(refillableContainer.getKitName().equals(""))
             {
                 //Set container's items
-                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(REFILLABLE_TIME_LIST_TYPE_TOKEN, items);
+                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, items);
             }
             else
             {
@@ -255,7 +257,7 @@ public class JSONStorage implements Storage
     {
         try
         {
-            final List<Kit> kits = kitsNode.getNode("kits").getList(KIT_TYPE_TOKEN, new ArrayList<>());
+            final List<Kit> kits = kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, new ArrayList<>());
             return kits;
         }
         catch(ObjectMappingException e)
@@ -272,8 +274,20 @@ public class JSONStorage implements Storage
     {
         try
         {
-            final ConfigurationNode configurationNode = kitsNode.getNode("kits").getAppendedNode();
-            configurationNode.setValue(KIT_TYPE_TOKEN, kit);
+            final ConfigurationNode configurationNode = kitsNode.getNode("kits");
+            final ConfigurationNode newNode = configurationNode.getAppendedNode();
+
+            if (newNode.getOptions().acceptsType(Short.class) && newNode.getOptions().acceptsType(Byte.class))
+                newNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+            else
+            {
+                ConfigurationOptions options = newNode.getOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+                        Short.class, Byte.class, Number.class));
+
+                final ConfigurationNode fixedNode = SimpleCommentedConfigurationNode.root(options);
+                fixedNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+                configurationNode.setValue(fixedNode);
+            }
             kitsLoader.save(kitsNode);
             return true;
         }
@@ -291,9 +305,9 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(KIT_TYPE_TOKEN));
+            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN));
             kits.removeIf(x->x.getName().equals(kitName));
-            kitsNode.getNode("kits").setValue(KIT_LIST_TYPE_TOKEN, kits);
+            kitsNode.getNode("kits").setValue(ChestRefillTypeSerializers.KIT_LIST_TYPE_TOKEN, kits);
             kitsLoader.save(kitsNode);
 
             //Remove the kit from containers
@@ -377,7 +391,7 @@ public class JSONStorage implements Storage
 
             final BlockType containerBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
             final String kitName = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").getString("");
-            List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(REFILLABLE_TIME_LIST_TYPE_TOKEN);
+            List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
             final int time = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
             final boolean isOneItemAtTime = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
             final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
