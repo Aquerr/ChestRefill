@@ -257,8 +257,7 @@ public class ContainerManager
                                 {
                                     if(lowestChanceItem.getSlot() == i)
                                     {
-                                        //Offer removes items from existing list and that's why we need to build a new itemstack
-                                        slot.offer(ItemStack.builder().fromItemStack(lowestChanceItem.getItem()).build());
+                                        slot.offer(lowestChanceItem.getItem().createStack());
                                         break;
                                     }
 
@@ -275,8 +274,7 @@ public class ContainerManager
                                 {
                                     if(item.getSlot() == i)
                                     {
-                                        //Offer removes items from existing list and that's why we need to build a new itemstack
-                                        slot.offer(ItemStack.builder().fromItemStack(item.getItem()).build());
+                                        slot.offer(item.getItem().createStack());
                                     }
                                     i++;
                                 }
@@ -301,7 +299,7 @@ public class ContainerManager
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block type : " + chestToRefill.getContainerBlockType()));
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block position : " + chestToRefill.getContainerLocation().getBlockPosition() + "|" + chestToRefill.getContainerLocation().getWorldUUID().toString()));
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container items : " + chestToRefill.getItems()));
-        this.plugin.getConsole().sendMessage(Text.of(TextColors.YELLOW, "Suggestion: Remove this container from the containers.json file and restart server."));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.YELLOW, "Suggestion: Remove this container from the containers.json file and restart the server."));
 
         return false;
     }
@@ -316,8 +314,6 @@ public class ContainerManager
         for (RefillableContainer refillableContainer : getRefillableContainers())
         {
             startRefillingContainer(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime());
-//            String name = "Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString();
-//            this.plugin.getContainerScheduler().scheduleWithInterval(name, refillableContainer.getRestoreTime(), TimeUnit.SECONDS, runRefillContainer(refillableContainer.getContainerLocation()));
         }
     }
 
@@ -354,27 +350,9 @@ public class ContainerManager
     {
         //We need to load items from kit and assign them to the container.
         final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
-        refillableContainer.setKit(kitName);
-//        final Map<String, Kit> kits = getKits();
-//        Kit assignedKit = null;
-//
-//        for(Kit kit : kits.values())
-//        {
-//            if(kit.getName().equals(kitName))
-//            {
-//                assignedKit = kit;
-//            }
-//        }
-//
-//        if(assignedKit != null)
-//        {
-            //This code modifies cache. This is bad. We should not modify cache outside ContainerCache class.
-//            refillableContainer.setItems(assignedKit.getItems());
-//            refillableContainer.setKit(kitName);
-            return this.storageHelper.assignKit(containerLocation, kitName);
-//        }
-
-//        return false;
+        if (refillableContainer != null)
+            refillableContainer.setKit(kitName);
+        return this.storageHelper.assignKit(containerLocation, kitName);
     }
 
     public Optional<RefillableContainer> getRefillableContainerAtLocation(ContainerLocation containerLocation)

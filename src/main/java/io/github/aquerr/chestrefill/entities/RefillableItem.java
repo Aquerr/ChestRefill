@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.entities;
 
-import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 
 public class RefillableItem
 {
@@ -8,7 +8,7 @@ public class RefillableItem
     private float chance = 1f;
 
     //Item
-    private ItemStack item;
+    private ItemStackSnapshot item;
 
     private int slot;
 
@@ -17,19 +17,19 @@ public class RefillableItem
 
     }
 
-    public RefillableItem(ItemStack itemStack)
+    public RefillableItem(ItemStackSnapshot itemStack)
     {
         this.item = itemStack;
     }
 
-    public RefillableItem(ItemStack itemStack, int slot, float chance)
+    public RefillableItem(ItemStackSnapshot itemStack, int slot, float chance)
     {
         this.item = itemStack;
         this.slot = slot;
         this.chance = chance;
     }
 
-    public ItemStack getItem()
+    public ItemStackSnapshot getItem()
     {
         return this.item;
     }

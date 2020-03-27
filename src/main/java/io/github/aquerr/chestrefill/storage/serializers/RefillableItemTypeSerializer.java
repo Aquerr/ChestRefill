@@ -15,6 +15,7 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
 
 import java.util.List;
@@ -136,22 +137,17 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
         if (emptyEnchant)
         {
             snapshot.offer(Keys.ITEM_ENCHANTMENTS, Lists.newArrayList());
-            return new RefillableItem(snapshot, slot, chance);
+            return new RefillableItem(snapshot.createSnapshot(), slot, chance);
         }
 
         if (snapshot.get(Keys.ITEM_ENCHANTMENTS).isPresent())
         {
             // Reset the data.
             snapshot.offer(Keys.ITEM_ENCHANTMENTS, snapshot.get(Keys.ITEM_ENCHANTMENTS).get());
-            return new RefillableItem(snapshot, slot, chance);
+            return new RefillableItem(snapshot.createSnapshot(), slot, chance);
         }
 
-        return new RefillableItem(snapshot, slot, chance);
-
-//        final float chance = value.getNode("change").getFloat(1f);
-//        final int slot = value.getNode("slot").getInt();
-//        final ItemStack item = value.getNode("item").getValue(TypeToken.of(ItemStack.class));
-//        return new RefillableItem(item, slot, chance);
+        return new RefillableItem(snapshot.createSnapshot(), slot, chance);
     }
 
     @Override
@@ -160,11 +156,7 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
         if (obj == null)
             return;
 
-//        value.getNode("chance").setValue(obj.getChance());
-//        value.getNode("slot").setValue(obj.getSlot());
-//        value.getNode("item").setValue(TypeToken.of(ItemStack.class), obj.getItem());
-
-        final ItemStack itemStack = obj.getItem();
+        final ItemStackSnapshot itemStack = obj.getItem();
         DataView view;
         try
         {
@@ -197,16 +189,6 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
 
         value.getNode("chance").setValue(obj.getChance());
         value.getNode("slot").setValue(obj.getSlot());
-        final ConfigurationNode itemNode = value.getNode("item");
-//        if (itemNode.getOptions().acceptsType(Short.class) && itemNode.getOptions().acceptsType(Byte.class))
-            itemNode.setValue(DataTranslators.CONFIGURATION_NODE.translate(view));
-//        else
-//        {
-//            ConfigurationOptions options = itemNode.getOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
-//                    Short.class, Byte.class, Number.class));
-//
-//            final ConfigurationNode fixedNode = SimpleCommentedConfigurationNode.root(options).setValue(DataTranslators.CONFIGURATION_NODE.translate(view));
-//            itemNode.setValue(fixedNode);
-//        }
+        value.getNode("item").setValue(DataTranslators.CONFIGURATION_NODE.translate(view));
     }
 }

@@ -6,6 +6,7 @@ import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 
@@ -151,10 +152,11 @@ public class RefillableContainer
         int slot = 0;
         for(final Inventory slotInventory : carrier.getInventory().slots())
         {
-            if (slotInventory.peek().isPresent())
+            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
             {
-                final DataView container = slotInventory.peek().get().toContainer();
-                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
+//                final DataView container = slotInventory.peek().get().toContainer();
+                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+//                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
             }
             slot++;
         }
@@ -180,21 +182,10 @@ public class RefillableContainer
         if(!this.name.equals(((RefillableContainer) obj).name))
             return false;
 
-        Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
-
-        this.items.forEach(x-> {
-            //Offer removes items from inventory so we need to build new temp items.
-            ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
-            tempInventory.offer(tempItemStack);
-        });
-
         //Compare items
-        for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
+        if (!this.items.containsAll(((RefillableContainer) obj).getItems()))
         {
-            if (!tempInventory.contains(comparedItem.getItem()))
-            {
-                return false;
-            }
+            return false;
         }
 
         //Compare restore time
