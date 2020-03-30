@@ -178,7 +178,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("refill"), CommandSpec.builder()
                 .description(Text.of("Force refill a specific container"))
                 .permission(PluginPermissions.REFILL_COMMAND)
-                .arguments(new ContainerNameArgument(Text.of("chest name")))
+                .arguments(GenericArguments.onlyOne(new ContainerNameArgument(Text.of("chest name"))))
                 .executor(new RefillCommand(this))
                 .build());
 
@@ -209,7 +209,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Arrays.asList("removekit"), CommandSpec.builder()
                 .description(Text.of("Removes a kit"))
                 .permission(PluginPermissions.REMOVE_KIT_COMMAND)
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
+                .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
                 .executor(new RemoveKitCommand(this))
                 .build());
 

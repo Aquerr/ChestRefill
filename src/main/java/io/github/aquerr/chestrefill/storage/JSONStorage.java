@@ -3,6 +3,7 @@ package io.github.aquerr.chestrefill.storage;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
+import com.typesafe.config.parser.ConfigNode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
@@ -14,6 +15,8 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode;
 import ninja.leaping.configurate.gson.GsonConfigurationLoader;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
@@ -25,6 +28,8 @@ import org.spongepowered.api.text.format.TextColors;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by Aquerr on 2018-02-12.
@@ -35,9 +40,27 @@ public class JSONStorage implements Storage
     private ChestRefillGsonConfigurationLoader containersLoader;
     private ConfigurationNode containersNode;
 
-    private Path kitsPath;
-    private ChestRefillGsonConfigurationLoader kitsLoader;
-    private ConfigurationNode kitsNode;
+    private Map<String, ConfigurationLoader<? extends ConfigurationNode>> kitsLoaders = new HashMap<>();
+
+//    private Path kitsPath;
+//    private ChestRefillGsonConfigurationLoader kitsLoader;
+//    private ConfigurationNode kitsNode;
+
+    private Path kitsDirectoryPath;
+    private Function<Path, ConfigurationLoader<? extends ConfigurationNode>> pathToConfigurationLoaderFunction = (path ->
+    {
+        final String fileName = path.getFileName().toString().toLowerCase();
+        if (this.kitsLoaders.containsKey(fileName))
+        {
+            return this.kitsLoaders.get(fileName);
+        }
+        else
+        {
+            ChestRefillGsonConfigurationLoader configurationLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(path));
+            this.kitsLoaders.put(fileName, configurationLoader);
+            return configurationLoader;
+        }
+    });
 
     private WatchService watchService;
     private WatchKey key;
@@ -47,26 +70,25 @@ public class JSONStorage implements Storage
         try
         {
             containersPath = Paths.get(configDir + "/containers.json");
-            kitsPath = Paths.get(configDir + "/kits.json");
 
             if (!Files.exists(containersPath))
             {
                 Files.createFile(containersPath);
             }
 
-            if (!Files.exists(kitsPath))
+            this.kitsDirectoryPath = configDir.resolve("kits");
+
+            if (!Files.exists(this.kitsDirectoryPath))
             {
-                Files.createFile(kitsPath);
+                Files.createDirectory(this.kitsDirectoryPath);
             }
 
-            containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setPath(containersPath));
-            ConfigurationOptions options = this.containersLoader.getDefaultOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
-                    Short.class, Byte.class, Number.class));
+            containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(containersPath));
 
-            containersNode = containersLoader.load(options);
+            containersNode = containersLoader.load(getDefaultOptions());
 
-            kitsLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(options).setPath(kitsPath));
-            kitsNode = kitsLoader.load(options);
+//            kitsLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(options).setPath(kitsPath));
+//            kitsNode = kitsLoader.load(options);
 
             //Register watcher
             watchService = configDir.getFileSystem().newWatchService();
@@ -257,10 +279,26 @@ public class JSONStorage implements Storage
     {
         try
         {
-            final List<Kit> kits = kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, new ArrayList<>());
-            return kits;
+            return Files.list(this.kitsDirectoryPath)
+                    .filter(Files::isRegularFile)
+                    .map(pathToConfigurationLoaderFunction)
+                    .map(configurationLoader ->
+                    {
+                        try
+                        {
+                            final ConfigurationNode configNode = configurationLoader.load();
+                            return configNode.getValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN);
+                        }
+                        catch (IOException | ObjectMappingException e)
+                        {
+                            e.printStackTrace();
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
         }
-        catch(ObjectMappingException e)
+        catch(IOException e)
         {
             e.printStackTrace();
             Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get kits from the storage.")));
@@ -274,21 +312,33 @@ public class JSONStorage implements Storage
     {
         try
         {
-            final ConfigurationNode configurationNode = kitsNode.getNode("kits");
-            final ConfigurationNode newNode = configurationNode.getAppendedNode();
-
-            if (newNode.getOptions().acceptsType(Short.class) && newNode.getOptions().acceptsType(Byte.class))
-                newNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
-            else
+            final Path kitPath = this.kitsDirectoryPath.resolve(kit.getName().toLowerCase() + ".json");
+            if(Files.notExists(kitPath))
             {
-                ConfigurationOptions options = newNode.getOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
-                        Short.class, Byte.class, Number.class));
-
-                final ConfigurationNode fixedNode = SimpleCommentedConfigurationNode.root(options);
-                fixedNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
-                configurationNode.setValue(fixedNode);
+                Files.createFile(kitPath);
             }
-            kitsLoader.save(kitsNode);
+
+            final ChestRefillGsonConfigurationLoader kitConfigLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(kitPath));
+            final ConfigurationNode configurationNode = kitConfigLoader.createEmptyNode();
+            configurationNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+
+//            final ConfigurationNode configurationNode = kitsNode.getNode("kits");
+//            final ConfigurationNode newNode = configurationNode.getAppendedNode();
+
+//            if (newNode.getOptions().acceptsType(Short.class) && newNode.getOptions().acceptsType(Byte.class))
+//                newNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+//            else
+//            {
+//                ConfigurationOptions options = newNode.getOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+//                        Short.class, Byte.class, Number.class));
+//
+//                final ConfigurationNode fixedNode = SimpleCommentedConfigurationNode.root(options);
+//                fixedNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+//                configurationNode.setValue(fixedNode);
+//            }
+//            kitsLoader.save(kitsNode);
+            kitConfigLoader.save(configurationNode);
+            this.kitsLoaders.put(kit.getName().toLowerCase(), kitConfigLoader);
             return true;
         }
         catch(Exception e)
@@ -305,10 +355,13 @@ public class JSONStorage implements Storage
     {
         try
         {
-            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN));
-            kits.removeIf(x->x.getName().equals(kitName));
-            kitsNode.getNode("kits").setValue(ChestRefillTypeSerializers.KIT_LIST_TYPE_TOKEN, kits);
-            kitsLoader.save(kitsNode);
+            Files.deleteIfExists(this.kitsDirectoryPath.resolve(kitName.toLowerCase() + ".json"));
+            this.kitsLoaders.remove(kitName.toLowerCase());
+
+//            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN));
+//            kits.removeIf(x->x.getName().equals(kitName));
+//            kitsNode.getNode("kits").setValue(ChestRefillTypeSerializers.KIT_LIST_TYPE_TOKEN, kits);
+//            kitsLoader.save(kitsNode);
 
             //Remove the kit from containers
             final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
@@ -318,7 +371,7 @@ public class JSONStorage implements Storage
                     continue;
                 final String blockPositionAndWorldUUIDString = String.valueOf(blockPositionAndWorldUUID);
                 final Object kitValue = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").getValue();
-                if(kitValue != null && String.valueOf(kitValue).equals(kitName))
+                if(kitValue != null && String.valueOf(kitValue).equalsIgnoreCase(kitName))
                     containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").setValue("");
             }
             return true;
@@ -413,5 +466,12 @@ public class JSONStorage implements Storage
         }
 
         return null;
+    }
+
+    private ConfigurationOptions getDefaultOptions()
+    {
+        final ConfigurationOptions configurationOptions = ConfigurationOptions.defaults();
+        return configurationOptions.setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+                Short.class, Byte.class, Number.class));
     }
 }
