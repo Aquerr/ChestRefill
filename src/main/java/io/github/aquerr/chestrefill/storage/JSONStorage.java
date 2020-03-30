@@ -42,10 +42,6 @@ public class JSONStorage implements Storage
 
     private Map<String, ConfigurationLoader<? extends ConfigurationNode>> kitsLoaders = new HashMap<>();
 
-//    private Path kitsPath;
-//    private ChestRefillGsonConfigurationLoader kitsLoader;
-//    private ConfigurationNode kitsNode;
-
     private Path kitsDirectoryPath;
     private Function<Path, ConfigurationLoader<? extends ConfigurationNode>> pathToConfigurationLoaderFunction = (path ->
     {
@@ -87,9 +83,6 @@ public class JSONStorage implements Storage
 
             containersNode = containersLoader.load(getDefaultOptions());
 
-//            kitsLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(options).setPath(kitsPath));
-//            kitsNode = kitsLoader.load(options);
-
             //Register watcher
             watchService = configDir.getFileSystem().newWatchService();
             key = configDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
@@ -98,10 +91,44 @@ public class JSONStorage implements Storage
             //Run a checkFileUpdate task every 2,5 second
             changeTask.async().intervalTicks(50L).execute(checkFileUpdate()).submit(ChestRefill.getInstance());
 
+
+            //Backwards compatibility with 1.5.0
+            //Convert old "kits.json" file into smaller kits files.
+            final Path oldKitsFile = Paths.get(configDir + "/kits.json");
+            if(Files.exists(oldKitsFile))
+            {
+                convertOldKitFileToNewFormat(oldKitsFile);
+            }
         }
         catch (IOException e)
         {
             e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Backwards compatibility with 1.5.0
+     * This method will be removed in 1.7.0
+     * @param oldKitsFile the path of the old kits file.
+     */
+    private void convertOldKitFileToNewFormat(Path oldKitsFile)
+    {
+        final ChestRefillGsonConfigurationLoader containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(oldKitsFile));
+
+        try
+        {
+            final ConfigurationNode containersNode = containersLoader.load(getDefaultOptions());
+            final List<Kit> kits = containersNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, new ArrayList<>());
+            for (final Kit kit : kits)
+            {
+                createKit(kit);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of(TextColors.RED, "Could not convert old kits.json file into new format.")));
         }
     }
 
@@ -322,21 +349,6 @@ public class JSONStorage implements Storage
             final ConfigurationNode configurationNode = kitConfigLoader.createEmptyNode();
             configurationNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
 
-//            final ConfigurationNode configurationNode = kitsNode.getNode("kits");
-//            final ConfigurationNode newNode = configurationNode.getAppendedNode();
-
-//            if (newNode.getOptions().acceptsType(Short.class) && newNode.getOptions().acceptsType(Byte.class))
-//                newNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
-//            else
-//            {
-//                ConfigurationOptions options = newNode.getOptions().setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
-//                        Short.class, Byte.class, Number.class));
-//
-//                final ConfigurationNode fixedNode = SimpleCommentedConfigurationNode.root(options);
-//                fixedNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
-//                configurationNode.setValue(fixedNode);
-//            }
-//            kitsLoader.save(kitsNode);
             kitConfigLoader.save(configurationNode);
             this.kitsLoaders.put(kit.getName().toLowerCase(), kitConfigLoader);
             return true;
@@ -357,11 +369,6 @@ public class JSONStorage implements Storage
         {
             Files.deleteIfExists(this.kitsDirectoryPath.resolve(kitName.toLowerCase() + ".json"));
             this.kitsLoaders.remove(kitName.toLowerCase());
-
-//            List<Kit> kits = new ArrayList<>(kitsNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN));
-//            kits.removeIf(x->x.getName().equals(kitName));
-//            kitsNode.getNode("kits").setValue(ChestRefillTypeSerializers.KIT_LIST_TYPE_TOKEN, kits);
-//            kitsLoader.save(kitsNode);
 
             //Remove the kit from containers
             final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
