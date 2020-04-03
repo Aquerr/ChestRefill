@@ -38,7 +38,7 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
     @Override
     public RefillableItem deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException
     {
-        final float chance = value.getNode("change").getFloat(1f);
+        final float chance = value.getNode("chance").getFloat(1f);
         final int slot = value.getNode("slot").getInt();
 
         final ConfigurationNode itemNode = value.getNode("item");
