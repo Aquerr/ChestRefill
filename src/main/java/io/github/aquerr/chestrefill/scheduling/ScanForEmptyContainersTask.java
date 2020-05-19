@@ -2,8 +2,11 @@ package io.github.aquerr.chestrefill.scheduling;
 
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
+import io.github.aquerr.chestrefill.util.ModSupport;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -34,8 +37,13 @@ public class ScanForEmptyContainersTask implements Runnable
 
             if(location.getTileEntity().isPresent())
             {
-                final TileEntityCarrier container = (TileEntityCarrier) location.getTileEntity().get();
-                if(container.getInventory().totalItems() == 0 && refillableContainer.shouldBeHiddenIfNoItems())
+                final TileEntity tileEntity = location.getTileEntity().get();
+                Inventory tileEntityInventory;
+                if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
+                    tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
+                else
+                    tileEntityInventory = ((TileEntityCarrier)tileEntity).getInventory();
+                if(tileEntityInventory.totalItems() == 0 && refillableContainer.shouldBeHiddenIfNoItems())
                 {
                     location.setBlockType(refillableContainer.getHidingBlock());
                 }

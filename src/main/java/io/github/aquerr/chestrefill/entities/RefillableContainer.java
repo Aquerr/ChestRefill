@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.entities;
 
+import com.flowpowered.math.vector.Vector3i;
 import io.github.aquerr.chestrefill.ChestRefill;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
@@ -9,6 +10,7 @@ import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Slot;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -55,6 +57,39 @@ public class RefillableContainer
         this.containerBlockType = containerBlockType;
         this.kitName = kitName;
         this.requiredPermission = requiredPermission;
+    }
+
+    public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
+    {
+        final List<RefillableItem> items = new ArrayList<>();
+        int slot = 0;
+        for (final Inventory slotInventory : inventory.slots())
+        {
+            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            {
+                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+            }
+            slot++;
+        }
+        return new RefillableContainer(new ContainerLocation(blockPosition, worldUUID), blockType, items);
+    }
+
+    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
+    {
+        TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
+        List<RefillableItem> items = new ArrayList<>();
+
+        int slot = 0;
+        for(final Inventory slotInventory : carrier.getInventory().slots())
+        {
+            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            {
+                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+            }
+            slot++;
+        }
+
+        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
 
     public void setName(String name)
@@ -142,26 +177,6 @@ public class RefillableContainer
     public String getRequiredPermission()
     {
         return requiredPermission;
-    }
-
-    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
-    {
-        TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
-        List<RefillableItem> items = new ArrayList<>();
-
-        int slot = 0;
-        for(final Inventory slotInventory : carrier.getInventory().slots())
-        {
-            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
-            {
-//                final DataView container = slotInventory.peek().get().toContainer();
-                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
-//                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
-            }
-            slot++;
-        }
-
-        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
 
     @Override

@@ -12,8 +12,6 @@ import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
 import io.github.aquerr.chestrefill.storage.serializers.RefillableItemListTypeSerializer;
 import io.github.aquerr.chestrefill.storage.serializers.RefillableItemTypeSerializer;
 import io.github.aquerr.chestrefill.version.VersionChecker;
-import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -152,6 +150,12 @@ public class ChestRefill
             .executor(new RemoveCommand(this))
             .build());
 
+        SUBCOMMANDS.put(Collections.singletonList("removeall"), CommandSpec.builder()
+                .description(Text.of("Removes all refillable containers"))
+                .permission(PluginPermissions.REMOVEALL_COMMAND)
+                .executor(new RemoveAllCommand(this))
+                .build());
+
         //Update Command
         SUBCOMMANDS.put(Arrays.asList("u", "update"), CommandSpec.builder()
             .description(Text.of("Toggles chest update mode"))
@@ -175,7 +179,7 @@ public class ChestRefill
                 .build());
 
         //Refill Command
-        SUBCOMMANDS.put(Arrays.asList("refill"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("refill"), CommandSpec.builder()
                 .description(Text.of("Force refill a specific container"))
                 .permission(PluginPermissions.REFILL_COMMAND)
                 .arguments(GenericArguments.onlyOne(new ContainerNameArgument(Text.of("chest name"))))
@@ -183,14 +187,14 @@ public class ChestRefill
                 .build());
 
         //RefillAll Command
-        SUBCOMMANDS.put(Arrays.asList("refillall"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("refillall"), CommandSpec.builder()
                 .description(Text.of("Force refill all containers"))
                 .permission(PluginPermissions.REFILLALL_COMMAND)
                 .executor(new RefillAllCommand(this))
                 .build());
 
         //Setname Command
-        SUBCOMMANDS.put(Arrays.asList("setname"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("setname"), CommandSpec.builder()
                 .description(Text.of("Set name for a refillable container"))
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))))
@@ -198,7 +202,7 @@ public class ChestRefill
                 .build());
 
         //CreateKit Command
-        SUBCOMMANDS.put(Arrays.asList("createkit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("createkit"), CommandSpec.builder()
                 .description(Text.of("Toggles kit creation mode"))
                 .permission(PluginPermissions.CREATE_KIT_COMMAND)
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
@@ -206,7 +210,7 @@ public class ChestRefill
                 .build());
 
         //RemoveKit Command
-        SUBCOMMANDS.put(Arrays.asList("removekit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("removekit"), CommandSpec.builder()
                 .description(Text.of("Removes a kit"))
                 .permission(PluginPermissions.REMOVE_KIT_COMMAND)
                 .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
@@ -214,7 +218,7 @@ public class ChestRefill
                 .build());
 
         //AssignKit Command
-        SUBCOMMANDS.put(Arrays.asList("assignkit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("assignkit"), CommandSpec.builder()
                 .description(Text.of("Toggles assign mode"))
                 .permission(PluginPermissions.ASSIGN_KIT_COMMAND)
                 .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
@@ -222,14 +226,14 @@ public class ChestRefill
                 .build());
 
         //Kits Command
-        SUBCOMMANDS.put(Arrays.asList("kits"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("kits"), CommandSpec.builder()
                 .description(Text.of("Shows available kits"))
                 .permission(PluginPermissions.KITS_COMMAND)
                 .executor(new KitsCommand(this))
                 .build());
 
         //ScanAndCreateCommand
-        SUBCOMMANDS.put(Arrays.asList("searchandcreate"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("searchandcreate"), CommandSpec.builder()
                 .description(Text.of("Scans selected region and converts found containers to refillable containers"))
                 .permission(PluginPermissions.SEARCH_AND_CREATE_COMMAND)
                 .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("restoreTime"))),

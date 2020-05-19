@@ -8,6 +8,7 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.scheduling.ScanForEmptyContainersTask;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
+import io.github.aquerr.chestrefill.util.ModSupport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
@@ -86,10 +87,7 @@ public class ContainerManager
         final boolean successfullyStopped = stopRefillingContainer(containerLocation);
         final boolean successfullyRemoved = storageHelper.removeContainer(containerLocation);
 
-        if(successfullyStopped && successfullyRemoved)
-            return true;
-
-        return false;
+        return successfullyStopped && successfullyRemoved;
     }
 
     private boolean stopRefillingContainer(ContainerLocation containerLocation)
@@ -221,10 +219,19 @@ public class ContainerManager
                     final Optional<TileEntity> optionalTileEntity = location.getTileEntity();
                     if(optionalTileEntity.isPresent())
                     {
-                        final TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                        final TileEntity tileEntity = location.getTileEntity().get();
+                        Inventory tileEntityInventory;
+                        if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
+                            tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
+                        else
+                        {
+                            final TileEntityCarrier tileEntityCarrier = (TileEntityCarrier)tileEntity;
+                            tileEntityInventory = tileEntityCarrier.getInventory();
+                        }
+
                         if (chestToRefill.shouldReplaceExistingItems())
                         {
-                            chest.getInventory().clear();
+                            tileEntityInventory.clear();
                         }
 
                         final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
@@ -253,7 +260,7 @@ public class ContainerManager
 
                                 //Refill item
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory().slots())
+                                for(final Inventory slot : tileEntityInventory.slots())
                                 {
                                     if(lowestChanceItem.getSlot() == i)
                                     {
@@ -270,7 +277,7 @@ public class ContainerManager
                             for (final RefillableItem item : itemsAchievedFromRandomizer)
                             {
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory().slots())
+                                for(final Inventory slot : tileEntityInventory.slots())
                                 {
                                     if(item.getSlot() == i)
                                     {
@@ -281,7 +288,7 @@ public class ContainerManager
                             }
                         }
 
-                        if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                        if (chestToRefill.shouldBeHiddenIfNoItems() && tileEntityInventory.totalItems() == 0)
                         {
                             location.setBlockType(chestToRefill.getHidingBlock());
                         }
