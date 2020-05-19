@@ -8,11 +8,13 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.persistence.DataTranslators;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -20,6 +22,7 @@ import org.spongepowered.api.util.Tuple;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -115,6 +118,12 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
 
                 dataContainer.remove(dataQuery);
             }
+        }
+
+        final Optional<ItemType> itemType = Sponge.getRegistry().getType(ItemType.class, String.valueOf(dataContainer.get(DataQuery.of("ItemType")).get()));
+        if (!itemType.isPresent())
+        {
+            throw new ObjectMappingException("ItemType could not be recognized. Probably comes from a mod that has been removed from the server.");
         }
 
         ItemStack snapshot;

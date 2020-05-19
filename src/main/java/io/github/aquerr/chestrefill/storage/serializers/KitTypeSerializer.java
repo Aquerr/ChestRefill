@@ -8,6 +8,7 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Sponge;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,17 @@ public class KitTypeSerializer implements TypeSerializer<Kit>
     @Override
     public Kit deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException
     {
-        final String name = value.getNode("name").getString();
-        final List<RefillableItem> items = value.getNode("items").getList(TypeToken.of(RefillableItem.class), new ArrayList<>());
+        String name = "";
+        List<RefillableItem> items;
+        try
+        {
+            name = value.getNode("name").getString();
+            items = value.getNode("items").getList(TypeToken.of(RefillableItem.class), new ArrayList<>());
+        }
+        catch (final Exception exception)
+        {
+            throw new ObjectMappingException("Could not deserialize the kit: " + name, exception);
+        }
         return new Kit(name, items);
     }
 

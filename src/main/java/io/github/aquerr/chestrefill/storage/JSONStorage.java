@@ -97,7 +97,11 @@ public class JSONStorage implements Storage
             final Path oldKitsFile = Paths.get(configDir + "/kits.json");
             if(Files.exists(oldKitsFile))
             {
-                convertOldKitFileToNewFormat(oldKitsFile);
+                //We do not want to touch kits directory if it is not empty as we could break kits that already exists there.
+                if (Files.list(kitsDirectoryPath).count() == 0)
+                {
+                    convertOldKitFileToNewFormat(oldKitsFile);
+                }
             }
         }
         catch (IOException e)
