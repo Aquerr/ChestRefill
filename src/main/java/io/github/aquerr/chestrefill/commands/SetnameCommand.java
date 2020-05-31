@@ -28,13 +28,13 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
 
         if(!(source instanceof Player))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Only in-game players can use this command!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
             return CommandResult.success();
         }
 
         if(!optionalName.isPresent())
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "You need to specify a name!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You need to specify a name!"));
             return CommandResult.success();
         }
 
@@ -47,20 +47,20 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
             {
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.SET_NAME);
                 ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), containerName);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on setname mode"));
             }
             else
             {
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
                 ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off setname mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off setname mode"));
             }
         }
         else
         {
             ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.SET_NAME);
             ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), containerName);
-            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on setname mode"));
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on setname mode"));
         }
 
         return CommandResult.success();

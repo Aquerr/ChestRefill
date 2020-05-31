@@ -23,7 +23,7 @@ public class ContainerCache
             }
             for(final Kit kit : kits)
             {
-                kitsCache.put(kit.getName(), kit);
+                kitsCache.put(kit.getName().toLowerCase(), kit);
             }
         }
         catch(NullPointerException exception)
@@ -43,7 +43,7 @@ public class ContainerCache
     {
         try
         {
-            kitsCache.put(kit.getName(), kit);
+            kitsCache.put(kit.getName().toLowerCase(), kit);
         }
         catch(final Exception e)
         {
@@ -56,10 +56,10 @@ public class ContainerCache
     {
         try
         {
-            kitsCache.remove(name);
+            kitsCache.remove(name.toLowerCase());
             for(final RefillableContainer refillableContainer : refillableContainersCache.values())
             {
-                if(refillableContainer.getKitName().equals(name))
+                if(refillableContainer.getKitName().equalsIgnoreCase(name))
                     refillableContainer.setKit("");
             }
         }
@@ -143,6 +143,6 @@ public class ContainerCache
     {
         final RefillableContainer refillableContainer = refillableContainersCache.get(containerLocation);
         refillableContainer.setKit(kitName);
-        return refillableContainer.getKitName().equals(kitName);
+        return refillableContainer.getKitName().equalsIgnoreCase(kitName);
     }
 }

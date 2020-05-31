@@ -52,4 +52,13 @@ public class ContainerLocation
         result = prime * result + (this.worldUUID != null ? this.worldUUID.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ContainerLocation{" +
+                "blockPosition=" + blockPosition +
+                ", worldUUID=" + worldUUID +
+                '}';
+    }
 }

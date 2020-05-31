@@ -6,7 +6,9 @@ import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
+import io.github.aquerr.chestrefill.scheduling.ScanForEmptyContainersTask;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
+import io.github.aquerr.chestrefill.util.ModSupport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
@@ -87,10 +89,7 @@ public class ContainerManager
         final boolean successfullyStopped = stopRefillingContainer(containerLocation);
         final boolean successfullyRemoved = storageHelper.removeContainer(containerLocation);
 
-        if(successfullyStopped && successfullyRemoved)
-            return true;
-
-        return false;
+        return successfullyStopped && successfullyRemoved;
     }
 
     private boolean stopRefillingContainer(ContainerLocation containerLocation)
@@ -222,10 +221,19 @@ public class ContainerManager
                     final Optional<TileEntity> optionalTileEntity = location.getTileEntity();
                     if(optionalTileEntity.isPresent())
                     {
-                        final TileEntityCarrier chest = (TileEntityCarrier) location.getTileEntity().get();
+                        final TileEntity tileEntity = location.getTileEntity().get();
+                        Inventory tileEntityInventory;
+                        if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
+                            tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
+                        else
+                        {
+                            final TileEntityCarrier tileEntityCarrier = (TileEntityCarrier)tileEntity;
+                            tileEntityInventory = tileEntityCarrier.getInventory();
+                        }
+
                         if (chestToRefill.shouldReplaceExistingItems())
                         {
-                            chest.getInventory().clear();
+                            tileEntityInventory.clear();
                         }
 
                         final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
@@ -254,12 +262,11 @@ public class ContainerManager
 
                                 //Refill item
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory().slots())
+                                for(final Inventory slot : tileEntityInventory.slots())
                                 {
                                     if(lowestChanceItem.getSlot() == i)
                                     {
-                                        //Offer removes items from existing list and that's why we need to build a new itemstack
-                                        slot.offer(ItemStack.builder().fromItemStack(lowestChanceItem.getItem()).build());
+                                        slot.offer(lowestChanceItem.getItem().createStack());
                                         break;
                                     }
 
@@ -272,19 +279,18 @@ public class ContainerManager
                             for (final RefillableItem item : itemsAchievedFromRandomizer)
                             {
                                 int i = 0;
-                                for(final Inventory slot : chest.getInventory().slots())
+                                for(final Inventory slot : tileEntityInventory.slots())
                                 {
                                     if(item.getSlot() == i)
                                     {
-                                        //Offer removes items from existing list and that's why we need to build a new itemstack
-                                        slot.offer(ItemStack.builder().fromItemStack(item.getItem()).build());
+                                        slot.offer(item.getItem().createStack());
                                     }
                                     i++;
                                 }
                             }
                         }
 
-                        if (chestToRefill.shouldBeHiddenIfNoItems() && chest.getInventory().totalItems() == 0)
+                        if (chestToRefill.shouldBeHiddenIfNoItems() && tileEntityInventory.totalItems() == 0)
                         {
                                 location.setBlockType(chestToRefill.getContainerBlockType(), Cause.builder().named(NamedCause.of("Plugin", plugin)).build());
                         }
@@ -302,7 +308,7 @@ public class ContainerManager
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block type : " + chestToRefill.getContainerBlockType()));
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container block position : " + chestToRefill.getContainerLocation().getBlockPosition() + "|" + chestToRefill.getContainerLocation().getWorldUUID().toString()));
         this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, "Container items : " + chestToRefill.getItems()));
-        this.plugin.getConsole().sendMessage(Text.of(TextColors.YELLOW, "Suggestion: Remove this container from the containers.json file and restart server."));
+        this.plugin.getConsole().sendMessage(Text.of(TextColors.YELLOW, "Suggestion: Remove this container from the containers.json file and restart the server."));
 
         return false;
     }
@@ -317,8 +323,6 @@ public class ContainerManager
         for (RefillableContainer refillableContainer : getRefillableContainers())
         {
             startRefillingContainer(refillableContainer.getContainerLocation(), refillableContainer.getRestoreTime());
-//            String name = "Chest Refill " + refillableContainer.getContainerLocation().getBlockPosition().toString() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString();
-//            this.plugin.getContainerScheduler().scheduleWithInterval(name, refillableContainer.getRestoreTime(), TimeUnit.SECONDS, runRefillContainer(refillableContainer.getContainerLocation()));
         }
     }
 
@@ -355,27 +359,9 @@ public class ContainerManager
     {
         //We need to load items from kit and assign them to the container.
         final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
-        refillableContainer.setKit(kitName);
-//        final Map<String, Kit> kits = getKits();
-//        Kit assignedKit = null;
-//
-//        for(Kit kit : kits.values())
-//        {
-//            if(kit.getName().equals(kitName))
-//            {
-//                assignedKit = kit;
-//            }
-//        }
-//
-//        if(assignedKit != null)
-//        {
-            //This code modifies cache. This is bad. We should not modify cache outside ContainerCache class.
-//            refillableContainer.setItems(assignedKit.getItems());
-//            refillableContainer.setKit(kitName);
-            return this.storageHelper.assignKit(containerLocation, kitName);
-//        }
-
-//        return false;
+        if (refillableContainer != null)
+            refillableContainer.setKit(kitName);
+        return this.storageHelper.assignKit(containerLocation, kitName);
     }
 
     public Optional<RefillableContainer> getRefillableContainerAtLocation(ContainerLocation containerLocation)
@@ -389,6 +375,11 @@ public class ContainerManager
         {
             return Optional.of(refillableContainer);
         }
+    }
+
+    public void startLookingForEmptyContainers()
+    {
+        this.plugin.getContainerScheduler().scheduleWithInterval("Chest Refill - Scanning for empty containers", 5L, TimeUnit.SECONDS, new ScanForEmptyContainersTask(this));
     }
 
     public Kit getKit(final String name)
