@@ -1,13 +1,16 @@
 package io.github.aquerr.chestrefill.entities;
 
+import com.flowpowered.math.vector.Vector3i;
 import io.github.aquerr.chestrefill.ChestRefill;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Slot;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -54,6 +57,39 @@ public class RefillableContainer
         this.containerBlockType = containerBlockType;
         this.kitName = kitName;
         this.requiredPermission = requiredPermission;
+    }
+
+    public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
+    {
+        final List<RefillableItem> items = new ArrayList<>();
+        int slot = 0;
+        for (final Inventory slotInventory : inventory.slots())
+        {
+            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            {
+                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+            }
+            slot++;
+        }
+        return new RefillableContainer(new ContainerLocation(blockPosition, worldUUID), blockType, items);
+    }
+
+    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
+    {
+        TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
+        List<RefillableItem> items = new ArrayList<>();
+
+        int slot = 0;
+        for(final Inventory slotInventory : carrier.getInventory().slots())
+        {
+            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            {
+                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+            }
+            slot++;
+        }
+
+        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
     }
 
     public void setName(String name)
@@ -143,25 +179,6 @@ public class RefillableContainer
         return requiredPermission;
     }
 
-    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
-    {
-        TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
-        List<RefillableItem> items = new ArrayList<>();
-
-        int slot = 0;
-        for(final Inventory slotInventory : carrier.getInventory().slots())
-        {
-            if (slotInventory.peek().isPresent())
-            {
-                final DataView container = slotInventory.peek().get().toContainer();
-                items.add(new RefillableItem(ItemStack.builder().fromContainer(container).build(), slot, 1f));
-            }
-            slot++;
-        }
-
-        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
-    }
-
     @Override
     public boolean equals(Object obj)
     {
@@ -177,21 +194,13 @@ public class RefillableContainer
         if(!this.containerLocation.equals(((RefillableContainer) obj).containerLocation))
             return false;
 
-        Inventory tempInventory = Inventory.builder().build(ChestRefill.getInstance());
-
-        this.items.forEach(x-> {
-            //Offer removes items from inventory so we need to build new temp items.
-            ItemStack tempItemStack = ItemStack.builder().fromItemStack(x.getItem()).build();
-            tempInventory.offer(tempItemStack);
-        });
+        if(!this.name.equals(((RefillableContainer) obj).name))
+            return false;
 
         //Compare items
-        for (RefillableItem comparedItem : ((RefillableContainer) obj).getItems())
+        if (!this.items.containsAll(((RefillableContainer) obj).getItems()))
         {
-            if (!tempInventory.contains(comparedItem.getItem()))
-            {
-                return false;
-            }
+            return false;
         }
 
         //Compare restore time
@@ -213,9 +222,6 @@ public class RefillableContainer
         if(!this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
             return false;
 
-        if(!this.name.equals(((RefillableContainer) obj).name))
-            return false;
-
         return true;
     }
 
@@ -235,5 +241,23 @@ public class RefillableContainer
         result = prime * result + (this.kitName != null ? this.kitName.hashCode() : 0);
         result = prime * result + (this.requiredPermission != null ? this.requiredPermission.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RefillableContainer{" +
+                "name='" + name + '\'' +
+                ", containerLocation=" + containerLocation +
+                ", items=" + items +
+                ", containerBlockType=" + containerBlockType +
+                ", restoreTimeInSeconds=" + restoreTimeInSeconds +
+                ", oneItemAtTime=" + oneItemAtTime +
+                ", replaceExistingItems=" + replaceExistingItems +
+                ", hiddenIfNoItems=" + hiddenIfNoItems +
+                ", hidingBlock=" + hidingBlock +
+                ", kitName='" + kitName + '\'' +
+                ", requiredPermission='" + requiredPermission + '\'' +
+                '}';
     }
 }

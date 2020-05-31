@@ -15,6 +15,8 @@ Simply place a e.g. chest, put items in it, mark it as a refillable chest and th
 
 Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how everything works!
 
+**If you enjoy using Chest Refill, give this repo a star!**
+
 ## Links
 - [Wiki](https://github.com/Aquerr/ChestRefill/wiki)
 - [Downloads](https://github.com/Aquerr/ChestRefill/releases)
@@ -26,4 +28,4 @@ Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how 
 
 ## Donation
 
-Creation of this plugin is really a time consuming task. If you would like to support me then you can send me some cookies through [PayPal](https://www.paypal.me/aquerr)
+Creation of this plugin is really a time consuming task. If you would like to support me then you can star this repo or send me some cookies through [PayPal](https://www.paypal.me/aquerr).
