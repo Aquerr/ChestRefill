@@ -39,20 +39,20 @@ public class CreateCommand extends AbstractCommand implements CommandExecutor
                 {
                     optionalName.ifPresent(s -> ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), s));
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.CREATE);
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on creation mode"));
                 }
                 else
                 {
                     ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off creation mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off creation mode"));
                 }
             }
             else
             {
                 optionalName.ifPresent(s -> ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), s));
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.CREATE);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on creation mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on creation mode"));
             }
         }
 

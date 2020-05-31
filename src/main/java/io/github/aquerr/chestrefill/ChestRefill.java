@@ -1,16 +1,18 @@
 package io.github.aquerr.chestrefill;
 
+import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.commands.*;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.commands.arguments.KitNameArgument;
-import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.entities.SelectionMode;
-import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
-import io.github.aquerr.chestrefill.listeners.PlayerJoinListener;
-import io.github.aquerr.chestrefill.listeners.RightClickListener;
+import io.github.aquerr.chestrefill.entities.*;
+import io.github.aquerr.chestrefill.listeners.*;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
+import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
+import io.github.aquerr.chestrefill.storage.serializers.RefillableItemListTypeSerializer;
+import io.github.aquerr.chestrefill.storage.serializers.RefillableItemTypeSerializer;
 import io.github.aquerr.chestrefill.version.VersionChecker;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -34,7 +36,7 @@ import java.util.concurrent.CompletableFuture;
  * Created by Aquerr on 2018-02-09.
  */
 
-@Plugin(id = PluginInfo.Id, name = PluginInfo.Name, version = PluginInfo.Version, description = PluginInfo.Description, authors = PluginInfo.Authors, url = PluginInfo.Url)
+@Plugin(id = PluginInfo.ID, name = PluginInfo.NAME, version = PluginInfo.VERSION, description = PluginInfo.DESCRIPTION, authors = PluginInfo.AUTHORS, url = PluginInfo.URL)
 public class ChestRefill
 {
     public static final Map<List<String>, CommandSpec> SUBCOMMANDS = new HashMap<>();
@@ -45,13 +47,12 @@ public class ChestRefill
     public static final Map<UUID, String> PLAYER_KIT_NAME = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
 
+    public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
+
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;
 
     private static ChestRefill chestRefill;
-
-    @Inject
-    private Logger _logger;
 
     public static ChestRefill getInstance()
     {
@@ -59,8 +60,6 @@ public class ChestRefill
             return chestRefill;
         return new ChestRefill();
     }
-
-    public Logger getLogger() {return _logger;}
 
     @Inject
     @ConfigDir(sharedRoot = false)
@@ -71,28 +70,29 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
+        registerTypeSerializers();
         this.containerManager = new ContainerManager(this, getConfigDir());
         this.containerScheduler = new ContainerScheduler(this);
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is loading... :D"));
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing commands..."));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Chest Refill is loading... :D"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Initializing commands..."));
 
         initCommands();
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Initializing listeners..."));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Initializing listeners..."));
 
         initListeners();
 
-        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Chest Refill is ready!"));
+        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Chest Refill is ready!"));
 
         CompletableFuture.runAsync(() ->{
-            if (VersionChecker.isLatest(PluginInfo.Version))
+            if (VersionChecker.isLatest(PluginInfo.VERSION))
             {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You are using the latest version!"));
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You are using the latest version!"));
             }
             else
             {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.Name, TextColors.RED, " is available online!"));
+                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.NAME, TextColors.RED, " is available online!"));
             }
         });
     }
@@ -145,6 +145,12 @@ public class ChestRefill
             .executor(new RemoveCommand(this))
             .build());
 
+        SUBCOMMANDS.put(Collections.singletonList("removeall"), CommandSpec.builder()
+                .description(Text.of("Removes all refillable containers"))
+                .permission(PluginPermissions.REMOVEALL_COMMAND)
+                .executor(new RemoveAllCommand(this))
+                .build());
+
         //Update Command
         SUBCOMMANDS.put(Arrays.asList("u", "update"), CommandSpec.builder()
             .description(Text.of("Toggles chest update mode"))
@@ -168,22 +174,22 @@ public class ChestRefill
                 .build());
 
         //Refill Command
-        SUBCOMMANDS.put(Arrays.asList("refill"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("refill"), CommandSpec.builder()
                 .description(Text.of("Force refill a specific container"))
                 .permission(PluginPermissions.REFILL_COMMAND)
-                .arguments(new ContainerNameArgument(Text.of("chest name")))
+                .arguments(GenericArguments.onlyOne(new ContainerNameArgument(Text.of("chest name"))))
                 .executor(new RefillCommand(this))
                 .build());
 
         //RefillAll Command
-        SUBCOMMANDS.put(Arrays.asList("refillall"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("refillall"), CommandSpec.builder()
                 .description(Text.of("Force refill all containers"))
                 .permission(PluginPermissions.REFILLALL_COMMAND)
                 .executor(new RefillAllCommand(this))
                 .build());
 
         //Setname Command
-        SUBCOMMANDS.put(Arrays.asList("setname"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("setname"), CommandSpec.builder()
                 .description(Text.of("Set name for a refillable container"))
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))))
@@ -191,7 +197,7 @@ public class ChestRefill
                 .build());
 
         //CreateKit Command
-        SUBCOMMANDS.put(Arrays.asList("createkit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("createkit"), CommandSpec.builder()
                 .description(Text.of("Toggles kit creation mode"))
                 .permission(PluginPermissions.CREATE_KIT_COMMAND)
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
@@ -199,15 +205,15 @@ public class ChestRefill
                 .build());
 
         //RemoveKit Command
-        SUBCOMMANDS.put(Arrays.asList("removekit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("removekit"), CommandSpec.builder()
                 .description(Text.of("Removes a kit"))
                 .permission(PluginPermissions.REMOVE_KIT_COMMAND)
-                .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("kit name"))))
+                .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
                 .executor(new RemoveKitCommand(this))
                 .build());
 
         //AssignKit Command
-        SUBCOMMANDS.put(Arrays.asList("assignkit"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("assignkit"), CommandSpec.builder()
                 .description(Text.of("Toggles assign mode"))
                 .permission(PluginPermissions.ASSIGN_KIT_COMMAND)
                 .arguments(GenericArguments.onlyOne(new KitNameArgument(Text.of("kit name"))))
@@ -215,10 +221,33 @@ public class ChestRefill
                 .build());
 
         //Kits Command
-        SUBCOMMANDS.put(Arrays.asList("kits"), CommandSpec.builder()
+        SUBCOMMANDS.put(Collections.singletonList("kits"), CommandSpec.builder()
                 .description(Text.of("Shows available kits"))
                 .permission(PluginPermissions.KITS_COMMAND)
                 .executor(new KitsCommand(this))
+                .build());
+
+        //ScanAndCreateCommand
+        SUBCOMMANDS.put(Collections.singletonList("searchandcreate"), CommandSpec.builder()
+                .description(Text.of("Scans selected region and converts found containers to refillable containers"))
+                .permission(PluginPermissions.SEARCH_AND_CREATE_COMMAND)
+                .arguments(GenericArguments.optional(GenericArguments.integer(Text.of("restoreTime"))),
+                        GenericArguments.optional(GenericArguments.string(Text.of("requiredPermission"))))
+                .executor(new SearchAndCreateCommand(this))
+                .build());
+
+        //Deselect Command
+        SUBCOMMANDS.put(Arrays.asList("deselect", "desel"), CommandSpec.builder()
+                .description(Text.of("Clears selection points marked with ChestRefill's wand"))
+                .permission(PluginPermissions.DESELECT_COMMAND)
+                .executor(new DeselectCommand(this))
+                .build());
+
+        //Wand Command
+        SUBCOMMANDS.put(Arrays.asList("wand"), CommandSpec.builder()
+                .description(Text.of("Gives ChestRefill wand"))
+                .permission(PluginPermissions.WAND_COMMAND)
+                .executor(new WandCommand(this))
                 .build());
 
         //Build all commands
@@ -238,6 +267,15 @@ public class ChestRefill
         Sponge.getEventManager().registerListeners(this, new RightClickListener(this));
         Sponge.getEventManager().registerListeners(this, new ContainerBreakListener(this));
         Sponge.getEventManager().registerListeners(this, new PlayerJoinListener(this));
+        Sponge.getEventManager().registerListeners(this, new PlayerDisconnectListener(this));
+        Sponge.getEventManager().registerListeners(this, new WandUsageListener(this));
 //        Sponge.getEventManager().registerListeners(this, new DropItemListener());
+    }
+
+    private void registerTypeSerializers()
+    {
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(RefillableItem.class), new RefillableItemTypeSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(Kit.class), new KitTypeSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(new TypeToken<List<RefillableItem>>(){}, new RefillableItemListTypeSerializer());
     }
 }

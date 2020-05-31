@@ -6,11 +6,11 @@ plugins {
 }
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.11.2-1.5.0'
+version = '1.10.2-1.6.0'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
 dependencies {
-    compile 'org.spongepowered:spongeapi:6.0.0'
+    compile 'org.spongepowered:spongeapi:5.1.0'
 }
 
 jar {

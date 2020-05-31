@@ -28,19 +28,19 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
 
         if(!optionalName.isPresent())
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "You must specify a kit name!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You must specify a kit name!"));
             return CommandResult.empty();
         }
 
         if(super.getPlugin().getContainerManager().getKits().keySet().stream().anyMatch(x->x.equals(optionalName.get())))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Kit with given name already exists!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Kit with given name already exists!"));
             return CommandResult.empty();
         }
 
         if(!(source instanceof Player))
         {
-            source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Only in-game players can use this command!"));
+            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
             return CommandResult.empty();
         }
 
@@ -51,20 +51,20 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
             {
                 optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.CREATE_KIT);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on kit creation mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on kit creation mode"));
             }
             else
             {
                 ChestRefill.PLAYER_KIT_NAME.remove(player.getUniqueId());
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off kit creation mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off kit creation mode"));
             }
         }
         else
         {
             optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
             ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.CREATE_KIT);
-            player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on kit creation mode"));
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on kit creation mode"));
         }
 
         return CommandResult.success();

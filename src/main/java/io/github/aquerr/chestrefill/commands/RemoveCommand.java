@@ -34,18 +34,18 @@ public class RemoveCommand extends AbstractCommand implements CommandExecutor
                 if (SelectionMode.REMOVE != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
                 {
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.REMOVE);
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on removal mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on removal mode"));
                 }
                 else
                 {
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off removal mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off removal mode"));
                 }
             }
             else
             {
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.REMOVE);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on removal mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on removal mode"));
             }
         }
 

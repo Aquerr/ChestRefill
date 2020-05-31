@@ -19,7 +19,6 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -46,7 +45,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
 
             itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
-            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getItem().getName(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
+            refillableContainer.getItems().forEach(x-> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getType().getName(), TextColors.RESET, " x" + x.getItem().getCount() + "\n")));
 
             itemsToShow.append(Text.of("\n", TextColors.GREEN, "Kit: ", TextColors.WHITE, refillableContainer.getKitName(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
@@ -97,7 +96,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
             {
                 final Player player = (Player)source;
                 player.setLocation(new Location<>(player.getWorld(), this.chestPosition));
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.GREEN, "You were teleported to the selected container!"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You were teleported to the selected container!"));
             }
         }
     }

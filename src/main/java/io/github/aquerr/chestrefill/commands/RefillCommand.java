@@ -3,7 +3,6 @@ package io.github.aquerr.chestrefill.commands;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -13,7 +12,6 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,9 +41,9 @@ public class RefillCommand extends AbstractCommand implements CommandExecutor
                 {
                     boolean didSucceed = super.getPlugin().getContainerManager().refillContainer(refillableContainer.getContainerLocation());
                     if(didSucceed)
-                        source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Successfully refilled the container!"));
+                        source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Successfully refilled the container!"));
                     else
-                        source.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.RED, "Could not refill the container!"));
+                        source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Could not refill the container!"));
                     break;
                 }
             }

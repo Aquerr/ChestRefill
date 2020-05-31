@@ -21,9 +21,9 @@ public class PlayerJoinListener extends AbstractListener
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event, @Root Player player)
     {
-        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.isLatest(PluginInfo.Version))
+        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.isLatest(PluginInfo.VERSION))
         {
-            player.sendMessage(Text.of(PluginInfo.PluginPrefix, "There is a new version of ", TextColors.YELLOW, "Chest Refill", TextColors.WHITE, " available online!"));
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, "There is a new version of ", TextColors.YELLOW, "Chest Refill", TextColors.WHITE, " available online!"));
         }
     }
 }

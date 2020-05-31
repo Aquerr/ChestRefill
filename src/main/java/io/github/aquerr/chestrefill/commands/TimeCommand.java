@@ -39,18 +39,18 @@ public class TimeCommand extends AbstractCommand implements CommandExecutor
                 if (SelectionMode.TIME != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
                 {
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.TIME);
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on time mode"));
                 }
                 else
                 {
                     ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                    player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned off time mode"));
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off time mode"));
                 }
             }
             else
             {
                 ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.TIME);
-                player.sendMessage(Text.of(PluginInfo.PluginPrefix, TextColors.YELLOW, "Turned on time mode"));
+                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on time mode"));
             }
 
             if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId())
