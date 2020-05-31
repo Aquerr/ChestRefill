@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    shadow 'org.spongepowered:spongeapi:5.1.0'
-    annotationProcessor 'org.spongepowered:spongeapi:7.2.0'
+    shadow 'org.spongepowered:spongeapi:6.0.0'
+    annotationProcessor 'org.spongepowered:spongeapi:6.0.0'
 }
 
 jar {
