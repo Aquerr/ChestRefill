@@ -1,17 +1,25 @@
 plugins {
-    id 'org.spongepowered.plugin' version '0.9.0'
     id 'idea'
     id 'eclipse'
     id 'java'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
+compileJava.options.encoding = 'UTF-8'
+
 group = 'io.github.aquerr.chestrefill'
 version = '1.12.2-1.6.0'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url 'https://repo.spongepowered.org/maven' }
+}
+
 dependencies {
     shadow 'org.spongepowered:spongeapi:7.2.0'
+    annotationProcessor 'org.spongepowered:spongeapi:7.2.0'
 }
 
 jar {
