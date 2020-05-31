@@ -3,14 +3,23 @@ plugins {
     id 'idea'
     id 'eclipse'
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
+
+compileJava.options.encoding = 'UTF-8'
 
 group = 'io.github.aquerr.chestrefill'
 version = '1.10.2-1.6.0'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
+repositories {
+    jcenter()
+    maven { url 'https://repo.spongepowered.org/maven' }
+}
+
 dependencies {
-    compile 'org.spongepowered:spongeapi:5.1.0'
+    shadow 'org.spongepowered:spongeapi:5.1.0'
+    annotationProcessor 'org.spongepowered:spongeapi:5.1.0'
 }
 
 jar {
@@ -18,6 +27,10 @@ jar {
         version = version + "_" + System.getenv("BUILD_NUMBER")
         println("File name =>" + baseName)
     }
+}
+
+shadowJar {
+    classifier = null;
 }
 
 tasks.create("publishBuildOnDiscord") {
