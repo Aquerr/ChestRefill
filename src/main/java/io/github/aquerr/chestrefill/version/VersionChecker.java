@@ -41,10 +41,9 @@ public class VersionChecker
                 JsonArray latestJsonArray = latestJsonElement.getAsJsonArray();
                 JsonElement latestRelease = latestJsonArray.get(0);
 
-                Date latestReleaseDate = Date.from(Instant.parse(latestRelease.getAsJsonObject().get("published_at").getAsString()));
-                Date currentReleaseDate = Date.from(Instant.parse(currentJsonElement.getAsJsonObject().get("published_at").getAsString()));
-
-                if (currentReleaseDate.before(latestReleaseDate)) return false;
+                Date latestReleaseDate = Date.from(Instant.parse(latestRelease.getAsJsonObject().get("createdAt").getAsString()));
+                Date currentReleaseDate = Date.from(Instant.parse(currentJsonElement.getAsJsonObject().get("createdAt").getAsString()));
+                return !currentReleaseDate.before(latestReleaseDate);
             }
         }
 
