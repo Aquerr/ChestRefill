@@ -136,6 +136,7 @@ public class JSONStorage implements Storage
         }
     }
 
+    @Override
     public boolean addOrUpdateContainer(RefillableContainer refillableContainer)
     {
         try
@@ -181,6 +182,9 @@ public class JSONStorage implements Storage
 
             //Set required permission
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
+
+            //Set open message
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").setValue(refillableContainer.getOpenMessage());
 
             containersLoader.save(containersNode);
 
@@ -462,13 +466,14 @@ public class JSONStorage implements Storage
             final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
             final String requiredPermission = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").getString("");
+            final String openMessage = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").getString("");
 
             if(chestItems == null)
             {
                 chestItems = new ArrayList<>();
             }
 
-            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission);
+            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission, openMessage);
         }
         catch (Exception e)
         {

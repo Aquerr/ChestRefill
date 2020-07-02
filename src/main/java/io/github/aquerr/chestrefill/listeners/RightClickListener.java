@@ -20,6 +20,7 @@ import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.item.inventory.BlockCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Map;
@@ -121,6 +122,7 @@ public class RightClickListener extends AbstractListener
                     refillableContainer.setName(refillableContainerAtLocation.getName());
                     refillableContainer.setRequiredPermission(refillableContainerAtLocation.getRequiredPermission());
                     refillableContainer.setHidingBlock(refillableContainerAtLocation.getHidingBlock());
+                    refillableContainer.setOpenMessage(refillableContainerAtLocation.getOpenMessage());
                     final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
                     if(didSucceed)
                     {
@@ -293,6 +295,10 @@ public class RightClickListener extends AbstractListener
                 player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You don't have permissions to open this chest!"));
                 event.setCancelled(true);
                 return;
+            }
+            if (!refillableContainer.getOpenMessage().equals(""))
+            {
+                player.sendMessage(Text.of(refillableContainer.getOpenMessage()));
             }
         }
     }
