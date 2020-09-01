@@ -39,12 +39,14 @@ public class RefillableContainer
 
     private String requiredPermission;
 
+    private String openMessage;
+
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "");
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "","");
     }
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission, String openMessage)
     {
         this.name = name;
         this.containerLocation = containerLocation;
@@ -57,6 +59,7 @@ public class RefillableContainer
         this.containerBlockType = containerBlockType;
         this.kitName = kitName;
         this.requiredPermission = requiredPermission;
+        this.openMessage = openMessage;
     }
 
     public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
@@ -127,6 +130,11 @@ public class RefillableContainer
         this.hidingBlock = hidingBlock;
     }
 
+    public void setOpenMessage(final String openMessage)
+    {
+        this.openMessage = openMessage;
+    }
+
     public String getName()
     {
         return this.name;
@@ -177,6 +185,11 @@ public class RefillableContainer
     public String getRequiredPermission()
     {
         return requiredPermission;
+    }
+
+    public String getOpenMessage()
+    {
+        return this.openMessage;
     }
 
     @Override
@@ -258,6 +271,7 @@ public class RefillableContainer
                 ", hidingBlock=" + hidingBlock +
                 ", kitName='" + kitName + '\'' +
                 ", requiredPermission='" + requiredPermission + '\'' +
+                ", openMessage='" + openMessage + '\'' +
                 '}';
     }
 }
