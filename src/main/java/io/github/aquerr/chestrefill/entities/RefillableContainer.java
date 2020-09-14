@@ -11,6 +11,7 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.text.Text;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -39,14 +40,14 @@ public class RefillableContainer
 
     private String requiredPermission;
 
-    private String openMessage;
+    private Text openMessage;
 
     private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
     {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "","");
+        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "", Text.of());
     }
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission, String openMessage)
+    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission, Text openMessage)
     {
         this.name = name;
         this.containerLocation = containerLocation;
@@ -130,7 +131,7 @@ public class RefillableContainer
         this.hidingBlock = hidingBlock;
     }
 
-    public void setOpenMessage(final String openMessage)
+    public void setOpenMessage(final Text openMessage)
     {
         this.openMessage = openMessage;
     }
@@ -187,7 +188,7 @@ public class RefillableContainer
         return requiredPermission;
     }
 
-    public String getOpenMessage()
+    public Text getOpenMessage()
     {
         return this.openMessage;
     }

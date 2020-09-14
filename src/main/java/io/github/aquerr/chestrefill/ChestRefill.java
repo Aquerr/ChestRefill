@@ -55,7 +55,7 @@ public class ChestRefill
     private static ChestRefill chestRefill;
 
     @Inject
-    private Logger _logger;
+    private Logger logger;
 
     public static ChestRefill getInstance()
     {
@@ -64,12 +64,12 @@ public class ChestRefill
         return new ChestRefill();
     }
 
-    public Logger getLogger() {return _logger;}
+    public Logger getLogger() {return logger;}
 
     @Inject
     @ConfigDir(sharedRoot = false)
-    private Path _configDir;
-    public Path getConfigDir() {return _configDir;}
+    private Path configDir;
+    public Path getConfigDir() {return configDir;}
 
     @Listener
     public void onGameInitialization(GameInitializationEvent event)
@@ -199,6 +199,12 @@ public class ChestRefill
                 .permission(PluginPermissions.SETNAME_COMMAND)
                 .arguments(GenericArguments.onlyOne(GenericArguments.string(Text.of("name"))))
                 .executor(new SetnameCommand(this))
+                .build());
+
+        SUBCOMMANDS.put(Collections.singletonList("setopenmessage"), CommandSpec.builder()
+                .description(Text.of("Sets message that will be shown when refillable container will be opened"))
+                .permission(PluginPermissions.SET_OPEN_MESSAGE_COMMAND)
+                .arguments(GenericArguments.string(Text.of("message")))
                 .build());
 
         //CreateKit Command

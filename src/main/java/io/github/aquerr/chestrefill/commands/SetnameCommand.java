@@ -27,16 +27,10 @@ public class SetnameCommand extends AbstractCommand implements CommandExecutor
         Optional<String> optionalName = context.getOne(Text.of("name"));
 
         if(!(source instanceof Player))
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
-            return CommandResult.success();
-        }
+            throw new CommandException(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
 
         if(!optionalName.isPresent())
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You need to specify a name!"));
-            return CommandResult.success();
-        }
+            throw new CommandException(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You need to specify a name!"));
 
         Player player = (Player)source;
         String containerName = optionalName.get();

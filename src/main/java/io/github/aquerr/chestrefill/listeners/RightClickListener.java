@@ -22,6 +22,7 @@ import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Map;
 import java.util.Optional;
@@ -184,6 +185,26 @@ public class RightClickListener extends AbstractListener
                 break;
             }
 
+            case SET_OPEN_MESSAGE:
+            {
+                if(!optionalRefillableContainerAtLocation.isPresent())
+                {
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
+                }
+                else
+                {
+                    refillableContainer.setOpenMessage(TextSerializers.FORMATTING_CODE.deserialize(ChestRefill.PLAYER_CHEST_NAME.get(player.getUniqueId())));
+                    final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
+                    if(didSucceed)
+                    {
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated a refilling container!"));
+                    }
+                    else
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
+                }
+                break;
+            }
+
             case COPY:
             {
                 if(!optionalRefillableContainerAtLocation.isPresent())
@@ -296,7 +317,7 @@ public class RightClickListener extends AbstractListener
                 event.setCancelled(true);
                 return;
             }
-            if (!refillableContainer.getOpenMessage().equals(""))
+            if (!refillableContainer.getOpenMessage().isEmpty() || refillableContainer.getOpenMessage().toPlain().equals(""))
             {
                 player.sendMessage(Text.of(refillableContainer.getOpenMessage()));
             }

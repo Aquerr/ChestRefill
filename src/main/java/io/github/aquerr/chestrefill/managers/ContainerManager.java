@@ -68,7 +68,7 @@ public class ContainerManager
 
     public boolean updateRefillableContainer(RefillableContainer refillableContainer)
     {
-        //We do not need to restart scheduler. New chest content will be loaded from the storage by existing scheduler.
+        //We do not need to restart the refill scheduler task. New chest content will be loaded from the storage by existing scheduler.
         return storageHelper.addOrUpdateContainer(refillableContainer);
     }
 

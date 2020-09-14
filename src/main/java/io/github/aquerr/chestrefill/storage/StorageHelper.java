@@ -8,6 +8,7 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +21,7 @@ public class StorageHelper
     {
         containersToSave = new LinkedList<>();
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(startContainerSavingThread());
+        executorService.execute(this::startContainerSavingThread);
         containerStorage = new JSONStorage(configDir);
 
         //Load cache
@@ -96,31 +97,28 @@ public class StorageHelper
     }
 
     //TODO: Remove this and replace with CompletableFuture
-    private Runnable startContainerSavingThread()
+    private void startContainerSavingThread()
     {
-        return () ->
+        while(true)
         {
-            while(true)
+            synchronized(containersToSave)
             {
-                synchronized(containersToSave)
+                if(containersToSave.size() > 0)
                 {
-                    if(containersToSave.size() > 0)
+                    this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
+                }
+                else
+                {
+                    try
                     {
-                        this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
+                        this.containersToSave.wait();
                     }
-                    else
+                    catch(InterruptedException exception)
                     {
-                        try
-                        {
-                            this.containersToSave.wait();
-                        }
-                        catch(InterruptedException exception)
-                        {
-                            exception.printStackTrace();
-                        }
+                        exception.printStackTrace();
                     }
                 }
             }
-        };
+        }
     }
 }

@@ -24,6 +24,7 @@ import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -89,7 +90,7 @@ public class JSONStorage implements Storage
 
             Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
             //Run a checkFileUpdate task every 2,5 second
-            changeTask.async().intervalTicks(50L).execute(checkFileUpdate()).submit(ChestRefill.getInstance());
+            changeTask.async().intervalTicks(50L).execute(this::checkFileUpdate).submit(ChestRefill.getInstance());
 
 
             //Backwards compatibility with 1.5.0
@@ -184,7 +185,7 @@ public class JSONStorage implements Storage
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
 
             //Set open message
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").setValue(refillableContainer.getOpenMessage());
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getOpenMessage()));
 
             containersLoader.save(containersNode);
 
@@ -422,29 +423,26 @@ public class JSONStorage implements Storage
         return false;
     }
 
-    private Runnable checkFileUpdate()
+    private void checkFileUpdate()
     {
-        return () ->
+        try
         {
-            try
+            for (WatchEvent<?> event : key.pollEvents())
             {
-                for (WatchEvent<?> event : key.pollEvents())
+                final Path changedFilePath = (Path) event.context();
+                if (changedFilePath.getFileName().toString().equals("containers.json"))
                 {
-                    final Path changedFilePath = (Path) event.context();
-                    if (changedFilePath.getFileName().toString().equals("containers.json"))
-                    {
-                        Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
-                        containersNode = containersLoader.load();
-                        break;
-                    }
+                    Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                    containersNode = containersLoader.load();
+                    break;
                 }
-                key.reset();
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        };
+            key.reset();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private RefillableContainer getRefillableContainerFromFile(ContainerLocation containerLocation)
@@ -466,7 +464,7 @@ public class JSONStorage implements Storage
             final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
             final BlockType hidingBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
             final String requiredPermission = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").getString("");
-            final String openMessage = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").getString("");
+            final Text openMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").getString(""));
 
             if(chestItems == null)
             {
