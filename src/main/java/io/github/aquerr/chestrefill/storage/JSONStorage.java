@@ -187,6 +187,10 @@ public class JSONStorage implements Storage
             //Set open message
             containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getOpenMessage()));
 
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "has-been-opened").setValue(refillableContainer.hasBeenOpened());
+
+            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "first-open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getFirstOpenMessage()));
+
             containersLoader.save(containersNode);
 
             return true;
@@ -458,20 +462,37 @@ public class JSONStorage implements Storage
             final BlockType containerBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
             final String kitName = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").getString("");
             List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
-            final int time = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt();
-            final boolean isOneItemAtTime = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean();
-            final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean();
-            final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean();
+            final int time = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt(120);
+            final boolean isOneItemAtTime = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
+            final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
+            final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
             final BlockType hidingBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
             final String requiredPermission = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").getString("");
             final Text openMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").getString(""));
+            final boolean hasBeenOpened = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
+            final Text firstOpenMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "first-open-message").getString(""));
 
             if(chestItems == null)
             {
                 chestItems = new ArrayList<>();
             }
 
-            return new RefillableContainer(name, containerLocation, containerBlockType, chestItems, time, isOneItemAtTime, shouldReplaceExistingItems, hiddenIfNoItems, hidingBlockType, kitName, requiredPermission, openMessage);
+            return RefillableContainer.builder()
+                    .name(name)
+                    .location(containerLocation)
+                    .blockType(containerBlockType)
+                    .items(chestItems)
+                    .restoreTimeInSeconds(time)
+                    .oneItemAtTime(isOneItemAtTime)
+                    .replaceExisitngItems(shouldReplaceExistingItems)
+                    .hiddenIfNoItems(hiddenIfNoItems)
+                    .hidingBlock(hidingBlockType)
+                    .kitName(kitName)
+                    .openMessage(openMessage)
+                    .requiredPermission(requiredPermission)
+                    .hasBeenOpened(hasBeenOpened)
+                    .firstOpenMessage(firstOpenMessage)
+                    .build();
         }
         catch (Exception e)
         {

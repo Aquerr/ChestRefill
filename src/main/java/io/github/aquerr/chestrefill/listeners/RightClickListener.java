@@ -317,6 +317,17 @@ public class RightClickListener extends AbstractListener
                 event.setCancelled(true);
                 return;
             }
+
+            if (!refillableContainer.hasBeenOpened())
+            {
+                if (!refillableContainer.getFirstOpenMessage().isEmpty())
+                    player.sendMessage(Text.of(refillableContainer.getFirstOpenMessage()));
+
+                refillableContainer.setHasBeenOpened(true);
+                super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
+                return;
+            }
+
             if (!refillableContainer.getOpenMessage().isEmpty() || refillableContainer.getOpenMessage().toPlain().equals(""))
             {
                 player.sendMessage(Text.of(refillableContainer.getOpenMessage()));

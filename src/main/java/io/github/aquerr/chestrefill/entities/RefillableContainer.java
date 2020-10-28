@@ -42,25 +42,25 @@ public class RefillableContainer
 
     private Text openMessage;
 
-    private RefillableContainer(ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList)
-    {
-        this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "", Text.of());
-    }
+    private Text firstOpenMessage;
+    private boolean hasBeenOpened;
 
-    public RefillableContainer(String name, ContainerLocation containerLocation, BlockType containerBlockType, List<RefillableItem> refillableItemList, int time, boolean oneItemAtTime, boolean replaceExistingItems, boolean hiddenIfNoItems, BlockType hidingBlock, String kitName, String requiredPermission, Text openMessage)
+    public RefillableContainer(RefillableContainer.Builder builder)
     {
-        this.name = name;
-        this.containerLocation = containerLocation;
-        this.restoreTimeInSeconds = time;
-        this.items = refillableItemList;
-        this.oneItemAtTime = oneItemAtTime;
-        this.replaceExistingItems = replaceExistingItems;
-        this.hiddenIfNoItems = hiddenIfNoItems;
-        this.hidingBlock = hidingBlock;
-        this.containerBlockType = containerBlockType;
-        this.kitName = kitName;
-        this.requiredPermission = requiredPermission;
-        this.openMessage = openMessage;
+        this.name = builder.name;
+        this.containerLocation = builder.containerLocation;
+        this.restoreTimeInSeconds = builder.restoreTimeInSeconds;
+        this.items = builder.items;
+        this.oneItemAtTime = builder.oneItemAtTime;
+        this.replaceExistingItems = builder.replaceExistingItems;
+        this.hiddenIfNoItems = builder.hiddenIfNoItems;
+        this.hidingBlock = builder.hidingBlock;
+        this.containerBlockType = builder.containerBlockType;
+        this.kitName = builder.kitName;
+        this.requiredPermission = builder.requiredPermission;
+        this.openMessage = builder.openMessage;
+        this.firstOpenMessage = builder.firstOpenMessage;
+        this.hasBeenOpened = builder.hasBeenOpened;
     }
 
     public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
@@ -75,7 +75,8 @@ public class RefillableContainer
             }
             slot++;
         }
-        return new RefillableContainer(new ContainerLocation(blockPosition, worldUUID), blockType, items);
+
+        return builder().location(new ContainerLocation(blockPosition, worldUUID)).blockType(blockType).items(items).build();
     }
 
     public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
@@ -93,7 +94,12 @@ public class RefillableContainer
             slot++;
         }
 
-        return new RefillableContainer(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID), tileEntity.getBlock().getType(), items);
+        return builder().location(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID)).blockType(tileEntity.getBlock().getType()).items(items).build();
+    }
+
+    public static RefillableContainer.Builder builder()
+    {
+        return new Builder();
     }
 
     public void setName(String name)
@@ -193,6 +199,31 @@ public class RefillableContainer
         return this.openMessage;
     }
 
+    public int getRestoreTimeInSeconds()
+    {
+        return restoreTimeInSeconds;
+    }
+
+    public Text getFirstOpenMessage()
+    {
+        return this.firstOpenMessage;
+    }
+
+    public boolean hasBeenOpened()
+    {
+        return this.hasBeenOpened;
+    }
+
+    public void setHasBeenOpened(boolean hasBeenOpened)
+    {
+        this.hasBeenOpened = hasBeenOpened;
+    }
+
+    public void setFirstOpenMessage(Text firstOpenMessage)
+    {
+        this.firstOpenMessage = firstOpenMessage;
+    }
+
     @Override
     public boolean equals(Object obj)
     {
@@ -274,5 +305,147 @@ public class RefillableContainer
                 ", requiredPermission='" + requiredPermission + '\'' +
                 ", openMessage='" + openMessage + '\'' +
                 '}';
+    }
+
+//            this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "", Text.of());
+
+    public static class Builder
+    {
+        private String name;
+
+        private ContainerLocation containerLocation;
+        private List<RefillableItem> items;
+        private BlockType containerBlockType;
+
+        private int restoreTimeInSeconds;
+        private boolean oneItemAtTime;
+        private boolean replaceExistingItems;
+
+        private boolean hiddenIfNoItems;
+        private BlockType hidingBlock;
+
+        private String kitName;
+
+        private String requiredPermission;
+
+        private Text openMessage;
+
+        private Text firstOpenMessage;
+        boolean hasBeenOpened;
+
+        private Builder()
+        {
+            this.name = "";
+            this.containerLocation = null;
+            this.items = new ArrayList<>();
+            this.containerBlockType = null;
+            this.restoreTimeInSeconds = 120;
+            this.oneItemAtTime = false;
+            this.replaceExistingItems = true;
+            this.hiddenIfNoItems = false;
+            this.hidingBlock = BlockTypes.DIRT;
+            this.kitName = "";
+            this.requiredPermission = "";
+            this.openMessage = Text.EMPTY;
+
+            this.firstOpenMessage = Text.EMPTY;
+            this.hasBeenOpened = false;
+        }
+
+        public Builder name(final String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Builder location(final ContainerLocation containerLocation)
+        {
+            this.containerLocation = containerLocation;
+            return this;
+        }
+
+        public Builder items(final List<RefillableItem> items)
+        {
+            this.items = items;
+            return this;
+        }
+
+        public Builder blockType(final BlockType blockType)
+        {
+            this.containerBlockType = blockType;
+            return this;
+        }
+
+        public Builder restoreTimeInSeconds(final int restoreTimeInSeconds)
+        {
+            this.restoreTimeInSeconds = restoreTimeInSeconds;
+            return this;
+        }
+
+        public Builder oneItemAtTime(final boolean oneItemAtTime)
+        {
+            this.oneItemAtTime = oneItemAtTime;
+            return this;
+        }
+
+        public Builder replaceExisitngItems(final boolean replaceExistingItems)
+        {
+            this.replaceExistingItems = replaceExistingItems;
+            return this;
+        }
+
+        public Builder hiddenIfNoItems(final boolean hiddenIfNoItems)
+        {
+            this.hiddenIfNoItems = hiddenIfNoItems;
+            return this;
+        }
+
+        public Builder hidingBlock(final BlockType hidingBlock)
+        {
+            this.hidingBlock = hidingBlock;
+            return this;
+        }
+
+        public Builder kitName(final String kitName)
+        {
+            this.kitName = kitName;
+            return this;
+        }
+
+        public Builder requiredPermission(final String requiredPermission)
+        {
+            this.requiredPermission = requiredPermission;
+            return this;
+        }
+
+        public Builder openMessage(final Text openMessage)
+        {
+            this.openMessage = openMessage;
+            return this;
+        }
+
+        public Builder hasBeenOpened(final boolean hasBeenOpened)
+        {
+            this.hasBeenOpened = hasBeenOpened;
+            return this;
+        }
+
+        public Builder firstOpenMessage(final Text firstOpenMessage)
+        {
+            this.firstOpenMessage = firstOpenMessage;
+            return this;
+        }
+
+        public RefillableContainer build()
+        {
+            if (this.name == null)
+                this.name = "";
+            if (this.kitName == null)
+                this.kitName = "";
+            if (this.requiredPermission == null)
+                this.requiredPermission = "";
+
+            return new RefillableContainer(this);
+        }
     }
 }
