@@ -17,6 +17,12 @@ import org.spongepowered.api.effect.particle.ParticleOptions;
 import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.property.InventoryCapacity;
+import org.spongepowered.api.item.inventory.property.InventoryTitle;
+import org.spongepowered.api.item.inventory.property.SlotIndex;
+import org.spongepowered.api.item.inventory.property.SlotPos;
+import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Color;
@@ -28,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -258,40 +265,15 @@ public class ContainerManager
                                     }
                                 }
 
-                                //Refill item
-                                int i = 0;
-                                for(final Inventory slot : tileEntityInventory.slots())
-                                {
-                                    if(lowestChanceItem.getSlot() == i)
-                                    {
-                                        slot.offer(lowestChanceItem.getItem().createStack());
-                                        break;
-                                    }
-
-                                    i++;
-                                }
+                                refillItems(tileEntityInventory, Collections.singletonList(lowestChanceItem), true, chestToRefill.shouldPlaceItemsInRandomSlots());
                             }
                         }
                         else
                         {
-                            for (final RefillableItem item : itemsAchievedFromRandomizer)
-                            {
-                                int i = 0;
-                                for(final Inventory slot : tileEntityInventory.slots())
-                                {
-                                    if(item.getSlot() == i)
-                                    {
-                                        slot.offer(item.getItem().createStack());
-                                    }
-                                    i++;
-                                }
-                            }
+                            refillItems(tileEntityInventory, itemsAchievedFromRandomizer, false, chestToRefill.shouldPlaceItemsInRandomSlots());
                         }
 
-                        if (chestToRefill.shouldBeHiddenIfNoItems() && tileEntityInventory.totalItems() == 0)
-                        {
-                            location.setBlockType(chestToRefill.getHidingBlock());
-                        }
+                        tryHideContainer(chestToRefill, tileEntityInventory, location);
                         return true;
                     }
                 }
@@ -383,5 +365,53 @@ public class ContainerManager
     public Kit getKit(final String name)
     {
         return getKits().get(name);
+    }
+
+    private void refillItems(final Inventory inventory, final List<RefillableItem> refillableItems, final boolean stopAtFirstItem, final boolean placeItemsInRandomSlots)
+    {
+        if (placeItemsInRandomSlots)
+        {
+            //TODO: Sometimes chest is empty...
+            final int numberOfSlots = inventory.capacity();
+            for (int i = 0; i < refillableItems.size(); i++)
+            {
+                final RefillableItem refillableItem = refillableItems.get(i);
+                final int randomSlot = ThreadLocalRandom.current().nextInt(numberOfSlots);
+                Slot slot = inventory.query(QueryOperationTypes.INVENTORY_PROPERTY.of(SlotIndex.of(randomSlot)));
+                if (slot.totalItems() != 0)
+                {
+                    i--;
+                    continue;
+                }
+                slot.offer(refillableItem.getItem().createStack());
+                if (stopAtFirstItem)
+                    break;
+            }
+        }
+        else
+        {
+            for (final RefillableItem item : refillableItems)
+            {
+                int i = 0;
+                for(final Inventory slot : inventory.slots())
+                {
+                    if(item.getSlot() == i)
+                    {
+                        slot.offer(item.getItem().createStack());
+                        if (stopAtFirstItem)
+                            break;
+                    }
+                    i++;
+                }
+            }
+        }
+    }
+
+    private void tryHideContainer(final RefillableContainer refillableContainer, final Inventory inventory, final Location<World> containerLocation)
+    {
+        if (refillableContainer.shouldBeHiddenIfNoItems() && inventory.totalItems() == 0)
+        {
+            containerLocation.setBlockType(refillableContainer.getHidingBlock());
+        }
     }
 }

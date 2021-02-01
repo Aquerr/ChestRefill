@@ -37,6 +37,9 @@ import java.util.stream.Collectors;
  */
 public class JSONStorage implements Storage
 {
+    private static final String NODE_CHEST_REFILL = "chestrefill";
+    private static final String NODE_REFILLABLE_CONTAINERS = "refillable-containers";
+
     private Path containersPath;
     private ChestRefillGsonConfigurationLoader containersLoader;
     private ConfigurationNode containersNode;
@@ -148,48 +151,50 @@ public class JSONStorage implements Storage
             List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
 
             //Set container's name
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(refillableContainer.getName());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").setValue(refillableContainer.getName());
 
             //Set container's block type
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
 
             //Set container's kit
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").setValue(refillableContainer.getKitName());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").setValue(refillableContainer.getKitName());
 
             if(refillableContainer.getKitName().equals(""))
             {
                 //Set container's items
-                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, items);
+                containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, items);
             }
             else
             {
-                containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").setValue(new ArrayList<>());
+                containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").setValue(new ArrayList<>());
             }
 
             //Set container's regeneration time (in seconds)
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
 
             //Set container's "one itemstack at time"
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").setValue(refillableContainer.isOneItemAtTime());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").setValue(refillableContainer.isOneItemAtTime());
 
             //Set container's should-replace-existing-items property
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").setValue(refillableContainer.shouldReplaceExistingItems());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").setValue(refillableContainer.shouldReplaceExistingItems());
 
             //Set container's should-be-hidden-if-no-items
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").setValue(refillableContainer.shouldBeHiddenIfNoItems());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").setValue(refillableContainer.shouldBeHiddenIfNoItems());
 
             //Set container's hidding block
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").setValue(TypeToken.of(BlockType.class), refillableContainer.getHidingBlock());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").setValue(TypeToken.of(BlockType.class), refillableContainer.getHidingBlock());
 
             //Set required permission
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
 
             //Set open message
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getOpenMessage()));
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getOpenMessage()));
 
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "has-been-opened").setValue(refillableContainer.hasBeenOpened());
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").setValue(refillableContainer.hasBeenOpened());
 
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "first-open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getFirstOpenMessage()));
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getFirstOpenMessage()));
+
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").setValue(refillableContainer.shouldPlaceItemsInRandomSlots());
 
             containersLoader.save(containersNode);
 
@@ -211,7 +216,7 @@ public class JSONStorage implements Storage
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
-            containersNode.getNode("chestrefill", "refillable-containers").removeChild(blockPositionAndWorldUUID);
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).removeChild(blockPositionAndWorldUUID);
 
             containersLoader.save(containersNode);
 
@@ -229,7 +234,7 @@ public class JSONStorage implements Storage
     @Override
     public List<ContainerLocation> getContainerLocations()
     {
-        Set<Object> objectList = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+        Set<Object> objectList = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).getChildrenMap().keySet();
         List<ContainerLocation> containerLocations = new ArrayList<>();
 
         for (Object object : objectList)
@@ -276,7 +281,7 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's regeneration time (in seconds)
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").setValue(time);
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").setValue(time);
 
             containersLoader.save(containersNode);
 
@@ -300,7 +305,7 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's name
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").setValue(containerName);
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").setValue(containerName);
             containersLoader.save(containersNode);
 
             return true;
@@ -384,15 +389,15 @@ public class JSONStorage implements Storage
             this.kitsLoaders.remove(kitName.toLowerCase());
 
             //Remove the kit from containers
-            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode("chestrefill", "refillable-containers").getChildrenMap().keySet();
+            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).getChildrenMap().keySet();
             for(final Object blockPositionAndWorldUUID : blockPositionsAndWorldUUIDs)
             {
                 if(!(blockPositionAndWorldUUID instanceof String))
                     continue;
                 final String blockPositionAndWorldUUIDString = String.valueOf(blockPositionAndWorldUUID);
-                final Object kitValue = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").getValue();
+                final Object kitValue = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").getValue();
                 if(kitValue != null && String.valueOf(kitValue).equalsIgnoreCase(kitName))
-                    containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUIDString, "kit").setValue("");
+                    containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").setValue("");
             }
             return true;
         }
@@ -414,7 +419,7 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's kit
-            containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").setValue(kitName);
+            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").setValue(kitName);
             containersLoader.save(containersNode);
             return true;
         }
@@ -455,22 +460,23 @@ public class JSONStorage implements Storage
         {
              final String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
 
-            final Object containersName = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "name").getValue();
+            final Object containersName = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").getValue();
             String name = null;
             if (containersName != null) name = (String)containersName;
 
-            final BlockType containerBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
-            final String kitName = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "kit").getString("");
-            List<RefillableItem> chestItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "items").getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
-            final int time = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "time").getInt(120);
-            final boolean isOneItemAtTime = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
-            final boolean shouldReplaceExistingItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
-            final boolean hiddenIfNoItems = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
-            final BlockType hidingBlockType = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
-            final String requiredPermission = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "required-permission").getString("");
-            final Text openMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "open-message").getString(""));
-            final boolean hasBeenOpened = containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
-            final Text firstOpenMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode("chestrefill", "refillable-containers", blockPositionAndWorldUUID, "first-open-message").getString(""));
+            final BlockType containerBlockType = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
+            final String kitName = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").getString("");
+            List<RefillableItem> chestItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
+            final int time = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").getInt(120);
+            final boolean isOneItemAtTime = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
+            final boolean shouldReplaceExistingItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
+            final boolean hiddenIfNoItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
+            final BlockType hidingBlockType = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
+            final String requiredPermission = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").getString("");
+            final Text openMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString(""));
+            final boolean hasBeenOpened = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
+            final Text firstOpenMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString(""));
+            final boolean shouldPlaceItemsInRandomSlots = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").getBoolean(false);
 
             if(chestItems == null)
             {
@@ -492,6 +498,7 @@ public class JSONStorage implements Storage
                     .requiredPermission(requiredPermission)
                     .hasBeenOpened(hasBeenOpened)
                     .firstOpenMessage(firstOpenMessage)
+                    .placeItemsInRandomSlots(shouldPlaceItemsInRandomSlots)
                     .build();
         }
         catch (Exception e)
@@ -506,7 +513,7 @@ public class JSONStorage implements Storage
     private ConfigurationOptions getDefaultOptions()
     {
         final ConfigurationOptions configurationOptions = ConfigurationOptions.defaults();
-        return configurationOptions.setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+        return configurationOptions.withNativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
                 Short.class, Byte.class, Number.class));
     }
 }

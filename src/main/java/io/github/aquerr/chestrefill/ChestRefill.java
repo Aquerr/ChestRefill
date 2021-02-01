@@ -204,6 +204,7 @@ public class ChestRefill
         SUBCOMMANDS.put(Collections.singletonList("setopenmessage"), CommandSpec.builder()
                 .description(Text.of("Sets message that will be shown when refillable container will be opened"))
                 .permission(PluginPermissions.SET_OPEN_MESSAGE_COMMAND)
+                .executor(new SetOpenMessageCommand(this))
                 .arguments(GenericArguments.string(Text.of("message")))
                 .build());
 

@@ -45,6 +45,8 @@ public class RefillableContainer
     private Text firstOpenMessage;
     private boolean hasBeenOpened;
 
+    private boolean placeItemsInRandomSlots;
+
     public RefillableContainer(RefillableContainer.Builder builder)
     {
         this.name = builder.name;
@@ -61,6 +63,7 @@ public class RefillableContainer
         this.openMessage = builder.openMessage;
         this.firstOpenMessage = builder.firstOpenMessage;
         this.hasBeenOpened = builder.hasBeenOpened;
+        this.placeItemsInRandomSlots = builder.placeItemsInRandomSlots;
     }
 
     public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
@@ -224,6 +227,11 @@ public class RefillableContainer
         this.firstOpenMessage = firstOpenMessage;
     }
 
+    public boolean shouldPlaceItemsInRandomSlots()
+    {
+        return this.placeItemsInRandomSlots;
+    }
+
     @Override
     public boolean equals(Object obj)
     {
@@ -303,11 +311,12 @@ public class RefillableContainer
                 ", hidingBlock=" + hidingBlock +
                 ", kitName='" + kitName + '\'' +
                 ", requiredPermission='" + requiredPermission + '\'' +
-                ", openMessage='" + openMessage + '\'' +
+                ", openMessage=" + openMessage +
+                ", firstOpenMessage=" + firstOpenMessage +
+                ", hasBeenOpened=" + hasBeenOpened +
+                ", placeItemsInRandomSlots=" + placeItemsInRandomSlots +
                 '}';
     }
-
-//            this("", containerLocation, containerBlockType, refillableItemList, 120, false, true, false, BlockTypes.DIRT, "", "", Text.of());
 
     public static class Builder
     {
@@ -331,7 +340,9 @@ public class RefillableContainer
         private Text openMessage;
 
         private Text firstOpenMessage;
-        boolean hasBeenOpened;
+        private boolean hasBeenOpened;
+
+        private boolean placeItemsInRandomSlots;
 
         private Builder()
         {
@@ -350,6 +361,8 @@ public class RefillableContainer
 
             this.firstOpenMessage = Text.EMPTY;
             this.hasBeenOpened = false;
+
+            this.placeItemsInRandomSlots = false;
         }
 
         public Builder name(final String name)
@@ -433,6 +446,12 @@ public class RefillableContainer
         public Builder firstOpenMessage(final Text firstOpenMessage)
         {
             this.firstOpenMessage = firstOpenMessage;
+            return this;
+        }
+
+        public Builder placeItemsInRandomSlots(final boolean placeItemsInRandomSlots)
+        {
+            this.placeItemsInRandomSlots = placeItemsInRandomSlots;
             return this;
         }
 

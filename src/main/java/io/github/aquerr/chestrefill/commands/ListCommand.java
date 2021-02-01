@@ -48,6 +48,7 @@ public class ListCommand extends AbstractCommand implements CommandExecutor
             refillableContainer.getItems().forEach(x -> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getTranslation().get(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
 
             itemsToShow.append(Text.of("\n", TextColors.GREEN, "Kit: ", TextColors.WHITE, refillableContainer.getKitName(), "\n"));
+            itemsToShow.append(Text.of(TextColors.GREEN, "Place items in random slots: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Replace existing items: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
             itemsToShow.append(Text.of(TextColors.GREEN, "Hidden if no items: ", TextColors.WHITE, refillableContainer.shouldBeHiddenIfNoItems(), "\n"));
