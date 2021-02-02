@@ -1,6 +1,5 @@
 package io.github.aquerr.chestrefill.managers;
 
-import com.flowpowered.math.vector.Vector3d;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
@@ -11,21 +10,13 @@ import io.github.aquerr.chestrefill.storage.StorageHelper;
 import io.github.aquerr.chestrefill.util.ModSupport;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.block.tileentity.carrier.Chest;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.effect.particle.ParticleEffect;
-import org.spongepowered.api.effect.particle.ParticleOptions;
-import org.spongepowered.api.effect.particle.ParticleTypes;
 import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.item.inventory.property.InventoryCapacity;
-import org.spongepowered.api.item.inventory.property.InventoryTitle;
 import org.spongepowered.api.item.inventory.property.SlotIndex;
-import org.spongepowered.api.item.inventory.property.SlotPos;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.util.Color;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -234,6 +225,8 @@ public class ContainerManager
                         {
                             final TileEntityCarrier tileEntityCarrier = (TileEntityCarrier)tileEntity;
                             tileEntityInventory = tileEntityCarrier.getInventory();
+                            if (tileEntityCarrier instanceof Chest)
+                                tileEntityInventory = ((Chest) tileEntityCarrier).getDoubleChestInventory().orElse(tileEntityInventory);
                         }
 
                         if (chestToRefill.shouldReplaceExistingItems())
