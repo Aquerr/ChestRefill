@@ -371,13 +371,12 @@ public class ContainerManager
     {
         if (placeItemsInRandomSlots)
         {
-            //TODO: Sometimes chest is empty...
             final int numberOfSlots = inventory.capacity();
             for (int i = 0; i < refillableItems.size(); i++)
             {
                 final RefillableItem refillableItem = refillableItems.get(i);
                 final int randomSlot = ThreadLocalRandom.current().nextInt(numberOfSlots);
-                Slot slot = inventory.query(QueryOperationTypes.INVENTORY_PROPERTY.of(SlotIndex.of(randomSlot)));
+                Inventory slot = inventory.query(QueryOperationTypes.INVENTORY_PROPERTY.of(SlotIndex.of(randomSlot)));
                 if (slot.totalItems() != 0)
                 {
                     i--;
