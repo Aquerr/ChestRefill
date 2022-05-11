@@ -512,8 +512,9 @@ public class JSONStorage implements Storage
 
     private ConfigurationOptions getDefaultOptions()
     {
-        final ConfigurationOptions configurationOptions = ConfigurationOptions.defaults();
-        return configurationOptions.withNativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
-                Short.class, Byte.class, Number.class));
+        return ConfigurationOptions.defaults()
+                .withSerializers(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
+                .withNativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+                        Short.class, Byte.class, Number.class));
     }
 }

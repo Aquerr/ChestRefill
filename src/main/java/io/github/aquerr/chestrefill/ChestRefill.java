@@ -12,7 +12,7 @@ import io.github.aquerr.chestrefill.storage.serializers.KitTypeSerializer;
 import io.github.aquerr.chestrefill.storage.serializers.RefillableItemListTypeSerializer;
 import io.github.aquerr.chestrefill.storage.serializers.RefillableItemTypeSerializer;
 import io.github.aquerr.chestrefill.version.VersionChecker;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.args.GenericArguments;
@@ -75,7 +75,6 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
-        registerTypeSerializers();
         this.containerManager = new ContainerManager(this, getConfigDir());
         this.containerScheduler = new ContainerScheduler(this);
 
@@ -282,12 +281,5 @@ public class ChestRefill
         Sponge.getEventManager().registerListeners(this, new PlayerDisconnectListener(this));
         Sponge.getEventManager().registerListeners(this, new WandUsageListener(this));
 //        Sponge.getEventManager().registerListeners(this, new DropItemListener());
-    }
-
-    private void registerTypeSerializers()
-    {
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(RefillableItem.class), new RefillableItemTypeSerializer());
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(Kit.class), new KitTypeSerializer());
-        TypeSerializers.getDefaultSerializers().registerType(new TypeToken<List<RefillableItem>>(){}, new RefillableItemListTypeSerializer());
     }
 }

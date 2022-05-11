@@ -8,23 +8,22 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.12.2-1.6.0'
+version = '1.12.2-1.6.1'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
 repositories {
     mavenCentral()
-    jcenter()
     maven { url 'https://repo.spongepowered.org/maven' }
 }
 
 dependencies {
-    shadow 'org.spongepowered:spongeapi:7.3.0'
-    annotationProcessor 'org.spongepowered:spongeapi:7.3.0'
+    shadow 'org.spongepowered:spongeapi:7.4.0'
+    annotationProcessor 'org.spongepowered:spongeapi:7.4.0'
 }
 
 jar {
     if(System.getenv("JENKINS_HOME")) {
-        version = version + "_" + System.getenv("BUILD_NUMBER")
+        version = version + "_" + System.getenv("BUILD_NUMBER") + "-SNAPSHOT"
         println("File name =>" + baseName)
     }
 }
