@@ -1,42 +1,40 @@
 package io.github.aquerr.chestrefill.storage.serializers;
 
-import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RefillableItemListTypeSerializer implements TypeSerializer<List<RefillableItem>>
 {
-    @Nullable
     @Override
-    public List<RefillableItem> deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public List<RefillableItem> deserialize(Type type, ConfigurationNode node) throws SerializationException
     {
         final List<RefillableItem> refillableItems = new ArrayList<>();
-        final List<? extends ConfigurationNode> nodes = value.getChildrenList();
+        final List<? extends ConfigurationNode> nodes = node.childrenList();
         for (final ConfigurationNode configurationNode : nodes)
         {
-            final RefillableItem refillableItem = configurationNode.getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_TYPE_TOKEN);
+            final RefillableItem refillableItem = configurationNode.get(ChestRefillTypeSerializers.REFILLABLE_ITEM_TYPE_TOKEN);
             refillableItems.add(refillableItem);
         }
         return refillableItems;
     }
 
     @Override
-    public void serialize(@NonNull TypeToken<?> type, @Nullable List<RefillableItem> obj, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public void serialize(Type type, @Nullable List<RefillableItem> obj, ConfigurationNode node) throws SerializationException
     {
         if (obj == null)
             return;
 
         for (final RefillableItem refillableItem : obj)
         {
-            final ConfigurationNode configurationNode = value.getAppendedNode();
-            configurationNode.setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_TYPE_TOKEN, refillableItem);
+            final ConfigurationNode configurationNode = node.appendListNode();
+            configurationNode.set(ChestRefillTypeSerializers.REFILLABLE_ITEM_TYPE_TOKEN, refillableItem);
         }
     }
 }

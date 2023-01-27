@@ -1,66 +1,43 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.commands.arguments.ChestRefillCommandParameters;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-
-import java.util.Map;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 public class AssignKitCommand extends AbstractCommand implements CommandExecutor
 {
+    private final MessageSource messageSource;
+
     public AssignKitCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        final String kitName = context.requireOne(Text.of("kit name"));
+        final Kit kit = context.requireOne(ChestRefillCommandParameters.kit());
 
-        if(!(source instanceof Player))
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
-            return CommandResult.empty();
-        }
+        final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        final Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
-        if(kits.keySet().stream().noneMatch(x->x.equals(kitName)))
+        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.ASSIGN_KIT, (selectionMode, selectionMode2) -> null);
+        ChestRefill.PLAYER_KIT_ASSIGN.merge(serverPlayer.uniqueId(), kit.getName(), (s, s2) -> null);
+        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        if (isModeActive)
         {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Kit with such name does not exists!"));
-            return CommandResult.empty();
-        }
-
-        final Player player = (Player)source;
-        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
-        {
-            if (SelectionMode.ASSIGN_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
-            {
-                ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
-                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on assign mode"));
-            }
-            else
-            {
-                ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
-                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off assign mode"));
-            }
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.assignkit.turned-on"));
         }
         else
         {
-            ChestRefill.PLAYER_KIT_ASSIGN.put(player.getUniqueId(), kitName);
-            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.ASSIGN_KIT);
-            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on assign mode"));
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.assignkit.turned-off"));
         }
 
         return CommandResult.success();

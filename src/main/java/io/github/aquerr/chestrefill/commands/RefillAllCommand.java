@@ -1,25 +1,24 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
 
-public class RefillAllCommand extends AbstractCommand implements CommandExecutor
+public class RefillAllCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public RefillAllCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
         boolean didSucceed = true;
         for (ContainerLocation containerLocation : super.getPlugin().getContainerManager().getContainerLocations())
@@ -30,9 +29,13 @@ public class RefillAllCommand extends AbstractCommand implements CommandExecutor
         }
 
         if(didSucceed)
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Successfully refilled all containers!"));
-        else source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Some containers couldn't be refilled."));
-
-        return CommandResult.success();
+        {
+            context.cause().audience().sendMessage(messageSource.resolveMessageWithPrefix("command.refillall.success"));
+            return CommandResult.success();
+        }
+        else
+        {
+            throw messageSource.resolveExceptionWithMessage("command.refillall.failure");
+        }
     }
 }

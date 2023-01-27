@@ -1,54 +1,54 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+
+import java.util.UUID;
 
 public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public SetPlaceItemsInRandomSlotsCommand(final ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        final boolean shouldPlaceItemsInRandomSlots = args.requireOne(Text.of("value"));
+        final boolean shouldPlaceItemsInRandomSlots = context.requireOne(Parameter.bool().key("value").build());
 
-        if (!(source instanceof Player))
-            throw new CommandException(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
+        final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-//        Player player = (Player) source;
-//        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
-//        {
-//            if (SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
-//            {
-//                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.SET_OPEN_MESSAGE);
-//                ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), message);
-//                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on set open message mode"));
-//            }
-//            else
-//            {
-//                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-//                ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
-//                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off set open message mode"));
-//            }
-//        }
-//        else
-//        {
-//            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS);
-//            ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), message);
-//
-//        }
+        ChestRefill.PLAYER_CHEST_SELECTION_MODE.compute(serverPlayer.uniqueId(), this::toggleSelectionMode);
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId()))
+        {
+            ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.compute(serverPlayer.uniqueId(), ((uuid, aBoolean) -> shouldPlaceItemsInRandomSlots));
+        }
+
+        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        if (isModeActive)
+        {
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.setplaceitemsinrandomslots.turned-on"));
+        }
+        else
+        {
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.setplaceitemsinrandomslots.turned-off"));
+        }
 
         return CommandResult.success();
+    }
+
+    private SelectionMode toggleSelectionMode(UUID uuid, SelectionMode selectionMode)
+    {
+        return selectionMode == null ? SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS : null;
     }
 }

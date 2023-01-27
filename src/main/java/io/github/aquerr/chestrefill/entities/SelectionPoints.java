@@ -1,9 +1,9 @@
 package io.github.aquerr.chestrefill.entities;
 
-import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.math.vector.Vector3i;
 
 /**
- * A mapping class for two instances of {@link Vector3i} which in this case are selected points in the world.
+ * A mapping class for two instances of {@link org.spongepowered.math.vector.Vector3i} which in this case are selected points in the world.
  */
 public class SelectionPoints
 {

@@ -7,11 +7,11 @@
 [![Downloads](https://img.shields.io/github/downloads/aquerr/chestrefill/total.svg?label=Total%20Downloads)](https://github.com/Aquerr/EagleFactions/releases)
 [![Discord](https://img.shields.io/discord/447076657698963466.svg?color=blue&label=Discord&logo=Discord&logoColor=white)](https://discord.gg/Zg3rWta)
 
-Chest Refill is a Minecraft plugin for servers which use SpongeForge.
+Chest Refill is a Minecraft plugin for servers that use SpongeForge.
 
-This plugin allows you to create refillable containers and regenerate their content after a specified time.
+It allows admins to create refillable containers that regenerate their content after a specified time.
 
-Simply place a e.g. chest, put items in it, mark it as a refillable chest and that's it! You can then update your chest at any time or change how often it should be refilled. :grin:
+Simply place a chest, put items in it, mark it as a refillable chest and that's it! You can then update your chest at any time or change how often it should be refilled. :grin:
 
 Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how everything works!
 
@@ -28,4 +28,4 @@ Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how 
 
 ## Donation
 
-Creation of this plugin is really a time consuming task. If you would like to support me then you can star this repo or send me some cookies through [PayPal](https://www.paypal.me/aquerr).
+Creation of this plugin is really a time-consuming task. If you would like to support me then you can star this repo or send me some cookies through [PayPal](https://www.paypal.me/aquerr).

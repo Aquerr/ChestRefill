@@ -1,45 +1,43 @@
 package io.github.aquerr.chestrefill.storage.serializers;
 
-import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import io.leangen.geantyref.TypeToken;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.Sponge;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class KitTypeSerializer implements TypeSerializer<Kit>
 {
-    @Nullable
     @Override
-    public Kit deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public Kit deserialize(Type type, ConfigurationNode node) throws SerializationException
     {
         String name = "";
         List<RefillableItem> items;
         try
         {
-            name = value.getNode("name").getString();
-            items = value.getNode("items").getList(TypeToken.of(RefillableItem.class), new ArrayList<>());
+            name = node.node("name").getString();
+            items = node.node("items").getList(TypeToken.get(RefillableItem.class), new ArrayList<>());
         }
         catch (final Exception exception)
         {
-            throw new ObjectMappingException("Could not deserialize the kit: " + name, exception);
+            throw new SerializationException("Could not deserialize the kit: " + name);
         }
         return new Kit(name, items);
     }
 
     @Override
-    public void serialize(@NonNull TypeToken<?> type, @Nullable Kit obj, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public void serialize(Type type, @Nullable Kit obj, ConfigurationNode node) throws SerializationException
     {
         if (obj == null)
             return;
 
-        value.getNode("name").setValue(obj.getName());
-        value.getNode("items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, obj.getItems());
+        node.node("name").set(obj.getName());
+        node.node("items").set(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, obj.getItems());
     }
 }

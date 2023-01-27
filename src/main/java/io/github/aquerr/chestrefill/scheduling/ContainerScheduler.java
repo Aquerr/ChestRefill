@@ -1,7 +1,8 @@
 package io.github.aquerr.chestrefill.scheduling;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import org.spongepowered.api.Sponge;
+import org.spongepowered.api.scheduler.ScheduledTask;
+import org.spongepowered.api.scheduler.Scheduler;
 import org.spongepowered.api.scheduler.Task;
 
 import java.util.HashMap;
@@ -11,28 +12,23 @@ import java.util.concurrent.TimeUnit;
 
 public class ContainerScheduler
 {
-    private final Map<String, Task> tasks;
+    private final Map<String, ScheduledTask> tasks;
     private final ChestRefill plugin;
 
-    public ContainerScheduler(ChestRefill plugin)
+    private final Scheduler syncScheduler;
+    private final Scheduler asyncScheduler;
+
+    public ContainerScheduler(ChestRefill plugin, final Scheduler syncScheduler, final Scheduler asyncScheduler)
     {
         this.plugin = plugin;
         this.tasks = new HashMap<>();
+        this.syncScheduler = syncScheduler;
+        this.asyncScheduler = asyncScheduler;
     }
 
-    public Map<String, Task> getScheduledTasks()
+    public Map<String, ScheduledTask> getScheduledTasks()
     {
         return this.tasks;
-    }
-
-    public void runDelayed(String name, long delay, TimeUnit timeUnit, Runnable runnable)
-    {
-        //Run and forget
-        Task task = Task.builder()
-                .name(name)
-                .delay(delay, timeUnit)
-                .execute(runnable)
-                .submit(this.plugin);
     }
 
     public void scheduleWithInterval(String name, long interval, TimeUnit timeUnit, Runnable runnable)
@@ -41,12 +37,13 @@ public class ContainerScheduler
             throw new IllegalArgumentException("Task with such name [" + name + "] already exists");
 
         Task task = Task.builder()
-                .name(name)
                 .interval(interval, timeUnit)
                 .execute(runnable)
-                .submit(this.plugin);
+                .plugin(this.plugin.getPluginContainer())
+                .build();
 
-        this.tasks.put(name, task);
+        ScheduledTask scheduledTask = syncScheduler.submit(task, name);
+        this.tasks.put(name, scheduledTask);
     }
 
     public void scheduleWithIntervalAsync(String name, long interval, TimeUnit timeUnit, Runnable runnable)
@@ -55,13 +52,12 @@ public class ContainerScheduler
             throw new IllegalArgumentException("Task with such name [" + name + "] already exists");
 
         Task task = Task.builder()
-                .name(name)
                 .interval(interval, timeUnit)
                 .execute(runnable)
-                .async()
-                .submit(this.plugin);
-
-        this.tasks.put(name, task);
+                .plugin(this.plugin.getPluginContainer())
+                .build();
+        ScheduledTask scheduledTask = asyncScheduler.submit(task, name);
+        this.tasks.put(name, scheduledTask);
     }
 
     public void scheduleDelayedWithInterval(String name, long delay, TimeUnit delayTimeUnit, long interval, TimeUnit intervalTimeUnit, Runnable runnable)
@@ -70,13 +66,13 @@ public class ContainerScheduler
             throw new IllegalArgumentException("Task with such name [" + name + "] already exists");
 
         Task task = Task.builder()
-                .name(name)
                 .delay(delay, delayTimeUnit)
                 .interval(interval, intervalTimeUnit)
                 .execute(runnable)
-                .submit(this.plugin);
-
-        this.tasks.put(name, task);
+                .plugin(this.plugin.getPluginContainer())
+                .build();
+        ScheduledTask scheduledTask = syncScheduler.submit(task, name);
+        this.tasks.put(name, scheduledTask);
     }
 
     public void scheduleDelayedWithIntervalAsync(String name, long delay, TimeUnit delayTimeUnit, long interval, TimeUnit intervalTimeUnit, Runnable runnable)
@@ -85,26 +81,23 @@ public class ContainerScheduler
             throw new IllegalArgumentException("Task with such name [" + name + "] already exists");
 
         Task task = Task.builder()
-                .name(name)
                 .delay(delay, delayTimeUnit)
                 .interval(interval, intervalTimeUnit)
                 .execute(runnable)
-                .async()
-                .submit(this.plugin);
-
-        this.tasks.put(name, task);
+                .plugin(this.plugin.getPluginContainer())
+                .build();
+        ScheduledTask scheduledTask = asyncScheduler.submit(task, name);
+        this.tasks.put(name, scheduledTask);
     }
 
-    public Task cancelTask(String taskName)
+    public void cancelTask(String taskName)
     {
-        Task task = this.tasks.remove(taskName);
-
+        ScheduledTask task = this.tasks.remove(taskName);
         if(task != null)
             task.cancel();
-        return task;
     }
 
-    public Optional<Task> getTask(String taskName)
+    public Optional<ScheduledTask> getTask(String taskName)
     {
         if(this.tasks.containsKey(taskName))
             return Optional.of(this.tasks.get(taskName));

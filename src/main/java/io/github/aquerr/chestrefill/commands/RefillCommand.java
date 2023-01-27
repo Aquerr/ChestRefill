@@ -1,54 +1,47 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
 
 import java.util.Collection;
-import java.util.Optional;
 
-/**
- * Created by Aquerr on 2018-06-24.
- */
-public class RefillCommand extends AbstractCommand implements CommandExecutor
+public class RefillCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public RefillCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        Optional<String> optionalChestName = args.getOne(Text.of("chest name"));
+        String containerName = context.requireOne(Parameter.string().key("name").build());
+        Collection<RefillableContainer> containers = super.getPlugin().getContainerManager().getRefillableContainers();
 
-        if (optionalChestName.isPresent())
+        for (RefillableContainer refillableContainer : containers)
         {
-            String chestName = optionalChestName.get();
-
-            Collection<RefillableContainer> containerList = super.getPlugin().getContainerManager().getRefillableContainers();
-
-            for (RefillableContainer refillableContainer : containerList)
+            if (refillableContainer.getName() != null && refillableContainer.getName().equals(containerName))
             {
-                if (refillableContainer.getName() != null && refillableContainer.getName().equals(chestName))
+                boolean didSucceed = super.getPlugin().getContainerManager().refillContainer(refillableContainer.getContainerLocation());
+                if(didSucceed)
                 {
-                    boolean didSucceed = super.getPlugin().getContainerManager().refillContainer(refillableContainer.getContainerLocation());
-                    if(didSucceed)
-                        source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Successfully refilled the container!"));
-                    else
-                        source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Could not refill the container!"));
+                    context.cause().audience().sendMessage(messageSource.resolveMessageWithPrefix("command.refill.success"));
                     break;
+                }
+                else
+                {
+                    throw messageSource.resolveExceptionWithMessage("command.refill.failure");
                 }
             }
         }
-
         return CommandResult.success();
     }
 }

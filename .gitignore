@@ -4,6 +4,7 @@ build
 out
 lib
 *.class
+run
 
 # Log file
 *.log

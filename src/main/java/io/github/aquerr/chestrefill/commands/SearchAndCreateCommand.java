@@ -1,66 +1,71 @@
 package io.github.aquerr.chestrefill.commands;
 
-import com.flowpowered.math.vector.Vector3d;
-import com.flowpowered.math.vector.Vector3i;
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionPoints;
-import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import org.spongepowered.api.block.entity.BlockEntity;
+import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.effect.particle.ParticleOptions;
 import org.spongepowered.api.effect.particle.ParticleTypes;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.world.server.ServerWorld;
+import org.spongepowered.math.vector.Vector3d;
+import org.spongepowered.math.vector.Vector3i;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
 public class SearchAndCreateCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public SearchAndCreateCommand(final ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        if(!(source instanceof Player))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
+        ServerPlayer serverPlayer = requirePlayerSource(context);
+        final int restoreTime = context.one(Parameter.integerNumber().key("restore_time").build()).orElse(120);
+        final String requiredPermission = context.one(Parameter.string().key("required_permission").build()).orElse("");
 
-        final int restoreTime = args.<Integer>getOne(Text.of("restoreTime")).orElse(120);
-        final String requiredPermission = args.<String>getOne(Text.of("requiredPermission")).orElse("");
-
-        final Player player = (Player) source;
-        final SelectionPoints selectionPoints = ChestRefill.PLAYER_SELECTION_POINTS.get(player.getUniqueId());
+        final SelectionPoints selectionPoints = ChestRefill.PLAYER_SELECTION_POINTS.get(serverPlayer.uniqueId());
 
         if (selectionPoints == null || selectionPoints.getFirstPoint() == null || selectionPoints.getSecondPoint() == null)
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, "You need to select two points with wand before using this command! Use \"/cr wand\" to get the wand and select two corners with it."));
+            throw messageSource.resolveExceptionWithMessage("command.searchandcreate.error.you-need-to-select-two-points");
 
-        player.sendMessage(PluginInfo.PLUGIN_PREFIX.concat(Text.of(TextColors.YELLOW, "Searching for containers...")));
+        serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.searchandcreate.searching"));
 
         //To not freeze game, we will run all calculations in separate thread.
-        CompletableFuture.runAsync(() -> scanAndCreateRefillableContainers(player, selectionPoints, restoreTime, requiredPermission));
+        CompletableFuture.runAsync(() -> scanAndCreateRefillableContainers(serverPlayer, selectionPoints, restoreTime, requiredPermission));
         return CommandResult.success();
     }
 
-    private void scanAndCreateRefillableContainers(final Player player, final SelectionPoints selectionPoints, final int restoreTime, final String requiredPermission)
+    private void scanAndCreateRefillableContainers(final ServerPlayer player, final SelectionPoints selectionPoints, final int restoreTime, final String requiredPermission)
     {
         final Vector3i firstCorner = selectionPoints.getFirstPoint();
         final Vector3i secondCorner = selectionPoints.getSecondPoint();
 
         final ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
-        final List<RefillableContainer> refillableContainers = forkJoinPool.invoke(new ScanForContainerTask(player.getWorld(), firstCorner, secondCorner));
+        final List<RefillableContainer> refillableContainers = forkJoinPool.invoke(new ScanForContainerTask(player.world(), firstCorner, secondCorner));
         int createdCount = 0;
 
         //Register each container
@@ -72,12 +77,12 @@ public class SearchAndCreateCommand extends AbstractCommand
             createdCount++;
         }
 
-        player.sendMessage(PluginInfo.PLUGIN_PREFIX.concat(Text.of(TextColors.GREEN, "Successfully created " + createdCount + " containers.")));
+        player.sendMessage(messageSource.resolveMessageWithPrefix("command.searchandcreate.success", createdCount));
     }
 
     public static class ScanForContainerTask extends RecursiveTask<List<RefillableContainer>>
     {
-        private final World world;
+        private final ServerWorld world;
 
         private final int startX;
         private final int startY;
@@ -93,17 +98,17 @@ public class SearchAndCreateCommand extends AbstractCommand
 
         private static final int THRESHOLD = 500;
 
-        public ScanForContainerTask(final World world, final Vector3i firstCorner, final Vector3i secondCorner)
+        public ScanForContainerTask(final ServerWorld world, final Vector3i firstCorner, final Vector3i secondCorner)
         {
             this.world = world;
 
-            startX = Math.min(firstCorner.getX(), secondCorner.getX());
-            startY = Math.min(firstCorner.getY(), secondCorner.getY());
-            startZ = Math.min(firstCorner.getZ(), secondCorner.getZ());
+            startX = Math.min(firstCorner.x(), secondCorner.x());
+            startY = Math.min(firstCorner.y(), secondCorner.y());
+            startZ = Math.min(firstCorner.z(), secondCorner.z());
 
-            endX = Math.max(firstCorner.getX(), secondCorner.getX());
-            endZ = Math.max(firstCorner.getZ(), secondCorner.getZ());
-            endY = Math.max(firstCorner.getY(), secondCorner.getY());
+            endX = Math.max(firstCorner.x(), secondCorner.x());
+            endZ = Math.max(firstCorner.z(), secondCorner.z());
+            endY = Math.max(firstCorner.y(), secondCorner.y());
             lengthX = endX - startX;
             lengthY = endY - startY;
             lengthZ = endZ - startZ;
@@ -114,7 +119,10 @@ public class SearchAndCreateCommand extends AbstractCommand
         {
             if (getBlockCountToScan() > THRESHOLD)
             {
-                return ForkJoinTask.invokeAll(createSubTasks()).stream().map(ForkJoinTask::join).flatMap(Collection::stream).collect(Collectors.toList());
+                return ForkJoinTask.invokeAll(createSubTasks()).stream()
+                        .map(ForkJoinTask::join)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
             }
             else return process();
         }
@@ -145,7 +153,7 @@ public class SearchAndCreateCommand extends AbstractCommand
         private List<RefillableContainer> process()
         {
             final List<RefillableContainer> containerList = new ArrayList<>();
-            final UUID worldUUID = world.getUniqueId();
+            final UUID worldUUID = world.uniqueId();
             for (int y = startY; y <= endY; y++)
             {
                 for (int x = startX; x <= endX; x++)
@@ -153,19 +161,19 @@ public class SearchAndCreateCommand extends AbstractCommand
                     for (int z = startZ; z <= endZ; z++)
                     {
                         world.spawnParticles(ParticleEffect.builder().quantity(10).type(ParticleTypes.END_ROD).option(ParticleOptions.VELOCITY, new Vector3d(0, 0.15, 0)).build(), Vector3d.from(x + 0.5, y, z + 0.5));
-                        final Optional<TileEntity> optionalTileEntity = world.getTileEntity(x, y, z);
-                        if (!optionalTileEntity.isPresent())
+                        final Optional<? extends BlockEntity> optionalBlockEntity = world.blockEntity(x, y, z);
+                        if (!optionalBlockEntity.isPresent())
                             continue;
-                        final TileEntity tileEntity = optionalTileEntity.get();
-                        if (!(tileEntity instanceof TileEntityCarrier))
+                        final BlockEntity blockEntity = optionalBlockEntity.get();
+                        if (!(blockEntity instanceof CarrierBlockEntity))
                             continue;
 
-                        final ContainerLocation containerLocation = new ContainerLocation(tileEntity.getLocatableBlock().getPosition(), worldUUID);
+                        final ContainerLocation containerLocation = new ContainerLocation(blockEntity.locatableBlock().blockPosition(), worldUUID);
                         final Optional<RefillableContainer> optionalRefillableContainerAtLocation = ChestRefill.getInstance().getContainerManager().getRefillableContainerAtLocation(containerLocation);
                         if(optionalRefillableContainerAtLocation.isPresent())
                             continue;
 
-                        final RefillableContainer refillableContainer = RefillableContainer.fromTileEntity(tileEntity, worldUUID);
+                        final RefillableContainer refillableContainer = RefillableContainer.fromBlockEntity((CarrierBlockEntity) blockEntity, worldUUID);
                         containerList.add(refillableContainer);
                     }
                 }

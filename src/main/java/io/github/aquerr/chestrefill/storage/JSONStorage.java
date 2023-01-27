@@ -1,9 +1,6 @@
 package io.github.aquerr.chestrefill.storage;
 
-import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.reflect.TypeToken;
-import com.typesafe.config.parser.ConfigNode;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
@@ -11,26 +8,43 @@ import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.serializers.ChestRefillTypeSerializers;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.commented.SimpleCommentedConfigurationNode;
-import ninja.leaping.configurate.gson.GsonConfigurationLoader;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
+import io.leangen.geantyref.TypeToken;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.data.persistence.DataTranslators;
 import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.serializer.TextSerializers;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.ConfigurationOptions;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
+import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializerCollection;
+import org.spongepowered.math.vector.Vector3i;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.LinearComponents.linear;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 
 /**
  * Created by Aquerr on 2018-02-12.
@@ -56,7 +70,9 @@ public class JSONStorage implements Storage
         }
         else
         {
-            ChestRefillGsonConfigurationLoader configurationLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(path));
+            ChestRefillGsonConfigurationLoader configurationLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder()
+                    .defaultOptions(getDefaultOptions())
+                    .path(path));
             this.kitsLoaders.put(fileName, configurationLoader);
             return configurationLoader;
         }
@@ -83,7 +99,9 @@ public class JSONStorage implements Storage
                 Files.createDirectory(this.kitsDirectoryPath);
             }
 
-            containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(containersPath));
+            containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder()
+                    .defaultOptions(getDefaultOptions())
+                    .path(containersPath));
 
             containersNode = containersLoader.load(getDefaultOptions());
 
@@ -91,10 +109,12 @@ public class JSONStorage implements Storage
             watchService = configDir.getFileSystem().newWatchService();
             key = configDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
-            Task.Builder changeTask = Sponge.getScheduler().createTaskBuilder();
-            //Run a checkFileUpdate task every 2,5 second
-            changeTask.async().intervalTicks(50L).execute(this::checkFileUpdate).submit(ChestRefill.getInstance());
-
+            //Run a checkFileUpdate task every 3 second
+            Sponge.asyncScheduler().submit(Task.builder()
+                            .interval(3, TimeUnit.SECONDS)
+                            .execute(this::checkFileUpdate)
+                            .plugin(ChestRefill.getInstance().getPluginContainer())
+                            .build());
 
             //Backwards compatibility with 1.5.0
             //Convert old "kits.json" file into smaller kits files.
@@ -122,12 +142,14 @@ public class JSONStorage implements Storage
      */
     private void convertOldKitFileToNewFormat(Path oldKitsFile)
     {
-        final ChestRefillGsonConfigurationLoader containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(oldKitsFile));
+        final ChestRefillGsonConfigurationLoader containersLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder()
+                .defaultOptions(getDefaultOptions())
+                .path(oldKitsFile));
 
         try
         {
             final ConfigurationNode containersNode = containersLoader.load(getDefaultOptions());
-            final List<Kit> kits = containersNode.getNode("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, new ArrayList<>());
+            final List<Kit> kits = containersNode.node("kits").getList(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, new ArrayList<>());
             for (final Kit kit : kits)
             {
                 createKit(kit);
@@ -136,7 +158,7 @@ public class JSONStorage implements Storage
         catch (Exception e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of(TextColors.RED, "Could not convert old kits.json file into new format.")));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(linear(RED, text("Could not convert old kits.json file into new format."))));
         }
     }
 
@@ -151,50 +173,50 @@ public class JSONStorage implements Storage
             List<RefillableItem> items = new ArrayList<>(refillableContainer.getItems());
 
             //Set container's name
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").setValue(refillableContainer.getName());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").set(refillableContainer.getName());
 
             //Set container's block type
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").setValue(TypeToken.of(BlockType.class), refillableContainer.getContainerBlockType());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").set(TypeToken.get(BlockType.class), refillableContainer.getContainerBlockType());
 
             //Set container's kit
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").setValue(refillableContainer.getKitName());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").set(refillableContainer.getKitName());
 
             if(refillableContainer.getKitName().equals(""))
             {
                 //Set container's items
-                containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, items);
+                containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").set(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN, items);
             }
             else
             {
-                containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").setValue(new ArrayList<>());
+                containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").set(new ArrayList<>());
             }
 
             //Set container's regeneration time (in seconds)
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").setValue(refillableContainer.getRestoreTime());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").set(refillableContainer.getRestoreTime());
 
             //Set container's "one itemstack at time"
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").setValue(refillableContainer.isOneItemAtTime());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").set(refillableContainer.isOneItemAtTime());
 
             //Set container's should-replace-existing-items property
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").setValue(refillableContainer.shouldReplaceExistingItems());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").set(refillableContainer.shouldReplaceExistingItems());
 
             //Set container's should-be-hidden-if-no-items
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").setValue(refillableContainer.shouldBeHiddenIfNoItems());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").set(refillableContainer.shouldBeHiddenIfNoItems());
 
             //Set container's hidding block
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").setValue(TypeToken.of(BlockType.class), refillableContainer.getHidingBlock());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").set(TypeToken.get(BlockType.class), refillableContainer.getHidingBlock());
 
             //Set required permission
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").setValue(refillableContainer.getRequiredPermission());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").set(refillableContainer.getRequiredPermission());
 
             //Set open message
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getOpenMessage()));
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").set(LegacyComponentSerializer.legacyAmpersand().serialize(refillableContainer.getOpenMessage()));
 
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").setValue(refillableContainer.hasBeenOpened());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").set(refillableContainer.hasBeenOpened());
 
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").setValue(TextSerializers.FORMATTING_CODE.serialize(refillableContainer.getFirstOpenMessage()));
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").set(LegacyComponentSerializer.legacyAmpersand().serialize(refillableContainer.getFirstOpenMessage()));
 
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").setValue(refillableContainer.shouldPlaceItemsInRandomSlots());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").set(refillableContainer.shouldPlaceItemsInRandomSlots());
 
             containersLoader.save(containersNode);
 
@@ -203,7 +225,7 @@ public class JSONStorage implements Storage
         catch (Exception exception)
         {
             exception.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add/update container in the storage. Container = " + refillableContainer)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not add/update container in the storage. Container = " + refillableContainer)));
         }
 
         return false;
@@ -216,7 +238,7 @@ public class JSONStorage implements Storage
             //We are using block position and recreating location on retrieval.
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).removeChild(blockPositionAndWorldUUID);
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).removeChild(blockPositionAndWorldUUID);
 
             containersLoader.save(containersNode);
 
@@ -225,7 +247,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not remove container from the storage. Container location = " + containerLocation)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not remove container from the storage. Container location = " + containerLocation)));
         }
 
         return false;
@@ -234,7 +256,7 @@ public class JSONStorage implements Storage
     @Override
     public List<ContainerLocation> getContainerLocations()
     {
-        Set<Object> objectList = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).getChildrenMap().keySet();
+        Set<Object> objectList = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).childrenMap().keySet();
         List<ContainerLocation> containerLocations = new ArrayList<>();
 
         for (Object object : objectList)
@@ -281,7 +303,7 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's regeneration time (in seconds)
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").setValue(time);
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").set(time);
 
             containersLoader.save(containersNode);
 
@@ -290,7 +312,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not update container restore time. Container location = " + containerLocation + " | New time = " + time)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not update container restore time. Container location = " + containerLocation + " | New time = " + time)));
         }
 
         return false;
@@ -305,7 +327,7 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's name
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").setValue(containerName);
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").set(containerName);
             containersLoader.save(containersNode);
 
             return true;
@@ -313,7 +335,7 @@ public class JSONStorage implements Storage
         catch (IOException exception)
         {
             exception.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not change container name. Container location = " + containerLocation + " | Container name = " + containerName)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not change container name. Container location = " + containerLocation + " | Container name = " + containerName)));
         }
 
         return false;
@@ -332,9 +354,9 @@ public class JSONStorage implements Storage
                         try
                         {
                             final ConfigurationNode configNode = configurationLoader.load();
-                            return configNode.getValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN);
+                            return configNode.get(ChestRefillTypeSerializers.KIT_TYPE_TOKEN);
                         }
-                        catch (IOException | ObjectMappingException e)
+                        catch (IOException e)
                         {
                             e.printStackTrace();
                         }
@@ -346,7 +368,7 @@ public class JSONStorage implements Storage
         catch(IOException e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get kits from the storage.")));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not get kits from the storage.")));
         }
 
         return new ArrayList<>();
@@ -363,9 +385,11 @@ public class JSONStorage implements Storage
                 Files.createFile(kitPath);
             }
 
-            final ChestRefillGsonConfigurationLoader kitConfigLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder().setDefaultOptions(getDefaultOptions()).setPath(kitPath));
-            final ConfigurationNode configurationNode = kitConfigLoader.createEmptyNode();
-            configurationNode.setValue(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
+            final ChestRefillGsonConfigurationLoader kitConfigLoader = new ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.builder()
+                    .defaultOptions(getDefaultOptions())
+                    .path(kitPath));
+            final ConfigurationNode configurationNode = kitConfigLoader.createNode();
+            configurationNode.set(ChestRefillTypeSerializers.KIT_TYPE_TOKEN, kit);
 
             kitConfigLoader.save(configurationNode);
             this.kitsLoaders.put(kit.getName().toLowerCase(), kitConfigLoader);
@@ -374,7 +398,7 @@ public class JSONStorage implements Storage
         catch(Exception e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not add kit to the storage. Kit = " + kit)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not add kit to the storage. Kit = " + kit)));
         }
 
         return false;
@@ -389,22 +413,22 @@ public class JSONStorage implements Storage
             this.kitsLoaders.remove(kitName.toLowerCase());
 
             //Remove the kit from containers
-            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).getChildrenMap().keySet();
+            final Set<Object> blockPositionsAndWorldUUIDs = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS).childrenMap().keySet();
             for(final Object blockPositionAndWorldUUID : blockPositionsAndWorldUUIDs)
             {
                 if(!(blockPositionAndWorldUUID instanceof String))
                     continue;
                 final String blockPositionAndWorldUUIDString = String.valueOf(blockPositionAndWorldUUID);
-                final Object kitValue = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").getValue();
+                final Object kitValue = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").get(Objects.class);
                 if(kitValue != null && String.valueOf(kitValue).equalsIgnoreCase(kitName))
-                    containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").setValue("");
+                    containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUIDString, "kit").set("");
             }
             return true;
         }
         catch(Exception e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not remove kit from the storage. Kit name = " + kitName)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not remove kit from the storage. Kit name = " + kitName)));
         }
 
         return false;
@@ -419,14 +443,14 @@ public class JSONStorage implements Storage
             String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID();
 
             //Set chest's kit
-            containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").setValue(kitName);
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").set(kitName);
             containersLoader.save(containersNode);
             return true;
         }
         catch(IOException e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not assign kit to the container location. Container location = " + containerLocation + " | Kit name = " + kitName)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not assign kit to the container location. Container location = " + containerLocation + " | Kit name = " + kitName)));
         }
 
         return false;
@@ -441,7 +465,7 @@ public class JSONStorage implements Storage
                 final Path changedFilePath = (Path) event.context();
                 if (changedFilePath.getFileName().toString().equals("containers.json"))
                 {
-                    Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Detected changes in containers.json file. Reloading!"));
+                    Sponge.server().sendMessage(linear(PluginInfo.PLUGIN_PREFIX, YELLOW, text("Detected changes in containers.json file. Reloading!")));
                     containersNode = containersLoader.load();
                     break;
                 }
@@ -460,23 +484,23 @@ public class JSONStorage implements Storage
         {
              final String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
 
-            final Object containersName = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").getValue();
+            final Object containersName = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").get(Objects.class);
             String name = null;
             if (containersName != null) name = (String)containersName;
 
-            final BlockType containerBlockType = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").getValue(TypeToken.of(BlockType.class));
-            final String kitName = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").getString("");
-            List<RefillableItem> chestItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").getValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
-            final int time = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").getInt(120);
-            final boolean isOneItemAtTime = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
-            final boolean shouldReplaceExistingItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
-            final boolean hiddenIfNoItems = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
-            final BlockType hidingBlockType = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").getValue(TypeToken.of(BlockType.class));
-            final String requiredPermission = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").getString("");
-            final Text openMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString(""));
-            final boolean hasBeenOpened = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
-            final Text firstOpenMessage = TextSerializers.FORMATTING_CODE.deserialize(containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString(""));
-            final boolean shouldPlaceItemsInRandomSlots = containersNode.getNode(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").getBoolean(false);
+            final BlockType containerBlockType = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").get(TypeToken.get(BlockType.class));
+            final String kitName = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").getString("");
+            List<RefillableItem> chestItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").get(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
+            final int time = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").getInt(120);
+            final boolean isOneItemAtTime = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
+            final boolean shouldReplaceExistingItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
+            final boolean hiddenIfNoItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
+            final BlockType hidingBlockType = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").get(TypeToken.get(BlockType.class));
+            final String requiredPermission = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").getString("");
+            final TextComponent openMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString(""));
+            final boolean hasBeenOpened = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
+            final TextComponent firstOpenMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString(""));
+            final boolean shouldPlaceItemsInRandomSlots = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").getBoolean(false);
 
             if(chestItems == null)
             {
@@ -504,7 +528,7 @@ public class JSONStorage implements Storage
         catch (Exception e)
         {
             e.printStackTrace();
-            Sponge.getServer().getConsole().sendMessage(PluginInfo.ERROR_PREFIX.concat(Text.of("Could not get a container from the storage. Container location = " + containerLocation)));
+            Sponge.server().sendMessage(PluginInfo.ERROR_PREFIX.append(text("Could not get a container from the storage. Container location = " + containerLocation)));
         }
 
         return null;
@@ -513,8 +537,11 @@ public class JSONStorage implements Storage
     private ConfigurationOptions getDefaultOptions()
     {
         return ConfigurationOptions.defaults()
-                .withSerializers(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
-                .withNativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
+                .serializers(TypeSerializerCollection.builder()
+                        .registerAll(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
+                        .build())
+                .serializers(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
+                .nativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
                         Short.class, Byte.class, Number.class));
     }
 }

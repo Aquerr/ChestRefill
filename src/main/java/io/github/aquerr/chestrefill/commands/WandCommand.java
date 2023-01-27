@@ -1,49 +1,48 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WandCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public WandCommand(final ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = getPlugin().getMessageSource();
     }
 
     @Override
-    public CommandResult execute(final CommandSource source, final CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        if(!(source instanceof Player))
-            throw new CommandException(Text.of(PluginInfo.ERROR_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
+        final ServerPlayer player = requirePlayerSource(context);
+        final Inventory inventory = player.inventory();
 
-        final Player player = (Player) source;
-        final Inventory inventory = player.getInventory();
-
-        final List<Text> wandDescriptionLines = new ArrayList<>();
-        final Text firstLine = Text.of("Select first point with your", TextColors.GOLD, " left click.");
-        final Text secondLine = Text.of("Select second point with your", TextColors.GOLD, " right click.");
+        final List<Component> wandDescriptionLines = new ArrayList<>();
+        final TextComponent firstLine = messageSource.resolveComponentWithMessage("command.wand.wand-lore.line1");
+        final TextComponent secondLine = messageSource.resolveComponentWithMessage("command.wand.wand-lore.line2");
         wandDescriptionLines.add(firstLine);
         wandDescriptionLines.add(secondLine);
 
         final ItemStack chestRefillWand = ItemStack.builder()
                 .itemType(ItemTypes.IRON_AXE)
                 .quantity(1)
-                .add(Keys.DISPLAY_NAME, Text.of(TextColors.GOLD, "ChestRefill Wand"))
-                .add(Keys.ITEM_LORE, wandDescriptionLines)
+                .add(Keys.DISPLAY_NAME, messageSource.resolveComponentWithMessage("command.wand.wand-name"))
+                .add(Keys.LORE, wandDescriptionLines)
                 .build();
 
         inventory.offer(chestRefillWand);

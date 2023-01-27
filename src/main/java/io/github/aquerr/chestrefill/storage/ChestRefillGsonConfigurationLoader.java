@@ -10,14 +10,15 @@ import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.ConfigurationOptions;
-import ninja.leaping.configurate.SimpleConfigurationNode;
-import ninja.leaping.configurate.gson.GsonConfigurationLoader;
-import ninja.leaping.configurate.loader.AbstractConfigurationLoader;
-import ninja.leaping.configurate.loader.CommentHandler;
-import ninja.leaping.configurate.loader.CommentHandlers;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.configurate.CommentedConfigurationNode;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.ConfigurationOptions;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
+import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
+import org.spongepowered.configurate.loader.CommentHandler;
+import org.spongepowered.configurate.loader.CommentHandlers;
+import org.spongepowered.configurate.loader.ParsingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,27 +33,36 @@ import java.util.Map;
  *
  * <p>This class, as such, is (c) zml & SpongePowered contributors.</p>
  */
-public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurationLoader<ConfigurationNode> {
+public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurationLoader<CommentedConfigurationNode>
+{
 
     private final boolean lenient;
     private final String indent;
 
     public ChestRefillGsonConfigurationLoader(GsonConfigurationLoader.Builder builder) {
         super(builder, new CommentHandler[] {CommentHandlers.DOUBLE_SLASH, CommentHandlers.SLASH_BLOCK, CommentHandlers.HASH});
-        this.lenient = builder.isLenient();
-        this.indent = Strings.repeat(" ", builder.getIndent());
+        this.lenient = builder.lenient();
+        this.indent = Strings.repeat(" ", builder.indent());
     }
 
     @Override
-    protected void loadInternal(ConfigurationNode node, BufferedReader reader) throws IOException {
-        reader.mark(1);
-        if (reader.read() == -1) {
-            return;
+    protected void loadInternal(CommentedConfigurationNode node, BufferedReader reader) throws ParsingException
+    {
+        try
+        {
+            reader.mark(1);
+            if (reader.read() == -1) {
+                return;
+            }
+            reader.reset();
+            try (JsonReader parser = new JsonReader(reader)) {
+                parser.setLenient(lenient);
+                parseValue(parser, node);
+            }
         }
-        reader.reset();
-        try (JsonReader parser = new JsonReader(reader)) {
-            parser.setLenient(lenient);
-            parseValue(parser, node);
+        catch (Exception exception)
+        {
+            throw new ParsingException(node, 1, 1, "Error", "error");
         }
     }
 
@@ -70,18 +80,18 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
                 int nextInt = (int) nextDouble;
                 long nextLong = (long) nextDouble;
                 if (nextInt == nextDouble) {
-                    node.setValue(nextInt); // They don't do much for us here in Gsonland
+                    node.set(nextInt); // They don't do much for us here in Gsonland
                 } else if (nextLong == nextDouble) {
-                    node.setValue(nextLong);
+                    node.set(nextLong);
                 } else {
-                    node.setValue(nextDouble);
+                    node.set(nextDouble);
                 }
                 break;
             case STRING:
-                node.setValue(parser.nextString());
+                node.set(parser.nextString());
                 break;
             case BOOLEAN:
-                node.setValue(parser.nextBoolean());
+                node.set(parser.nextBoolean());
                 break;
             case NULL: // Ignored values
             case NAME:
@@ -100,7 +110,7 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
                     parser.endArray();
                     return;
                 default:
-                    parseValue(parser, node.getAppendedNode());
+                    parseValue(parser, node.appendListNode());
             }
         }
         throw new JsonParseException("Reached end of stream with unclosed array at!");
@@ -117,7 +127,7 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
                     parser.endObject();
                     return;
                 case NAME:
-                    parseValue(parser, node.getNode(parser.nextName()));
+                    parseValue(parser, node.node(parser.nextName()));
                     break;
                 default:
                     throw new JsonParseException("Received improper object value " + token);
@@ -127,37 +137,45 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
     }
 
     @Override
-    public void saveInternal(ConfigurationNode node, Writer writer) throws IOException {
-        if (!lenient && !node.hasMapChildren()) {
-            throw new IOException("Non-lenient json generators must have children of map type");
+    public void saveInternal(ConfigurationNode node, Writer writer) throws ConfigurateException
+    {
+        try
+        {
+            if (!lenient && !node.childrenMap().isEmpty() ) {
+                throw new IOException("Non-lenient json generators must have children of map type");
+            }
+            try (JsonWriter generator = new JsonWriter(writer)) {
+                generator.setIndent(indent);
+                generator.setLenient(lenient);
+                generateValue(generator, node);
+                generator.flush();
+                writer.write(SYSTEM_LINE_SEPARATOR);
+            }
         }
-        try (JsonWriter generator = new JsonWriter(writer)) {
-            generator.setIndent(indent);
-            generator.setLenient(lenient);
-            generateValue(generator, node);
-            generator.flush();
-            writer.write(SYSTEM_LINE_SEPARATOR);
+        catch (Exception exception)
+        {
+            throw new ConfigurateException();
         }
     }
 
-    @NonNull
     @Override
-    public ConfigurationNode createEmptyNode(@NonNull ConfigurationOptions options) {
-        options = options.setAcceptedTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class,
+    public CommentedConfigurationNode createNode(ConfigurationOptions options)
+    {
+        options = options.nativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class,
                 Long.class, Integer.class, Boolean.class, Byte.class, Short.class, String.class));
-        return SimpleConfigurationNode.root(options);
+        return CommentedConfigurationNode.root(options);
     }
 
     private static void generateValue(JsonWriter generator, ConfigurationNode node) throws IOException {
-        if (node.hasMapChildren()) {
+        if (node.isMap()) {
             generateObject(generator, node);
-        } else if (node.hasListChildren()) {
+        } else if (node.isList()) {
             generateArray(generator, node);
-        } else if (node.getKey() == null && node.getValue() == null) {
+        } else if (node.key() == null && node.get(Object.class) == null) {
             generator.beginObject();
             generator.endObject();
         } else {
-            Object value = node.getValue();
+            Object value = node.get(Object.class);
             if (value instanceof Double) {
                 generator.value((Double) value);
             } else if (value instanceof Float) {
@@ -181,11 +199,11 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
     }
 
     private static void generateObject(JsonWriter generator, ConfigurationNode node) throws IOException {
-        if (!node.hasMapChildren()) {
+        if (!node.isMap()) {
             throw new IOException("Node passed to generateObject does not have map children!");
         }
         generator.beginObject();
-        for (Map.Entry<Object, ? extends ConfigurationNode> ent : node.getChildrenMap().entrySet()) {
+        for (Map.Entry<Object, ? extends ConfigurationNode> ent : node.childrenMap().entrySet()) {
             generator.name(ent.getKey().toString());
             generateValue(generator, ent.getValue());
         }
@@ -193,10 +211,10 @@ public final class ChestRefillGsonConfigurationLoader extends AbstractConfigurat
     }
 
     private static void generateArray(JsonWriter generator, ConfigurationNode node) throws IOException {
-        if (!node.hasListChildren()) {
+        if (!node.isList()) {
             throw new IOException("Node passed to generateArray does not have list children!");
         }
-        List<? extends ConfigurationNode> children = node.getChildrenList();
+        List<? extends ConfigurationNode> children = node.childrenList();
         generator.beginArray();
         for (ConfigurationNode child : children) {
             generateValue(generator, child);

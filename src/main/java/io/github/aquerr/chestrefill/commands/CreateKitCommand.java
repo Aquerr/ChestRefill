@@ -1,70 +1,47 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-
-import java.util.Optional;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 public class CreateKitCommand extends AbstractCommand implements CommandExecutor
 {
+    private final MessageSource messageSource;
+
     public CreateKitCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        Optional<String> optionalName = context.getOne(Text.of("kit name"));
+        String kitName = context.requireOne(Parameter.string().key("name").build());
+        ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        if(!optionalName.isPresent())
+        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.CREATE_KIT, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        if (isModeActive)
         {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You must specify a kit name!"));
-            return CommandResult.empty();
-        }
-
-        if(super.getPlugin().getContainerManager().getKits().keySet().stream().anyMatch(x->x.equals(optionalName.get())))
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Kit with given name already exists!"));
-            return CommandResult.empty();
-        }
-
-        if(!(source instanceof Player))
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
-            return CommandResult.empty();
-        }
-
-        Player player = (Player)source;
-        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
-        {
-            if (SelectionMode.CREATE_KIT != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
+            if(super.getPlugin().getContainerManager().getKits().keySet().stream().anyMatch(x->x.equals(kitName)))
             {
-                optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
-                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.CREATE_KIT);
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on kit creation mode"));
+                throw messageSource.resolveExceptionWithMessage("command.createkit.error.kit-with-given-name-already-exists");
             }
-            else
-            {
-                ChestRefill.PLAYER_KIT_NAME.remove(player.getUniqueId());
-                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off kit creation mode"));
-            }
+
+            ChestRefill.PLAYER_KIT_NAME.put(serverPlayer.uniqueId(), kitName);
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.createkit.turned-on"));
         }
         else
         {
-            optionalName.ifPresent(s -> ChestRefill.PLAYER_KIT_NAME.put(player.getUniqueId(), s));
-            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.CREATE_KIT);
-            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on kit creation mode"));
+            ChestRefill.PLAYER_KIT_NAME.remove(serverPlayer.uniqueId());
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.createkit.turned-off"));
         }
 
         return CommandResult.success();

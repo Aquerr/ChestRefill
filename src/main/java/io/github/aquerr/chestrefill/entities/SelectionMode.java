@@ -9,7 +9,7 @@ public enum SelectionMode
     UPDATE,
     REMOVE,
     TIME,
-    SET_NAME,
+    SET_CONTAINER_NAME,
     COPY,
     AFTER_COPY,
     CREATE_KIT,

@@ -1,19 +1,14 @@
 package io.github.aquerr.chestrefill.entities;
 
-import com.flowpowered.math.vector.Vector3i;
-import io.github.aquerr.chestrefill.ChestRefill;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
-import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.text.Text;
+import org.spongepowered.math.vector.Vector3i;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +35,9 @@ public class RefillableContainer
 
     private String requiredPermission;
 
-    private Text openMessage;
+    private TextComponent openMessage;
 
-    private Text firstOpenMessage;
+    private TextComponent firstOpenMessage;
     private boolean hasBeenOpened;
 
     private boolean placeItemsInRandomSlots;
@@ -72,9 +67,9 @@ public class RefillableContainer
         int slot = 0;
         for (final Inventory slotInventory : inventory.slots())
         {
-            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            if (slotInventory.peek() != ItemStack.empty())
             {
-                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+                items.add(new RefillableItem(slotInventory.peek().createSnapshot(), slot, 1f));
             }
             slot++;
         }
@@ -82,22 +77,25 @@ public class RefillableContainer
         return builder().location(new ContainerLocation(blockPosition, worldUUID)).blockType(blockType).items(items).build();
     }
 
-    public static RefillableContainer fromTileEntity(TileEntity tileEntity, UUID worldUUID)
+    public static RefillableContainer fromBlockEntity(CarrierBlockEntity carrierBlockEntity, UUID worldUUID)
     {
-        TileEntityCarrier carrier = (TileEntityCarrier) tileEntity;
         List<RefillableItem> items = new ArrayList<>();
 
         int slot = 0;
-        for(final Inventory slotInventory : carrier.getInventory().slots())
+        for(final Inventory slotInventory : carrierBlockEntity.inventory().slots())
         {
-            if (slotInventory.peek().isPresent() && slotInventory.peek().get().getType() != ItemTypes.NONE)
+            if (slotInventory.peek() != ItemStack.empty())
             {
-                items.add(new RefillableItem(slotInventory.peek().get().createSnapshot(), slot, 1f));
+                items.add(new RefillableItem(slotInventory.peek().createSnapshot(), slot, 1f));
             }
             slot++;
         }
 
-        return builder().location(new ContainerLocation(tileEntity.getLocation().getBlockPosition(), worldUUID)).blockType(tileEntity.getBlock().getType()).items(items).build();
+        return builder()
+                .location(new ContainerLocation(carrierBlockEntity.location().blockPosition(), worldUUID))
+                .blockType(carrierBlockEntity.block().type())
+                .items(items)
+                .build();
     }
 
     public static RefillableContainer.Builder builder()
@@ -140,7 +138,7 @@ public class RefillableContainer
         this.hidingBlock = hidingBlock;
     }
 
-    public void setOpenMessage(final Text openMessage)
+    public void setOpenMessage(final TextComponent openMessage)
     {
         this.openMessage = openMessage;
     }
@@ -197,17 +195,12 @@ public class RefillableContainer
         return requiredPermission;
     }
 
-    public Text getOpenMessage()
+    public TextComponent getOpenMessage()
     {
         return this.openMessage;
     }
 
-    public int getRestoreTimeInSeconds()
-    {
-        return restoreTimeInSeconds;
-    }
-
-    public Text getFirstOpenMessage()
+    public TextComponent getFirstOpenMessage()
     {
         return this.firstOpenMessage;
     }
@@ -222,7 +215,7 @@ public class RefillableContainer
         this.hasBeenOpened = hasBeenOpened;
     }
 
-    public void setFirstOpenMessage(Text firstOpenMessage)
+    public void setFirstOpenMessage(TextComponent firstOpenMessage)
     {
         this.firstOpenMessage = firstOpenMessage;
     }
@@ -230,6 +223,11 @@ public class RefillableContainer
     public boolean shouldPlaceItemsInRandomSlots()
     {
         return this.placeItemsInRandomSlots;
+    }
+
+    public void setShouldPlaceItemsInRandomSlots(boolean value)
+    {
+        this.placeItemsInRandomSlots = value;
     }
 
     @Override
@@ -337,9 +335,9 @@ public class RefillableContainer
 
         private String requiredPermission;
 
-        private Text openMessage;
+        private TextComponent openMessage;
 
-        private Text firstOpenMessage;
+        private TextComponent firstOpenMessage;
         private boolean hasBeenOpened;
 
         private boolean placeItemsInRandomSlots;
@@ -354,12 +352,12 @@ public class RefillableContainer
             this.oneItemAtTime = false;
             this.replaceExistingItems = true;
             this.hiddenIfNoItems = false;
-            this.hidingBlock = BlockTypes.DIRT;
+            this.hidingBlock = BlockTypes.DIRT.get();
             this.kitName = "";
             this.requiredPermission = "";
-            this.openMessage = Text.EMPTY;
+            this.openMessage = Component.empty();
 
-            this.firstOpenMessage = Text.EMPTY;
+            this.firstOpenMessage = Component.empty();
             this.hasBeenOpened = false;
 
             this.placeItemsInRandomSlots = false;
@@ -431,7 +429,7 @@ public class RefillableContainer
             return this;
         }
 
-        public Builder openMessage(final Text openMessage)
+        public Builder openMessage(final TextComponent openMessage)
         {
             this.openMessage = openMessage;
             return this;
@@ -443,7 +441,7 @@ public class RefillableContainer
             return this;
         }
 
-        public Builder firstOpenMessage(final Text firstOpenMessage)
+        public Builder firstOpenMessage(final TextComponent firstOpenMessage)
         {
             this.firstOpenMessage = firstOpenMessage;
             return this;

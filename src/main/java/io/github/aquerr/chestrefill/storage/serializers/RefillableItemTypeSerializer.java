@@ -1,25 +1,27 @@
 package io.github.aquerr.chestrefill.storage.serializers;
 
 import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.DataQuery;
-import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.persistence.DataTranslators;
+import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.data.persistence.DataFormats;
+import org.spongepowered.api.data.persistence.DataQuery;
+import org.spongepowered.api.data.persistence.DataView;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.registry.RegistryEntry;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,55 +37,59 @@ import java.util.stream.Collectors;
  */
 public class RefillableItemTypeSerializer implements TypeSerializer<RefillableItem>
 {
-//    private static final TypeToken<ItemStack> ITEM_STACK_TYPE_TOKEN = TypeToken.of(ItemStack.class);
-
-    @Nullable
     @Override
-    public RefillableItem deserialize(@NonNull TypeToken<?> type, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public RefillableItem deserialize(Type type, ConfigurationNode node) throws SerializationException
     {
-        final float chance = value.getNode("chance").getFloat(1f);
-        final int slot = value.getNode("slot").getInt();
+        final float chance = node.node("chance").getFloat(1f);
+        final int slot = node.node("slot").getInt();
 
-        final ConfigurationNode itemNode = value.getNode("item");
+        final ConfigurationNode itemNode = node.node("item");
 
         boolean emptyEnchant = false;
-        ConfigurationNode ench = itemNode.getNode("UnsafeData", "ench");
-        if (!ench.isVirtual())
+        ConfigurationNode ench = itemNode.node("UnsafeData", "ench");
+        if (!ench.virtual())
         {
-            List<? extends ConfigurationNode> enchantments = ench.getChildrenList();
+            List<? extends ConfigurationNode> enchantments = ench.childrenList();
             if (enchantments.isEmpty())
             {
                 // Remove empty enchantment list.
-                itemNode.getNode("UnsafeData").removeChild("ench");
+                itemNode.node("UnsafeData").removeChild("ench");
             }
             else
             {
                 enchantments.forEach(x -> {
                     try
                     {
-                        short id = Short.parseShort(x.getNode("id").getString());
-                        short lvl = Short.parseShort(x.getNode("lvl").getString());
+                        short id = Short.parseShort(x.node("id").getString());
+                        short lvl = Short.parseShort(x.node("lvl").getString());
 
-                        x.getNode("id").setValue(id);
-                        x.getNode("lvl").setValue(lvl);
+                        x.node("id").set(id);
+                        x.node("lvl").set(lvl);
                     }
-                    catch (NumberFormatException e)
+                    catch (NumberFormatException | SerializationException e)
                     {
-                        x.setValue(null);
+                        try
+                        {
+                            x.set(null);
+                        }
+                        catch (SerializationException ex)
+                        {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 });
             }
         }
 
-        ConfigurationNode data = itemNode.getNode("Data");
-        if (!data.isVirtual() && data.hasListChildren())
+        ConfigurationNode data = itemNode.node("Data");
+        if (!data.virtual() && data.isList())
         {
-            List<? extends ConfigurationNode> n = data.getChildrenList().stream()
+            List<? extends ConfigurationNode> n = data.childrenList().stream()
                     .filter(x ->
-                            !x.getNode("DataClass").getString("").endsWith("SpongeEnchantmentData")
-                                    || (!x.getNode("ManipulatorData", "ItemEnchantments").isVirtual() && x.getNode("ManipulatorData", "ItemEnchantments").hasListChildren()))
+                            !x.node("DataClass").getString("").endsWith("SpongeEnchantmentData")
+                                    || (!x.node("ManipulatorData", "ItemEnchantments").virtual() && x.node("ManipulatorData", "ItemEnchantments").isList()))
                     .collect(Collectors.toList());
-            emptyEnchant = n.size() != data.getChildrenList().size();
+            emptyEnchant = n.size() != data.childrenList().size();
 
             if (emptyEnchant)
             {
@@ -93,13 +99,23 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
                 }
                 else
                 {
-                    itemNode.getNode("Data").setValue(n);
+                    itemNode.node("Data").set(n);
                 }
             }
         }
 
-        DataContainer dataContainer = DataTranslators.CONFIGURATION_NODE.translate(itemNode);
-        Set<DataQuery> ldq = dataContainer.getKeys(true);
+        DataContainer dataContainer = null;
+        try
+        {
+            String itemNodeAsString = HoconConfigurationLoader.builder().buildAndSaveString(itemNode);
+            dataContainer = DataFormats.HOCON.get().read(itemNodeAsString);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Set<DataQuery> ldq = dataContainer.keys(true);
 
         for (DataQuery dataQuery : ldq)
         {
@@ -109,7 +125,7 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
                 try
                 {
                     Tuple<DataQuery, Object> r = TypeHelper.getArray(dataQuery, dataContainer);
-                    dataContainer.set(r.getFirst(), r.getSecond());
+                    dataContainer.set(r.first(), r.second());
                 }
                 catch (Exception e)
                 {
@@ -120,47 +136,49 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
             }
         }
 
-        final Optional<ItemType> itemType = Sponge.getRegistry().getType(ItemType.class, String.valueOf(dataContainer.get(DataQuery.of("ItemType")).get()));
+        final Optional<ItemType> itemType = Sponge.game().registry(RegistryTypes.ITEM_TYPE)
+                .findEntry(ResourceKey.resolve(String.valueOf(dataContainer.get(DataQuery.of("ItemType")).get())))
+                .map(RegistryEntry::value);
         if (!itemType.isPresent())
         {
-            throw new ObjectMappingException("ItemType could not be recognized. Probably comes from a mod that has been removed from the server.");
+            throw new SerializationException("ItemType could not be recognized. Probably comes from a mod that has been removed from the server.");
         }
 
-        ItemStack snapshot;
+        ItemStack itemStack;
         try
         {
-            snapshot = ItemStack.builder().fromContainer(dataContainer).build();
+            itemStack = ItemStack.builder().fromContainer(dataContainer).build();
         }
         catch (Exception e)
         {
-            throw new ObjectMappingException("Could not create Item Stack from data container.");
+            throw new SerializationException("Could not create Item Stack from data container.");
         }
 
         // Validate the item.
-        if (snapshot.isEmpty() || snapshot.getType() == ItemTypes.NONE)
+        if (itemStack.isEmpty() || itemStack.type() == null)
         {
             // don't bother
-            throw new ObjectMappingException("Could not deserialize item. Item is empty.");
+            throw new SerializationException("Could not deserialize item. Item is empty.");
         }
 
-        if (emptyEnchant)
-        {
-            snapshot.offer(Keys.ITEM_ENCHANTMENTS, Lists.newArrayList());
-            return new RefillableItem(snapshot.createSnapshot(), slot, chance);
-        }
+//        if (emptyEnchant)
+//        {
+//            itemStack.offer(Keys.ITEM_ENCHANTMENTS, Lists.newArrayList());
+//            return new RefillableItem(itemStack.createSnapshot(), slot, chance);
+//        }
+//
+//        if (itemStack.get(Keys.ITEM_ENCHANTMENTS).isPresent())
+//        {
+//            // Reset the data.
+//            itemStack.offer(Keys.ITEM_ENCHANTMENTS, itemStack.get(Keys.ITEM_ENCHANTMENTS).get());
+//            return new RefillableItem(itemStack.createSnapshot(), slot, chance);
+//        }
 
-        if (snapshot.get(Keys.ITEM_ENCHANTMENTS).isPresent())
-        {
-            // Reset the data.
-            snapshot.offer(Keys.ITEM_ENCHANTMENTS, snapshot.get(Keys.ITEM_ENCHANTMENTS).get());
-            return new RefillableItem(snapshot.createSnapshot(), slot, chance);
-        }
-
-        return new RefillableItem(snapshot.createSnapshot(), slot, chance);
+        return new RefillableItem(itemStack.createSnapshot(), slot, chance);
     }
 
     @Override
-    public void serialize(@NonNull TypeToken<?> type, @Nullable RefillableItem obj, @NonNull ConfigurationNode value) throws ObjectMappingException
+    public void serialize(Type type, @Nullable RefillableItem obj, ConfigurationNode node) throws SerializationException
     {
         if (obj == null)
             return;
@@ -173,21 +191,20 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
         }
         catch (NullPointerException e)
         {
-            System.out.println("BOOM!");
-            return;
+            throw new SerializationException(e);
         }
 
-        final Map<DataQuery, Object> dataQueryObjectMap = view.getValues(true);
+        final Map<DataQuery, Object> dataQueryObjectMap = view.values(true);
         for (final Map.Entry<DataQuery, Object> entry : dataQueryObjectMap.entrySet())
         {
             if (entry.getValue().getClass().isArray())
             {
                 if (entry.getValue().getClass().getComponentType().isPrimitive())
-                    {
+                {
                     DataQuery old = entry.getKey();
                     Tuple<DataQuery, List<?>> dqo = TypeHelper.getList(old, entry.getValue());
                     view.remove(old);
-                    view.set(dqo.getFirst(), dqo.getSecond());
+                    view.set(dqo.first(), dqo.second());
                 }
                 else
                 {
@@ -196,8 +213,17 @@ public class RefillableItemTypeSerializer implements TypeSerializer<RefillableIt
             }
         }
 
-        value.getNode("chance").setValue(obj.getChance());
-        value.getNode("slot").setValue(obj.getSlot());
-        value.getNode("item").setValue(DataTranslators.CONFIGURATION_NODE.translate(view));
+        node.node("chance").set(obj.getChance());
+        node.node("slot").set(obj.getSlot());
+        try
+        {
+            String itemStackAsString = DataFormats.HOCON.get().write(view);
+            ConfigurationNode itemNode = HoconConfigurationLoader.builder().buildAndLoadString(itemStackAsString);
+            node.node("item").set(itemNode);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

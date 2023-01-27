@@ -1,51 +1,46 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.Kit;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import net.kyori.adventure.identity.Identity;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.command.parameter.Parameter;
 
 import java.util.Map;
-import java.util.Optional;
 
-public class RemoveKitCommand extends AbstractCommand implements CommandExecutor
+public class RemoveKitCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public RemoveKitCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = getPlugin().getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        Optional<String> optionalName = context.getOne(Text.of("kit name"));
-
-        if(!optionalName.isPresent())
-        {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "You must specify a kit name!"));
-            return CommandResult.empty();
-        }
-
+        String kitName = context.requireOne(Parameter.string().key("name").build());
         Map<String, Kit> kits = super.getPlugin().getContainerManager().getKits();
 
-        if(!kits.keySet().stream().anyMatch(x->x.equals(optionalName.get())))
+        if(kits.keySet().stream().noneMatch(x->x.equals(kitName)))
         {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Kit with given name does not exists!"));
-            return CommandResult.empty();
+            throw messageSource.resolveExceptionWithMessage("command.removekit.error.kit-does-not-exist");
         }
 
-        boolean didSucceed = super.getPlugin().getContainerManager().removeKit(optionalName.get());
+        boolean didSucceed = super.getPlugin().getContainerManager().removeKit(kitName);
         if (didSucceed)
         {
-            source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully removed the kit!"));
+            context.sendMessage(Identity.nil(), messageSource.resolveMessageWithPrefix("command.removekit.success"));
         }
-        else source.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
+        else
+        {
+            throw messageSource.resolveExceptionWithMessage("command.removekit.failure");
+        }
 
         return CommandResult.success();
     }

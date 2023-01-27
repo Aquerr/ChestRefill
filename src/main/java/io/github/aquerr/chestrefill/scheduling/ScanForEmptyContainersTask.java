@@ -3,12 +3,12 @@ package io.github.aquerr.chestrefill.scheduling;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.util.ModSupport;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import io.github.aquerr.chestrefill.util.WorldUtils;
+import org.spongepowered.api.block.entity.BlockEntity;
+import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
 import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.server.ServerLocation;
+import org.spongepowered.api.world.server.ServerWorld;
 
 import java.util.Optional;
 
@@ -26,24 +26,24 @@ public class ScanForEmptyContainersTask implements Runnable
     {
         for(final RefillableContainer refillableContainer : this.containerManager.getRefillableContainers())
         {
-            final Optional<World> world =  Sponge.getServer().getWorld(refillableContainer.getContainerLocation().getWorldUUID());
+            final Optional<ServerWorld> world = WorldUtils.getWorldByUUID(refillableContainer.getContainerLocation().getWorldUUID());
             if(!world.isPresent())
                 continue;
 
-            final Location<World> location = new Location<>(world.get(), refillableContainer.getContainerLocation().getBlockPosition());
+            final ServerLocation location = ServerLocation.of(world.get(), refillableContainer.getContainerLocation().getBlockPosition());
 
-            if (!location.getTileEntity().isPresent() && refillableContainer.shouldBeHiddenIfNoItems())
+            if (!location.blockEntity().isPresent() && refillableContainer.shouldBeHiddenIfNoItems())
                 continue;
 
-            if(location.getTileEntity().isPresent())
+            if(location.blockEntity().isPresent())
             {
-                final TileEntity tileEntity = location.getTileEntity().get();
+                final BlockEntity blockEntity = location.blockEntity().get();
                 Inventory tileEntityInventory;
-                if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
-                    tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
+                if (ModSupport.isStorageUnitFromActuallyAdditions(blockEntity))
+                    tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(blockEntity);
                 else
-                    tileEntityInventory = ((TileEntityCarrier)tileEntity).getInventory();
-                if(tileEntityInventory.totalItems() == 0 && refillableContainer.shouldBeHiddenIfNoItems())
+                    tileEntityInventory = ((CarrierBlockEntity)blockEntity).inventory();
+                if(tileEntityInventory.totalQuantity() == 0 && refillableContainer.shouldBeHiddenIfNoItems())
                 {
                     location.setBlockType(refillableContainer.getHidingBlock());
                 }

@@ -1,104 +1,113 @@
 package io.github.aquerr.chestrefill.commands;
 
-import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.PluginInfo;
+import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.entities.RefillableItem;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
+import io.github.aquerr.chestrefill.util.WorldUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.adventure.SpongeComponents;
+import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.format.TextStyles;
-import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.server.ServerLocation;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Created by Aquerr & vvozny on 2018-02-09.
- */
+import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.LinearComponents.linear;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 
-public class ListCommand extends AbstractCommand implements CommandExecutor
+public class ListCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public ListCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = getPlugin().getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext args) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        List<Text> helpList = Lists.newArrayList();
+        List<Component> helpList = Lists.newArrayList();
 
         for(RefillableContainer refillableContainer : super.getPlugin().getContainerManager().getRefillableContainers())
         {
-            Text.Builder itemsToShow = Text.builder();
+            TextComponent itemsToShow = Component.empty()
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.container-name", refillableContainer.getName()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.items-in-inventory"), newline()));
 
-            itemsToShow.append(Text.of(TextColors.GREEN, "Container's name: ", TextColors.YELLOW, refillableContainer.getName() + "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Items in inventory: " + "\n"));
-            refillableContainer.getItems().forEach(x -> itemsToShow.append(Text.of(TextColors.YELLOW, x.getItem().getTranslation().get(), TextColors.RESET, " x" + x.getItem().getQuantity() + "\n")));
+            for (final RefillableItem refillableItem : refillableContainer.getItems())
+            {
+                itemsToShow = itemsToShow.append(linear(YELLOW, Component.translatable(refillableItem.getItem().type().key(RegistryTypes.ITEM_TYPE).asString()), WHITE, text(" x" + refillableItem.getItem().quantity()), newline()));
+            }
 
-            itemsToShow.append(Text.of("\n", TextColors.GREEN, "Kit: ", TextColors.WHITE, refillableContainer.getKitName(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Place items in random slots: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "One item at time: ", TextColors.WHITE,  refillableContainer.isOneItemAtTime(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Replace existing items: ", TextColors.WHITE, refillableContainer.shouldReplaceExistingItems(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Hidden if no items: ", TextColors.WHITE, refillableContainer.shouldBeHiddenIfNoItems(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Hiding block: ", TextColors.WHITE, refillableContainer.getHidingBlock(), "\n"));
-            itemsToShow.append(Text.of(TextColors.GREEN, "Permission: ", TextColors.WHITE, refillableContainer.getRequiredPermission(), "\n"));
-            itemsToShow.append(Text.of("\n", TextColors.BLUE, TextStyles.BOLD, "Container cooldown: ", refillableContainer.getRestoreTime(),"s"));
-            itemsToShow.append(Text.of("\n", TextColors.RED, TextStyles.ITALIC, "Click to teleport..."));
+            itemsToShow = itemsToShow.append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.kit", refillableContainer.getKitName()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.place-items-in-random-slots", refillableContainer.shouldPlaceItemsInRandomSlots()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.one-item-at-time", refillableContainer.isOneItemAtTime()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.replace-existing-items", refillableContainer.shouldReplaceExistingItems()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.hidden-if-no-items", refillableContainer.shouldBeHiddenIfNoItems()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.hiding-block", refillableContainer.getHidingBlock()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.permission", refillableContainer.getRequiredPermission())))
+                    .append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.container-cooldown", refillableContainer.getRestoreTime())))
+                    .append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.click-to-teleport")));
 
-            Text.Builder chestName = Text.builder();
+            TextComponent chestText = empty();
             if(refillableContainer.getName().equals(""))
-                chestName.append(Text.of("Not named container"));
+                chestText = chestText.append(messageSource.resolveComponentWithMessage("command.list.unnamed-container-at-location", refillableContainer.getContainerLocation().getBlockPosition().toString()));
             else
-                chestName.append(Text.of("Container ", TextColors.YELLOW, refillableContainer.getName()));
+                chestText = chestText.append(messageSource.resolveComponentWithMessage("command.list.container-at-location", refillableContainer.getName(), refillableContainer.getContainerLocation().getBlockPosition().toString()));
 
-            Text chestText = Text.builder()
-                    .append(Text.of(TextColors.YELLOW, " - ", TextColors.DARK_GREEN, chestName.build(), " at location ", TextColors.YELLOW, refillableContainer.getContainerLocation().getBlockPosition().toString()))
-                    .onHover(TextActions.showText(itemsToShow.build()))
-                    .onClick(TextActions.executeCallback(new ChestTeleport(refillableContainer.getContainerLocation().getBlockPosition())))
-                    .build();
+            chestText = chestText.hoverEvent(HoverEvent.showText(itemsToShow))
+                    .clickEvent(SpongeComponents.executeCallback(new ChestTeleport(refillableContainer.getContainerLocation())));
 
             helpList.add(chestText);
         }
 
-        PaginationService paginationService = Sponge.getServiceManager().provide(PaginationService.class).get();
-        PaginationList.Builder paginationBuilder = paginationService.builder().title(Text.of(TextColors.GOLD, "List of Refilling Containers")).padding(Text.of(TextColors.DARK_GREEN, "-")).contents(helpList).linesPerPage(10);
-        paginationBuilder.sendTo(source);
+        PaginationService paginationService = Sponge.serviceProvider().provide(PaginationService.class).get();
+        PaginationList.Builder paginationBuilder = paginationService.builder()
+                .title(messageSource.resolveComponentWithMessage("command.list.header"))
+                .padding(messageSource.resolveComponentWithMessage("command.list.padding-character"))
+                .contents(helpList)
+                .linesPerPage(10);
+        paginationBuilder.sendTo(context.cause().audience());
 
 
         return CommandResult.success();
     }
 
-    private static class ChestTeleport implements Consumer<CommandSource>
+    private static class ChestTeleport implements Consumer<CommandCause>
     {
-        private final Vector3i chestPosition;
+        private final ContainerLocation containerLocation;
 
-        ChestTeleport(Vector3i chestPosition)
+        ChestTeleport(ContainerLocation containerLocation)
         {
-            this.chestPosition = chestPosition;
+            this.containerLocation = containerLocation;
         }
 
         @Override
-        public void accept(CommandSource source)
+        public void accept(CommandCause source)
         {
-            //Do we need this check? Only in-game players can click on the chat...
-            if (source instanceof Player)
-            {
-                final Player player = (Player)source;
-                player.setLocation(new Location<>(player.getWorld(), this.chestPosition));
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You were teleported to the selected container!"));
-            }
+            final ServerPlayer player = (ServerPlayer) source.audience();
+            player.setLocation(ServerLocation.of(WorldUtils.getWorldByUUID(containerLocation.getWorldUUID()).orElse(null), containerLocation.getBlockPosition()));
+            player.sendMessage(PluginInfo.PLUGIN_PREFIX.append(ChestRefill.getInstance().getMessageSource().resolveComponentWithMessage("command.list.you-were-teleported-to-selected-container")));
         }
     }
 }

@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.entities;
 
-import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.math.vector.Vector3i;
 
 import java.util.UUID;
 

@@ -1,52 +1,37 @@
 package io.github.aquerr.chestrefill.commands;
 
-import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
-import org.spongepowered.api.command.CommandException;
+import io.github.aquerr.chestrefill.entities.SelectionMode;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
-import org.spongepowered.api.command.spec.CommandExecutor;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.command.parameter.CommandContext;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
-/**
- * Created by Aquerr on 2018-02-16.
- */
-public class UpdateCommand extends AbstractCommand implements CommandExecutor
+public class UpdateCommand extends AbstractCommand
 {
+    private final MessageSource messageSource;
+
     public UpdateCommand(ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Override
-    public CommandResult execute(CommandSource source, CommandContext context) throws CommandException
+    public CommandResult execute(CommandContext context) throws CommandException
     {
-        if (source instanceof Player)
-        {
-            Player player = (Player)source;
+        ServerPlayer serverPlayer = requirePlayerSource(context);
 
-            if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
-            {
-                if (SelectionMode.UPDATE != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
-                {
-                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.UPDATE);
-                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on update mode"));
-                }
-                else
-                {
-                    ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off update mode"));
-                }
-            }
-            else
-            {
-                ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.UPDATE);
-                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on update mode"));
-            }
+        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.UPDATE, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        if (isModeActive)
+        {
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.update.turned-on"));
+        }
+        else
+        {
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.update.turned-off"));
         }
 
         return CommandResult.success();
