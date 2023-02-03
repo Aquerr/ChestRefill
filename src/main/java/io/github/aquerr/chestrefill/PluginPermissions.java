@@ -18,6 +18,7 @@ public abstract class PluginPermissions
     public static final String SETNAME_COMMAND = "chestrefill.command.setname";
     public static final String SEARCH_AND_CREATE_COMMAND = "chestrefill.command.scanandcreate";
     public static final String SET_OPEN_MESSAGE_COMMAND = "chestrefill.command.setopenmesssage";
+    public static final String SET_PLACE_ITEMS_IN_RANDOM_SLOTS = "chestrefill.command.setplaceitemsinrandomslots";
 
     public static final String KITS_COMMAND = "chestrefill.command.kit.kits";
     public static final String CREATE_KIT_COMMAND = "chestrefill.command.kit.create";

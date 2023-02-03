@@ -24,7 +24,13 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -201,74 +207,77 @@ public class ContainerManager
         final RefillableContainer chestToRefill = getRefillableContainer(containerLocation);
         try
         {
-            final Optional<World> world =  Sponge.getServer().getWorld(chestToRefill.getContainerLocation().getWorldUUID());
-            if (world.isPresent())
+            final World world =  Sponge.getServer().getWorld(chestToRefill.getContainerLocation().getWorldUUID()).orElse(null);
+            if (world == null)
             {
-                synchronized(chestToRefill)
+                this.plugin.getConsole().sendMessage(Text.of(TextColors.RED, String.format("World with UUID = '%s' does not exist!", chestToRefill.getContainerLocation().getWorldUUID().toString())));
+            }
+            else
+            {
+                final Location<World> location = new Location<>(world, chestToRefill.getContainerLocation().getBlockPosition());
+
+                //If chest is hidden then we need to show it
+                if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
                 {
-                    final Location<World> location = new Location<>(world.get(), chestToRefill.getContainerLocation().getBlockPosition());
+                    location.setBlockType(chestToRefill.getContainerBlockType());
+                }
 
-                    //If chest is hidden then we need to show it
-                    if (!location.getTileEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
+                final Optional<TileEntity> optionalTileEntity = location.getTileEntity();
+                if(optionalTileEntity.isPresent())
+                {
+                    final TileEntity tileEntity = location.getTileEntity().get();
+                    Inventory tileEntityInventory;
+                    if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
                     {
-                        location.setBlockType(chestToRefill.getContainerBlockType());
+                        tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
+                    }
+                    else
+                    {
+                        final TileEntityCarrier tileEntityCarrier = (TileEntityCarrier)tileEntity;
+                        tileEntityInventory = tileEntityCarrier.getInventory();
+                        if (tileEntityCarrier instanceof Chest)
+                            tileEntityInventory = ((Chest) tileEntityCarrier).getDoubleChestInventory().orElse(tileEntityInventory);
                     }
 
-                    final Optional<TileEntity> optionalTileEntity = location.getTileEntity();
-                    if(optionalTileEntity.isPresent())
+                    if (chestToRefill.shouldReplaceExistingItems())
                     {
-                        final TileEntity tileEntity = location.getTileEntity().get();
-                        Inventory tileEntityInventory;
-                        if (ModSupport.isStorageUnitFromActuallyAdditions(tileEntity))
-                            tileEntityInventory = ModSupport.getInventoryFromActuallyAdditions(tileEntity);
-                        else
-                        {
-                            final TileEntityCarrier tileEntityCarrier = (TileEntityCarrier)tileEntity;
-                            tileEntityInventory = tileEntityCarrier.getInventory();
-                            if (tileEntityCarrier instanceof Chest)
-                                tileEntityInventory = ((Chest) tileEntityCarrier).getDoubleChestInventory().orElse(tileEntityInventory);
-                        }
+                        tileEntityInventory.clear();
+                    }
 
-                        if (chestToRefill.shouldReplaceExistingItems())
+                    final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
+                    final List<RefillableItem> refillableItems = chestToRefill.getKitName().equals("") ? chestToRefill.getItems() : getKit(chestToRefill.getKitName()).getItems();
+                    for (RefillableItem refillableItem : refillableItems)
+                    {
+                        double number = Math.random();
+                        if (number <= refillableItem.getChance())
                         {
-                            tileEntityInventory.clear();
+                            itemsAchievedFromRandomizer.add(refillableItem);
                         }
+                    }
 
-                        final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
-                        final List<RefillableItem> refillableItems = chestToRefill.getKitName().equals("") ? chestToRefill.getItems() : getKit(chestToRefill.getKitName()).getItems();
-                        for (RefillableItem refillableItem : refillableItems)
+                    if (chestToRefill.isOneItemAtTime())
+                    {
+                        if (itemsAchievedFromRandomizer.size() > 0)
                         {
-                            double number = Math.random();
-                            if (number <= refillableItem.getChance())
+                            RefillableItem lowestChanceItem = itemsAchievedFromRandomizer.get(0);
+                            for (RefillableItem item : itemsAchievedFromRandomizer)
                             {
-                                itemsAchievedFromRandomizer.add(refillableItem);
-                            }
-                        }
-
-                        if (chestToRefill.isOneItemAtTime())
-                        {
-                            if (itemsAchievedFromRandomizer.size() > 0)
-                            {
-                                RefillableItem lowestChanceItem = itemsAchievedFromRandomizer.get(0);
-                                for (RefillableItem item : itemsAchievedFromRandomizer)
+                                if (item.getChance() < lowestChanceItem.getChance())
                                 {
-                                    if (item.getChance() < lowestChanceItem.getChance())
-                                    {
-                                        lowestChanceItem = item;
-                                    }
+                                    lowestChanceItem = item;
                                 }
-
-                                refillItems(tileEntityInventory, Collections.singletonList(lowestChanceItem), true, chestToRefill.shouldPlaceItemsInRandomSlots());
                             }
-                        }
-                        else
-                        {
-                            refillItems(tileEntityInventory, itemsAchievedFromRandomizer, false, chestToRefill.shouldPlaceItemsInRandomSlots());
-                        }
 
-                        tryHideContainer(chestToRefill, tileEntityInventory, location);
-                        return true;
+                            refillItems(tileEntityInventory, Collections.singletonList(lowestChanceItem), true, chestToRefill.shouldPlaceItemsInRandomSlots());
+                        }
                     }
+                    else
+                    {
+                        refillItems(tileEntityInventory, itemsAchievedFromRandomizer, false, chestToRefill.shouldPlaceItemsInRandomSlots());
+                    }
+
+                    tryHideContainer(chestToRefill, tileEntityInventory, location);
+                    return true;
                 }
             }
         }

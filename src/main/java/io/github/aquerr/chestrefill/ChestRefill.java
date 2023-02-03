@@ -46,6 +46,7 @@ public class ChestRefill
     public static final Map<UUID, RefillableContainer> PLAYER_COPY_REFILLABLE_CONTAINER = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_NAME = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
+    public static final Map<UUID, Boolean> CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS = new HashMap<>();
 
     public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
 
@@ -200,11 +201,19 @@ public class ChestRefill
                 .executor(new SetnameCommand(this))
                 .build());
 
+        // Set open message Command
         SUBCOMMANDS.put(Collections.singletonList("setopenmessage"), CommandSpec.builder()
                 .description(Text.of("Sets message that will be shown when refillable container will be opened"))
                 .permission(PluginPermissions.SET_OPEN_MESSAGE_COMMAND)
                 .executor(new SetOpenMessageCommand(this))
                 .arguments(GenericArguments.string(Text.of("message")))
+                .build());
+
+        SUBCOMMANDS.put(Collections.singletonList("setplaceitemsinrandomslots"), CommandSpec.builder()
+                .description(Text.of("Makes container place items in random slots in its inventory on refill"))
+                .permission(PluginPermissions.SET_PLACE_ITEMS_IN_RANDOM_SLOTS)
+                .executor(new SetPlaceItemsInRandomSlotsCommand(this))
+                .arguments(GenericArguments.bool(Text.of("value")))
                 .build());
 
         //CreateKit Command

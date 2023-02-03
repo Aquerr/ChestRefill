@@ -193,8 +193,9 @@ public class RightClickListener extends AbstractListener
                 }
                 else
                 {
-                    refillableContainer.setOpenMessage(TextSerializers.FORMATTING_CODE.deserialize(ChestRefill.PLAYER_CHEST_NAME.get(player.getUniqueId())));
-                    final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
+                    final RefillableContainer refillableContainerAtLocation = optionalRefillableContainerAtLocation.get();
+                    refillableContainerAtLocation.setOpenMessage(TextSerializers.FORMATTING_CODE.deserialize(ChestRefill.PLAYER_CHEST_NAME.get(player.getUniqueId())));
+                    final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainerAtLocation);
                     if(didSucceed)
                     {
                         player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated a refilling container!"));
@@ -282,6 +283,28 @@ public class RightClickListener extends AbstractListener
                 ChestRefill.PLAYER_KIT_ASSIGN.remove(player.getUniqueId());
                 break;
             }
+
+            case SET_PLACE_ITEMS_IN_RANDOM_SLOTS:
+            {
+                if(!optionalRefillableContainerAtLocation.isPresent())
+                {
+                    player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "This is not a refillable container!"));
+                }
+                else
+                {
+                    final RefillableContainer refillableContainerAtLocation = optionalRefillableContainerAtLocation.get();
+                    refillableContainerAtLocation.setShouldPlaceItemsInRandomSlots(ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.get(player.getUniqueId()));
+                    final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainerAtLocation);
+                    if(didSucceed)
+                    {
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "Successfully updated a refilling container!"));
+                    }
+                    else
+                        player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Something went wrong..."));
+                }
+                ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.remove(player.getUniqueId());
+                break;
+            }
         }
 
         if(ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()) == SelectionMode.COPY)
@@ -328,7 +351,7 @@ public class RightClickListener extends AbstractListener
                 return;
             }
 
-            if (!refillableContainer.getOpenMessage().isEmpty() || refillableContainer.getOpenMessage().toPlain().equals(""))
+            if (!refillableContainer.getOpenMessage().isEmpty() || !refillableContainer.getOpenMessage().toPlain().equals(""))
             {
                 player.sendMessage(Text.of(refillableContainer.getOpenMessage()));
             }

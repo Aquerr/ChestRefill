@@ -232,6 +232,12 @@ public class RefillableContainer
         return this.placeItemsInRandomSlots;
     }
 
+    public void setShouldPlaceItemsInRandomSlots(boolean value)
+    {
+        this.placeItemsInRandomSlots = value;
+    }
+
+
     @Override
     public boolean equals(Object obj)
     {

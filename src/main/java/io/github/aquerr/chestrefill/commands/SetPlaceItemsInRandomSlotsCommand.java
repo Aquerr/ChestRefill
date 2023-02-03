@@ -11,6 +11,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.UUID;
+
 public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
 {
     public SetPlaceItemsInRandomSlotsCommand(final ChestRefill plugin)
@@ -26,29 +28,28 @@ public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
         if (!(source instanceof Player))
             throw new CommandException(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "Only in-game players can use this command!"));
 
-//        Player player = (Player) source;
-//        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
-//        {
-//            if (SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS != ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.getUniqueId()))
-//            {
-//                ChestRefill.PLAYER_CHEST_SELECTION_MODE.replace(player.getUniqueId(), SelectionMode.SET_OPEN_MESSAGE);
-//                ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), message);
-//                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on set open message mode"));
-//            }
-//            else
-//            {
-//                ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.getUniqueId());
-//                ChestRefill.PLAYER_CHEST_NAME.remove(player.getUniqueId());
-//                player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off set open message mode"));
-//            }
-//        }
-//        else
-//        {
-//            ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.getUniqueId(), SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS);
-//            ChestRefill.PLAYER_CHEST_NAME.put(player.getUniqueId(), message);
-//
-//        }
+        Player player = (Player) source;
+        ChestRefill.PLAYER_CHEST_SELECTION_MODE.compute(player.getUniqueId(), this::toggleSelectionMode);
+        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId()))
+        {
+            ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.compute(player.getUniqueId(), ((uuid, aBoolean) -> shouldPlaceItemsInRandomSlots));
+        }
+
+        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.getUniqueId());
+        if (isModeActive)
+        {
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned on set place items in random slots mode"));
+        }
+        else
+        {
+            player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Turned off set place items in random slots mode"));
+        }
 
         return CommandResult.success();
+    }
+
+    private SelectionMode toggleSelectionMode(UUID uuid, SelectionMode selectionMode)
+    {
+        return selectionMode == null ? SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS : null;
     }
 }
