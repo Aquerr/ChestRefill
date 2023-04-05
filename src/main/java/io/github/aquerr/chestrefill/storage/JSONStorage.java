@@ -8,17 +8,17 @@ import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.serializers.ChestRefillTypeSerializers;
-import io.leangen.geantyref.TypeToken;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
-import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.math.vector.Vector3i;
 
@@ -176,7 +176,7 @@ public class JSONStorage implements Storage
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").set(refillableContainer.getName());
 
             //Set container's block type
-            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").set(TypeToken.get(BlockType.class), refillableContainer.getContainerBlockType());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").set(String.class, RegistryTypes.BLOCK_TYPE.get().valueKey(refillableContainer.getContainerBlockType()).asString());
 
             //Set container's kit
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").set(refillableContainer.getKitName());
@@ -204,7 +204,7 @@ public class JSONStorage implements Storage
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").set(refillableContainer.shouldBeHiddenIfNoItems());
 
             //Set container's hidding block
-            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").set(TypeToken.get(BlockType.class), refillableContainer.getHidingBlock());
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").set(String.class, RegistryTypes.BLOCK_TYPE.get().valueKey(refillableContainer.getHidingBlock()).asString());
 
             //Set required permission
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").set(refillableContainer.getRequiredPermission());
@@ -488,14 +488,16 @@ public class JSONStorage implements Storage
             String name = null;
             if (containersName != null) name = (String)containersName;
 
-            final BlockType containerBlockType = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").get(TypeToken.get(BlockType.class));
+            final BlockType containerBlockType = RegistryTypes.BLOCK_TYPE.get()
+                    .value(ResourceKey.resolve(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").get(String.class)));
             final String kitName = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "kit").getString("");
             List<RefillableItem> chestItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "items").get(ChestRefillTypeSerializers.REFILLABLE_ITEM_LIST_TYPE_TOKEN);
             final int time = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "time").getInt(120);
             final boolean isOneItemAtTime = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "one-item-at-time").getBoolean(false);
             final boolean shouldReplaceExistingItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "replace-existing-items").getBoolean(true);
             final boolean hiddenIfNoItems = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").getBoolean(false);
-            final BlockType hidingBlockType = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").get(TypeToken.get(BlockType.class));
+            final BlockType hidingBlockType = RegistryTypes.BLOCK_TYPE.get()
+                    .value(ResourceKey.resolve(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").get(String.class)));
             final String requiredPermission = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").getString("");
             final TextComponent openMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString(""));
             final boolean hasBeenOpened = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
@@ -537,10 +539,9 @@ public class JSONStorage implements Storage
     private ConfigurationOptions getDefaultOptions()
     {
         return ConfigurationOptions.defaults()
-                .serializers(TypeSerializerCollection.builder()
+                .serializers(TypeSerializerCollection.defaults().childBuilder()
                         .registerAll(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
                         .build())
-                .serializers(ChestRefillTypeSerializers.TYPE_SERIALIZER_COLLECTION)
                 .nativeTypes(ImmutableSet.of(Map.class, List.class, Double.class, Float.class, Long.class, Integer.class, Boolean.class, String.class,
                         Short.class, Byte.class, Number.class));
     }
