@@ -8,7 +8,6 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,7 +22,10 @@ public class StorageHelper
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(this::startContainerSavingThread);
         containerStorage = new JSONStorage(configDir);
+    }
 
+    public void refreshCache()
+    {
         //Load cache
         ContainerCache.loadCache(containerStorage.getRefillableContainers(), containerStorage.getKits());
     }

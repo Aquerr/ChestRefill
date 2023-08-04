@@ -429,4 +429,9 @@ public class ContainerManager
             containerLocation.setBlockType(refillableContainer.getHidingBlock());
         }
     }
+
+    public void refreshCache()
+    {
+        this.storageHelper.refreshCache();
+    }
 }

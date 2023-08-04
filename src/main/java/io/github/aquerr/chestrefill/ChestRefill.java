@@ -183,6 +183,9 @@ public class ChestRefill
     @Listener
     public void onRegisterCommand(final RegisterCommandEvent<Command.Parameterized> event)
     {
+        if (isDisabled)
+            return;
+
         initCommands(event);
         this.logger.info(PLUGIN_PREFIX_PLAIN + "Commands loaded!");
     }
@@ -190,8 +193,14 @@ public class ChestRefill
     @Listener
     public void onGameLoad(LoadedGameEvent event)
     {
+        if (isDisabled)
+            return;
+
         try
         {
+            //Load cache
+            this.containerManager.refreshCache();
+
             initListeners();
 
             this.containerScheduler = new ContainerScheduler(this, Sponge.server().scheduler(), Sponge.game().asyncScheduler());
