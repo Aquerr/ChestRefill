@@ -10,13 +10,14 @@ val spongeApiVersion = findProperty("sponge-api.version") as String
 plugins {
     idea
     java
+    `maven-publish`
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.spongepowered.gradle.plugin") version "2.1.1"
     id("org.spongepowered.gradle.ore") version "2.1.1" // for Ore publishing
 }
 
-group = "io.github.aquerr.chestrefill"
-version = chestRefillVersion + "-API-" + spongeApiVersion
+group = "io.github.aquerr"
+version = "$chestRefillVersion-API-$spongeApiVersion"
 description = "Plugin for restoring contents of a container after the specified time."
 
 repositories {
@@ -141,26 +142,25 @@ oreDeployment {
     }*/
 }
 
-//publishing {
-//
-//    repositories {
-//        maven {
-//            name = "GithubPackages"
-//            url = uri("https://maven.pkg.github.com/Aquerr/ChestRefill")
-//            credentials {
-//                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_PUBLISHING_USERNAME")
-//                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_PUBLISHING_TOKEN")
-//            }
-//        }
-//    }
-//
-//    publications {
-//        create<MavenPublication>(chestRefillId)
-//        {
-//            artifactId = chestRefillId
-//            description = project.description
-//
-//            from(components["java"])
-//        }
-//    }
-//}
+publishing {
+
+    repositories {
+        maven {
+            name = "GithubPackages"
+            url = uri("https://maven.pkg.github.com/Aquerr/ChestRefill")
+            credentials {
+                username = System.getenv("GITHUB_PUBLISHING_USERNAME")
+                password = System.getenv("GITHUB_PUBLISHING_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        register<MavenPublication>(chestRefillId) {
+            artifactId = chestRefillId
+            description = project.description
+
+            from(components["java"])
+        }
+    }
+}
