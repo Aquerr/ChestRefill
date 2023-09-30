@@ -2,49 +2,37 @@ package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.entities.ItemProvider;
+import io.github.aquerr.chestrefill.entities.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.scheduling.ScanForEmptyContainersTask;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
-import io.github.aquerr.chestrefill.util.ModSupport;
+import io.github.aquerr.chestrefill.util.LootTableHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.spongepowered.api.block.entity.BlockEntity;
-import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
-import org.spongepowered.api.block.entity.carrier.chest.Chest;
-import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.Slot;
-import org.spongepowered.api.world.server.ServerLocation;
-import org.spongepowered.api.world.server.ServerWorld;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.aquerr.chestrefill.util.WorldUtils.getWorldByUUID;
-import static java.util.Optional.ofNullable;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.LinearComponents.linear;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
-/**
- * Created by Aquerr on 2018-02-13.
- */
 public class ContainerManager
 {
     private final ChestRefill plugin;
     private final StorageHelper storageHelper;
 
-    public ContainerManager(ChestRefill plugin, Path configDir)
+    private final ContainerRefiller containerRefiller;
+    private final LootTableHelper lootTableHelper;
+
+    public ContainerManager(ChestRefill plugin, Path configDir, LootTableHelper lootTableHelper)
     {
         this.plugin = plugin;
 
@@ -60,6 +48,8 @@ public class ContainerManager
             }
         }
         storageHelper = new StorageHelper(configDir);
+        this.lootTableHelper = lootTableHelper;
+        this.containerRefiller = new ContainerRefiller(plugin, this, lootTableHelper);
     }
 
     public boolean addRefillableContainer(RefillableContainer refillableContainer)
@@ -213,93 +203,28 @@ public class ContainerManager
 
     public boolean refillContainer(final ContainerLocation containerLocation)
     {
-        final RefillableContainer chestToRefill = getRefillableContainer(containerLocation);
+        final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
+        if (refillableContainer == null)
+        {
+            this.plugin.getServer().sendMessage(linear(RED, text("Could not find container at location: " + containerLocation)));
+            return false;
+        }
+
         try
         {
-            final ServerWorld world =  getWorldByUUID(chestToRefill.getContainerLocation().getWorldUUID()).orElse(null);
-            if (world == null)
-            {
-                this.plugin.getLogger().error(String.format("World with UUID = '%s' does not exist!", chestToRefill.getContainerLocation().getWorldUUID().toString()));
-            }
-            else
-            {
-                final ServerLocation location = ServerLocation.of(world, chestToRefill.getContainerLocation().getBlockPosition());
-
-                //If chest is hidden then we need to show it
-                if (!location.blockEntity().isPresent() && chestToRefill.shouldBeHiddenIfNoItems())
-                {
-                    location.setBlockType(chestToRefill.getContainerBlockType());
-                }
-
-                final Optional<? extends BlockEntity> optionalBlockEntity = location.blockEntity();
-                if(optionalBlockEntity.isPresent())
-                {
-                    final BlockEntity blockEntity = location.blockEntity().get();
-                    Inventory blockEntityInventory;
-                    if (ModSupport.isStorageUnitFromActuallyAdditions(blockEntity))
-                        blockEntityInventory = ModSupport.getInventoryFromActuallyAdditions(blockEntity);
-                    else
-                    {
-                        final CarrierBlockEntity carrierBlockEntity = (CarrierBlockEntity) blockEntity;
-                        blockEntityInventory = carrierBlockEntity.inventory();
-                        if (carrierBlockEntity instanceof Chest)
-                            blockEntityInventory = ((Chest) carrierBlockEntity).doubleChestInventory().orElse(blockEntityInventory);
-                    }
-
-                    if (chestToRefill.shouldReplaceExistingItems())
-                    {
-                        blockEntityInventory.clear();
-                    }
-
-                    final List<RefillableItem> itemsAchievedFromRandomizer = new ArrayList<>();
-                    final List<RefillableItem> refillableItems = chestToRefill.getKitName().equals("") ? chestToRefill.getItems() : getKit(chestToRefill.getKitName()).getItems();
-                    for (RefillableItem refillableItem : refillableItems)
-                    {
-                        double number = Math.random();
-                        if (number <= refillableItem.getChance())
-                        {
-                            itemsAchievedFromRandomizer.add(refillableItem);
-                        }
-                    }
-
-                    if (chestToRefill.isOneItemAtTime())
-                    {
-                        if (itemsAchievedFromRandomizer.size() > 0)
-                        {
-                            RefillableItem lowestChanceItem = itemsAchievedFromRandomizer.get(0);
-                            for (RefillableItem item : itemsAchievedFromRandomizer)
-                            {
-                                if (item.getChance() < lowestChanceItem.getChance())
-                                {
-                                    lowestChanceItem = item;
-                                }
-                            }
-
-                            refillItems(blockEntityInventory, Collections.singletonList(lowestChanceItem), true, chestToRefill.shouldPlaceItemsInRandomSlots());
-                        }
-                    }
-                    else
-                    {
-                        refillItems(blockEntityInventory, itemsAchievedFromRandomizer, false, chestToRefill.shouldPlaceItemsInRandomSlots());
-                    }
-
-                    tryHideContainer(chestToRefill, blockEntityInventory, location);
-                    return true;
-                }
-            }
+            this.containerRefiller.refillContainer(refillableContainer);
+            return true;
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             exception.printStackTrace();
+            this.plugin.getServer().sendMessage(linear(RED, text("Couldn't refill : " + refillableContainer.getName())));
+            this.plugin.getServer().sendMessage(linear(RED, text("Container block type : " + refillableContainer.getContainerBlockType())));
+            this.plugin.getServer().sendMessage(linear(RED, text("Container block position : " + refillableContainer.getContainerLocation().getBlockPosition() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString())));
+            this.plugin.getServer().sendMessage(linear(RED, text("Container items : " + refillableContainer.getItems())));
+            this.plugin.getServer().sendMessage(linear(RED, text("Suggestion: Remove this container from the containers.json file and restart the server.")));
+            return false;
         }
-
-        this.plugin.getServer().sendMessage(linear(RED, text("Couldn't refill : " + chestToRefill.getName())));
-        this.plugin.getServer().sendMessage(linear(RED, text("Container block type : " + chestToRefill.getContainerBlockType())));
-        this.plugin.getServer().sendMessage(linear(RED, text("Container block position : " + chestToRefill.getContainerLocation().getBlockPosition() + "|" + chestToRefill.getContainerLocation().getWorldUUID().toString())));
-        this.plugin.getServer().sendMessage(linear(RED, text("Container items : " + chestToRefill.getItems())));
-        this.plugin.getServer().sendMessage(linear(RED, text("Suggestion: Remove this container from the containers.json file and restart the server.")));
-
-        return false;
     }
 
     public Runnable runRefillContainer(ContainerLocation containerLocation)
@@ -347,10 +272,35 @@ public class ContainerManager
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
         //We need to load items from kit and assign them to the container.
-        final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
-        if (refillableContainer != null)
-            refillableContainer.setKit(kitName);
-        return this.storageHelper.assignKit(containerLocation, kitName);
+        try
+        {
+            final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
+            if (refillableContainer != null)
+                refillableContainer.setItemProvider(new ItemProvider(ItemProviderType.KIT, kitName));
+            return this.storageHelper.addOrUpdateContainer(refillableContainer);
+        }
+        catch (Exception exception)
+        {
+            exception.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean assignLootTable(ContainerLocation containerLocation, String lootTableName)
+    {
+        //We need to load items from kit and assign them to the container.
+        try
+        {
+            final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
+            if (refillableContainer != null)
+                refillableContainer.setItemProvider(new ItemProvider(ItemProviderType.LOOT_TABLE, lootTableName));
+            return this.storageHelper.addOrUpdateContainer(refillableContainer);
+        }
+        catch (Exception exception)
+        {
+            exception.printStackTrace();
+            return false;
+        }
     }
 
     public Optional<RefillableContainer> getRefillableContainerAtLocation(ContainerLocation containerLocation)
@@ -376,62 +326,13 @@ public class ContainerManager
         return getKits().get(name);
     }
 
-    private void refillItems(final Inventory inventory, final List<RefillableItem> refillableItems, final boolean stopAtFirstItem, final boolean placeItemsInRandomSlots)
-    {
-        if (placeItemsInRandomSlots)
-        {
-            final int numberOfSlots = inventory.capacity();
-            int itemIndex = 0;
-            for (; itemIndex < refillableItems.size(); itemIndex++)
-            {
-                final RefillableItem refillableItem = refillableItems.get(itemIndex);
-                final int randomSlot = ThreadLocalRandom.current().nextInt(numberOfSlots);
-                Slot slot = inventory.slot(randomSlot).orElse(null);
-                if (slot == null)
-                {
-                    itemIndex--;
-                    continue;
-                }
-
-                if (slot.totalQuantity() != 0)
-                {
-                    itemIndex--;
-                    continue;
-                }
-                slot.offer(refillableItem.getItem().createStack());
-                if (stopAtFirstItem)
-                    break;
-            }
-        }
-        else
-        {
-            for (final RefillableItem item : refillableItems)
-            {
-                int i = 0;
-                for(final Inventory slot : inventory.slots())
-                {
-                    if(item.getSlot() == i)
-                    {
-                        slot.offer(item.getItem().createStack());
-                        if (stopAtFirstItem)
-                            break;
-                    }
-                    i++;
-                }
-            }
-        }
-    }
-
-    private void tryHideContainer(final RefillableContainer refillableContainer, final Inventory inventory, final ServerLocation containerLocation)
-    {
-        if (refillableContainer.shouldBeHiddenIfNoItems() && inventory.totalQuantity() == 0)
-        {
-            containerLocation.setBlockType(refillableContainer.getHidingBlock());
-        }
-    }
-
     public void refreshCache()
     {
         this.storageHelper.refreshCache();
+    }
+
+    public LootTableHelper getLootTableHelper()
+    {
+        return this.lootTableHelper;
     }
 }

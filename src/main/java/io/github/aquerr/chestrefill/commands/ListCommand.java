@@ -59,9 +59,9 @@ public class ListCommand extends AbstractCommand
                 itemsToShow = itemsToShow.append(linear(YELLOW, Component.translatable(refillableItem.getItem().type().key(RegistryTypes.ITEM_TYPE).asString()), WHITE, text(" x" + refillableItem.getItem().quantity()), newline()));
             }
 
-            itemsToShow = itemsToShow.append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.kit", refillableContainer.getKitName()), newline()))
+            itemsToShow = itemsToShow.append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.item-provider", refillableContainer.getItemProvider().getType(), refillableContainer.getItemProvider().getLocation()), newline()))
                     .append(linear(messageSource.resolveComponentWithMessage("command.list.place-items-in-random-slots", refillableContainer.shouldPlaceItemsInRandomSlots()), newline()))
-                    .append(linear(messageSource.resolveComponentWithMessage("command.list.one-item-at-time", refillableContainer.isOneItemAtTime()), newline()))
+                    .append(linear(messageSource.resolveComponentWithMessage("command.list.one-item-at-time", refillableContainer.shouldRefillOneItemAtTime()), newline()))
                     .append(linear(messageSource.resolveComponentWithMessage("command.list.replace-existing-items", refillableContainer.shouldReplaceExistingItems()), newline()))
                     .append(linear(messageSource.resolveComponentWithMessage("command.list.hidden-if-no-items", refillableContainer.shouldBeHiddenIfNoItems()), newline()))
                     .append(linear(messageSource.resolveComponentWithMessage("command.list.hiding-block", refillableContainer.getHidingBlock()), newline()))

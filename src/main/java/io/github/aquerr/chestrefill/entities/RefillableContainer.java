@@ -11,11 +11,9 @@ import org.spongepowered.math.vector.Vector3i;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Created by Aquerr on 2018-02-12.
- */
 public class RefillableContainer
 {
     private String name;
@@ -25,14 +23,13 @@ public class RefillableContainer
     private BlockType containerBlockType;
 
     private int restoreTimeInSeconds;
-    private boolean oneItemAtTime;
+    private boolean refillOneItemAtTime;
     private boolean replaceExistingItems;
 
     private boolean hiddenIfNoItems;
     private BlockType hidingBlock;
 
-    private String kitName;
-
+    private ItemProvider itemProvider;
     private String requiredPermission;
 
     private TextComponent openMessage;
@@ -48,12 +45,12 @@ public class RefillableContainer
         this.containerLocation = builder.containerLocation;
         this.restoreTimeInSeconds = builder.restoreTimeInSeconds;
         this.items = builder.items;
-        this.oneItemAtTime = builder.oneItemAtTime;
+        this.refillOneItemAtTime = builder.oneItemAtTime;
         this.replaceExistingItems = builder.replaceExistingItems;
         this.hiddenIfNoItems = builder.hiddenIfNoItems;
         this.hidingBlock = builder.hidingBlock;
         this.containerBlockType = builder.containerBlockType;
-        this.kitName = builder.kitName;
+        this.itemProvider = builder.itemProvider;
         this.requiredPermission = builder.requiredPermission;
         this.openMessage = builder.openMessage;
         this.firstOpenMessage = builder.firstOpenMessage;
@@ -123,11 +120,6 @@ public class RefillableContainer
         this.items = items;
     }
 
-    public void setKit(String kitName)
-    {
-        this.kitName = kitName;
-    }
-
     public void setRequiredPermission(final String requiredPermission)
     {
         this.requiredPermission = requiredPermission;
@@ -165,9 +157,9 @@ public class RefillableContainer
 
     public int getRestoreTime() { return this.restoreTimeInSeconds; }
 
-    public boolean isOneItemAtTime()
+    public boolean shouldRefillOneItemAtTime()
     {
-        return this.oneItemAtTime;
+        return this.refillOneItemAtTime;
     }
 
     public boolean shouldReplaceExistingItems()
@@ -183,11 +175,6 @@ public class RefillableContainer
     public BlockType getHidingBlock()
     {
         return this.hidingBlock;
-    }
-
-    public String getKitName()
-    {
-        return this.kitName;
     }
 
     public String getRequiredPermission()
@@ -230,68 +217,29 @@ public class RefillableContainer
         this.placeItemsInRandomSlots = value;
     }
 
-    @Override
-    public boolean equals(Object obj)
+    public ItemProvider getItemProvider()
     {
-        if (!(obj instanceof RefillableContainer))
-        {
-            return false;
-        }
-        if (obj == this)
-        {
-            return true;
-        }
+        return itemProvider;
+    }
 
-        if(!this.containerLocation.equals(((RefillableContainer) obj).containerLocation))
-            return false;
+    public void setItemProvider(ItemProvider itemProvider)
+    {
+        this.itemProvider = itemProvider;
+    }
 
-        if(!this.name.equals(((RefillableContainer) obj).name))
-            return false;
-
-        //Compare items
-        if (!this.items.containsAll(((RefillableContainer) obj).getItems()))
-        {
-            return false;
-        }
-
-        //Compare restore time
-        if (this.restoreTimeInSeconds != ((RefillableContainer)obj).getRestoreTime())
-            return false;
-
-        //Check if randomize is turned on
-        if (this.oneItemAtTime != ((RefillableContainer)obj).oneItemAtTime)
-            return false;
-
-        //Check equality of replaceExistingItems property
-        if (this.replaceExistingItems != ((RefillableContainer)obj).replaceExistingItems)
-            return false;
-
-        //Compare kit names
-        if (!this.kitName.equals(((RefillableContainer) obj).kitName))
-            return false;
-
-        if(!this.requiredPermission.equals(((RefillableContainer)obj).requiredPermission))
-            return false;
-
-        return true;
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RefillableContainer that = (RefillableContainer) o;
+        return restoreTimeInSeconds == that.restoreTimeInSeconds && refillOneItemAtTime == that.refillOneItemAtTime && replaceExistingItems == that.replaceExistingItems && hiddenIfNoItems == that.hiddenIfNoItems && hasBeenOpened == that.hasBeenOpened && placeItemsInRandomSlots == that.placeItemsInRandomSlots && Objects.equals(name, that.name) && Objects.equals(containerLocation, that.containerLocation) && Objects.equals(items, that.items) && Objects.equals(containerBlockType, that.containerBlockType) && Objects.equals(hidingBlock, that.hidingBlock) && Objects.equals(itemProvider, that.itemProvider) && Objects.equals(requiredPermission, that.requiredPermission) && Objects.equals(openMessage, that.openMessage) && Objects.equals(firstOpenMessage, that.firstOpenMessage);
     }
 
     @Override
     public int hashCode()
     {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (this.name != null ? this.name.hashCode() : 0);
-        result = prime * result + (this.items != null ? this.items.hashCode() : 0);
-        result = prime * result + (this.oneItemAtTime ? 0 : 1);
-        result = prime * result + (this.hiddenIfNoItems ? 0 : 1);
-        result = prime * result + this.restoreTimeInSeconds;
-        result = prime * result + (this.containerLocation != null ? this.containerLocation.hashCode() : 0);
-        result = prime * result + (this.containerBlockType != null ? this.containerBlockType.hashCode() : 0);
-        result = prime * result + (this.hidingBlock != null ? this.hidingBlock.hashCode() : 0);
-        result = prime * result + (this.kitName != null ? this.kitName.hashCode() : 0);
-        result = prime * result + (this.requiredPermission != null ? this.requiredPermission.hashCode() : 0);
-        return result;
+        return Objects.hash(name, containerLocation, items, containerBlockType, restoreTimeInSeconds, refillOneItemAtTime, replaceExistingItems, hiddenIfNoItems, hidingBlock, itemProvider, requiredPermission, openMessage, firstOpenMessage, hasBeenOpened, placeItemsInRandomSlots);
     }
 
     @Override
@@ -303,11 +251,11 @@ public class RefillableContainer
                 ", items=" + items +
                 ", containerBlockType=" + containerBlockType +
                 ", restoreTimeInSeconds=" + restoreTimeInSeconds +
-                ", oneItemAtTime=" + oneItemAtTime +
+                ", oneItemAtTime=" + refillOneItemAtTime +
                 ", replaceExistingItems=" + replaceExistingItems +
                 ", hiddenIfNoItems=" + hiddenIfNoItems +
                 ", hidingBlock=" + hidingBlock +
-                ", kitName='" + kitName + '\'' +
+                ", refillSource=" + itemProvider +
                 ", requiredPermission='" + requiredPermission + '\'' +
                 ", openMessage=" + openMessage +
                 ", firstOpenMessage=" + firstOpenMessage +
@@ -331,7 +279,7 @@ public class RefillableContainer
         private boolean hiddenIfNoItems;
         private BlockType hidingBlock;
 
-        private String kitName;
+        private ItemProvider itemProvider;
 
         private String requiredPermission;
 
@@ -353,7 +301,7 @@ public class RefillableContainer
             this.replaceExistingItems = true;
             this.hiddenIfNoItems = false;
             this.hidingBlock = BlockTypes.DIRT.get();
-            this.kitName = "";
+            this.itemProvider = new ItemProvider(ItemProviderType.SELF, "");
             this.requiredPermission = "";
             this.openMessage = Component.empty();
 
@@ -417,12 +365,6 @@ public class RefillableContainer
             return this;
         }
 
-        public Builder kitName(final String kitName)
-        {
-            this.kitName = kitName;
-            return this;
-        }
-
         public Builder requiredPermission(final String requiredPermission)
         {
             this.requiredPermission = requiredPermission;
@@ -453,12 +395,16 @@ public class RefillableContainer
             return this;
         }
 
+        public Builder itemProvider(ItemProvider itemProvider)
+        {
+            this.itemProvider = itemProvider;
+            return this;
+        }
+
         public RefillableContainer build()
         {
             if (this.name == null)
                 this.name = "";
-            if (this.kitName == null)
-                this.kitName = "";
             if (this.requiredPermission == null)
                 this.requiredPermission = "";
 

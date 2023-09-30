@@ -5,10 +5,17 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import org.spongepowered.api.command.parameter.Parameter;
 
-public class ChestRefillCommandParameters
+public final class ChestRefillCommandParameters
 {
+    private ChestRefillCommandParameters()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     private static Parameter.Value<RefillableContainer> REFILLABLE_CONTAINER;
     private static Parameter.Value<Kit> KIT;
+
+    private static Parameter.Value<String> LOOT_TABLE;
 
     public static void init(ContainerManager containerManager)
     {
@@ -23,6 +30,12 @@ public class ChestRefillCommandParameters
                 .addParser(new KitArgument.ValueParser(containerManager))
                 .completer(new KitArgument.Completer(containerManager))
                 .build();
+
+        LOOT_TABLE = Parameter.builder(String.class)
+                .key("loot_table")
+                .addParser(new LootTableArgument.ValueParser(containerManager.getLootTableHelper()))
+                .completer(new LootTableArgument.Completer(containerManager.getLootTableHelper()))
+                .build();
     }
 
     public static Parameter.Value<RefillableContainer> refillableContainer()
@@ -33,5 +46,10 @@ public class ChestRefillCommandParameters
     public static Parameter.Value<Kit> kit()
     {
         return KIT;
+    }
+
+    public static Parameter.Value<String> lootTable()
+    {
+        return LOOT_TABLE;
     }
 }

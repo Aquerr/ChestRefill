@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill;
 
 import com.google.inject.Inject;
 import io.github.aquerr.chestrefill.commands.AssignKitCommand;
+import io.github.aquerr.chestrefill.commands.AssignLootTableCommand;
 import io.github.aquerr.chestrefill.commands.CopyCommand;
 import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.CreateKitCommand;
@@ -36,6 +37,7 @@ import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.messaging.ChestRefillMessageSource;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
 import io.github.aquerr.chestrefill.scheduling.ContainerScheduler;
+import io.github.aquerr.chestrefill.util.LootTableHelper;
 import io.github.aquerr.chestrefill.util.resource.Resource;
 import io.github.aquerr.chestrefill.util.resource.ResourceUtils;
 import io.github.aquerr.chestrefill.version.VersionChecker;
@@ -76,6 +78,7 @@ public class ChestRefill
     public static final Map<UUID, RefillableContainer> PLAYER_COPY_REFILLABLE_CONTAINER = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_NAME = new HashMap<>();
     public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
+    public static final Map<UUID, String> PLAYER_LOOT_TABLE_ASSIGN = new HashMap<>();
     public static final Map<UUID, Boolean> CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS = new HashMap<>();
 
     public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
@@ -141,7 +144,7 @@ public class ChestRefill
         {
             setupConfigs();
 
-            this.containerManager = new ContainerManager(this, getConfigDir());
+            this.containerManager = new ContainerManager(this, getConfigDir(), new LootTableHelper(this));
 
             this.logger.info(PLUGIN_PREFIX_PLAIN + "Loading Chest Refill...");
 
@@ -252,6 +255,7 @@ public class ChestRefill
         registerCommand(singletonList("create_kit"), "command.createkit.desc", PluginPermissions.CREATE_KIT_COMMAND, new CreateKitCommand(this), Parameter.string().key("name").build());
         registerCommand(singletonList("remove_kit"), "command.removekit.desc", PluginPermissions.REMOVE_KIT_COMMAND, new RemoveKitCommand(this), Parameter.string().key("name").build());
         registerCommand(singletonList("assign_kit"), "command.assignkit.desc", PluginPermissions.ASSIGN_KIT_COMMAND, new AssignKitCommand(this), ChestRefillCommandParameters.kit());
+        registerCommand(singletonList("assign_loot_table"), "command.assignloottable.desc", PluginPermissions.ASSIGN_LOOT_TABLE_COMMAND, new AssignLootTableCommand(this), ChestRefillCommandParameters.lootTable());
         registerCommand(singletonList("kits"), "command.kits.desc", PluginPermissions.KITS_COMMAND, new KitsCommand(this));
         registerCommand(singletonList("search_and_create"), "command.searchandcreate.desc", PluginPermissions.SEARCH_AND_CREATE_COMMAND, new SearchAndCreateCommand(this),
                 Parameter.integerNumber().key("restore_time").optional().build(),

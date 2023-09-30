@@ -6,9 +6,6 @@ import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.List;
 
-/**
- * Created by Aquerr on 2018-02-15.
- */
 public interface Storage
 {
     boolean addOrUpdateContainer(RefillableContainer refillableContainer);
@@ -30,6 +27,4 @@ public interface Storage
     boolean createKit(Kit kit);
 
     boolean removeKit(String kitName);
-
-    boolean assignKit(ContainerLocation containerLocation, String kitName);
 }

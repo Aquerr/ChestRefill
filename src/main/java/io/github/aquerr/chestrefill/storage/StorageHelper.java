@@ -92,12 +92,6 @@ public class StorageHelper
         return ContainerCache.removeKit(kitName);
     }
 
-    public boolean assignKit(ContainerLocation containerLocation, String kitName)
-    {
-        CompletableFuture.runAsync(() -> this.containerStorage.assignKit(containerLocation, kitName));
-        return ContainerCache.assignKit(containerLocation, kitName);
-    }
-
     //TODO: Remove this and replace with CompletableFuture
     private void startContainerSavingThread()
     {

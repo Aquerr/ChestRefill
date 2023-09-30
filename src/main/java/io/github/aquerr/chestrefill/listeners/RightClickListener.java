@@ -27,10 +27,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 
-/**
- * Created by Aquerr on 2018-02-10.
- */
-
 public class RightClickListener extends AbstractListener
 {
     private static final TextComponent THIS_IS_NOT_A_REFILLABLE_CONTAINER = text("This is not a refillable container!");
@@ -125,7 +121,7 @@ public class RightClickListener extends AbstractListener
                 else
                 {
                     final RefillableContainer refillableContainerAtLocation = optionalRefillableContainerAtLocation.get();
-                    refillableContainer.setKit(refillableContainerAtLocation.getKitName());
+                    refillableContainer.setItemProvider(refillableContainerAtLocation.getItemProvider());
                     refillableContainer.setRestoreTime(refillableContainerAtLocation.getRestoreTime());
                     refillableContainer.setName(refillableContainerAtLocation.getName());
                     refillableContainer.setRequiredPermission(refillableContainerAtLocation.getRequiredPermission());
@@ -292,6 +288,26 @@ public class RightClickListener extends AbstractListener
                         player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
                 }
                 ChestRefill.PLAYER_KIT_ASSIGN.remove(player.uniqueId());
+                break;
+            }
+
+            case ASSIGN_LOOT_TABLE:
+            {
+                if(!optionalRefillableContainerAtLocation.isPresent())
+                {
+                    player.sendMessage(linear(PLUGIN_PREFIX, RED, THIS_IS_NOT_A_REFILLABLE_CONTAINER));
+                }
+                else
+                {
+                    final boolean didSucceed = super.getPlugin().getContainerManager().assignLootTable(refillableContainer.getContainerLocation(), ChestRefill.PLAYER_LOOT_TABLE_ASSIGN.get(player.uniqueId()));
+                    if(didSucceed)
+                    {
+                        player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully assigned a loot table to the refilling container!")));
+                    }
+                    else
+                        player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+                }
+                ChestRefill.PLAYER_LOOT_TABLE_ASSIGN.remove(player.uniqueId());
                 break;
             }
 

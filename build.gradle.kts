@@ -1,23 +1,39 @@
+import net.minecraftforge.gradle.userdev.UserDevExtension
 import org.spongepowered.gradle.plugin.config.PluginLoaders
 import org.spongepowered.plugin.metadata.model.PluginDependency
 import java.io.ByteArrayOutputStream
 
+buildscript {
+    repositories {
+        maven { url = uri("https://maven.minecraftforge.net") }
+        mavenCentral()
+    }
+    dependencies {
+        classpath(group = "net.minecraftforge.gradle", name = "ForgeGradle", version = "5.1.+") {
+            isChanging = true
+        }
+    }
+}
+
 val chestRefillId = findProperty("chestrefill.id") as String
 val chestRefillName = findProperty("chestrefill.name") as String
 val chestRefillVersion = findProperty("chestrefill.version") as String
+val minecraftVersion = findProperty("minecraft.version") as String
+val forgeVersion = findProperty("forge.version") as String
 val spongeApiVersion = findProperty("sponge-api.version") as String
 
 plugins {
     idea
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.spongepowered.gradle.plugin") version "2.1.1"
     id("org.spongepowered.gradle.ore") version "2.1.1" // for Ore publishing
 }
 
 group = "io.github.aquerr"
 version = "$chestRefillVersion-API-$spongeApiVersion"
+apply(plugin = "net.minecraftforge.gradle")
+
 description = "Plugin for restoring contents of a container after the specified time."
 
 repositories {
@@ -42,11 +58,14 @@ tasks.withType(AbstractArchiveTask::class).configureEach {
 }
 
 dependencies {
+    "minecraft"("net.minecraftforge:forge:${forgeVersion}")
     api("org.spongepowered:spongeapi:${spongeApiVersion}")
 }
 
 tasks {
     jar {
+        finalizedBy("reobfJar")
+
         if(System.getenv("JENKINS_HOME") != null) {
             project.version = project.version.toString() + "_" + System.getenv("BUILD_NUMBER")
             println("File name => " + archiveBaseName.get())
@@ -54,16 +73,10 @@ tasks {
             project.version = project.version.toString() + "-SNAPSHOT"
         }
     }
+}
 
-    shadowJar {
-        dependsOn(test)
-
-        archiveClassifier.set("")
-    }
-
-    build {
-        dependsOn(shadowJar)
-    }
+configure<UserDevExtension> {
+    mappings("official", minecraftVersion)
 }
 
 sponge {

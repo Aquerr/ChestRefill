@@ -25,6 +25,7 @@ public abstract class PluginPermissions
     public static final String CREATE_KIT_COMMAND = "chestrefill.command.kit.create";
     public static final String REMOVE_KIT_COMMAND = "chestrefill.command.kit.remove";
     public static final String ASSIGN_KIT_COMMAND = "chestrefill.command.kit.assign";
+    public static final String ASSIGN_LOOT_TABLE_COMMAND = "chestrefill.command.loottable.assign";
 
     public static final String WAND_COMMAND = "chestrefill.command.wand";
     public static final String DESELECT_COMMAND = "chestrefill.command.deselect";

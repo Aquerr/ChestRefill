@@ -2,14 +2,21 @@ package io.github.aquerr.chestrefill.caching;
 
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
+import io.github.aquerr.chestrefill.entities.ItemProvider;
+import io.github.aquerr.chestrefill.entities.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ContainerCache
+public final class ContainerCache
 {
+    private ContainerCache()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     private static Map<ContainerLocation, RefillableContainer> refillableContainersCache = new HashMap<>();
     private static Map<String, Kit> kitsCache = new HashMap<>();
 
@@ -59,8 +66,11 @@ public class ContainerCache
             kitsCache.remove(name.toLowerCase());
             for(final RefillableContainer refillableContainer : refillableContainersCache.values())
             {
-                if(refillableContainer.getKitName().equalsIgnoreCase(name))
-                    refillableContainer.setKit("");
+                if (refillableContainer.getItemProvider().getType() == ItemProviderType.KIT
+                    && refillableContainer.getItemProvider().getLocation().equalsIgnoreCase(name))
+                {
+                    refillableContainer.setItemProvider(new ItemProvider(ItemProviderType.SELF, null));
+                }
             }
         }
         catch(Exception exception)
@@ -142,7 +152,7 @@ public class ContainerCache
     public static boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
         final RefillableContainer refillableContainer = refillableContainersCache.get(containerLocation);
-        refillableContainer.setKit(kitName);
-        return refillableContainer.getKitName().equalsIgnoreCase(kitName);
+        refillableContainer.setItemProvider(new ItemProvider(ItemProviderType.KIT, kitName));
+        return refillableContainer.getItemProvider().getLocation().equalsIgnoreCase(kitName);
     }
 }
