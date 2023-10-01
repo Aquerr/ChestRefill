@@ -28,13 +28,13 @@ public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
 
         final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.compute(serverPlayer.uniqueId(), this::toggleSelectionMode);
-        if (ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId()))
+        ChestRefill.SELECTION_MODE.compute(serverPlayer.uniqueId(), this::toggleSelectionMode);
+        if (ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId()))
         {
             ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.compute(serverPlayer.uniqueId(), ((uuid, aBoolean) -> shouldPlaceItemsInRandomSlots));
         }
 
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.setplaceitemsinrandomslots.turned-on"));

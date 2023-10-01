@@ -17,6 +17,7 @@ import io.github.aquerr.chestrefill.commands.RemoveCommand;
 import io.github.aquerr.chestrefill.commands.RemoveKitCommand;
 import io.github.aquerr.chestrefill.commands.SearchAndCreateCommand;
 import io.github.aquerr.chestrefill.commands.SetContainerNameCommand;
+import io.github.aquerr.chestrefill.commands.SetHiddenIfNoItemsCommand;
 import io.github.aquerr.chestrefill.commands.SetOpenMessageCommand;
 import io.github.aquerr.chestrefill.commands.SetPlaceItemsInRandomSlotsCommand;
 import io.github.aquerr.chestrefill.commands.TimeCommand;
@@ -72,7 +73,7 @@ import static java.util.Collections.singletonList;
 public class ChestRefill
 {
     public static final Map<List<String>, Command.Parameterized> SUBCOMMANDS = new HashMap<>();
-    public static final Map<UUID, SelectionMode> PLAYER_CHEST_SELECTION_MODE = new HashMap<>();
+    public static final Map<UUID, SelectionMode> SELECTION_MODE = new HashMap<>();
     public static final Map<UUID, String> PLAYER_CHEST_NAME = new HashMap<>();
     public static final Map<UUID, Integer> CONTAINER_TIME_CHANGE_PLAYER = new HashMap<>();
     public static final Map<UUID, RefillableContainer> PLAYER_COPY_REFILLABLE_CONTAINER = new HashMap<>();
@@ -80,6 +81,7 @@ public class ChestRefill
     public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
     public static final Map<UUID, String> PLAYER_LOOT_TABLE_ASSIGN = new HashMap<>();
     public static final Map<UUID, Boolean> CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS = new HashMap<>();
+    public static final Map<UUID, Boolean> CONTAINER_HIDDEN_IF_NO_ITEMS = new HashMap<>();
 
     public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
 
@@ -263,6 +265,7 @@ public class ChestRefill
         registerCommand(asList("deselect", "desel"), "command.deselect.desc", PluginPermissions.DESELECT_COMMAND, new DeselectCommand(this));
         registerCommand(singletonList("wand"), "command.wand.desc", PluginPermissions.WAND_COMMAND, new WandCommand(this));
         registerCommand(singletonList("set_place_items_in_random_slots"), "command.setplaceitemsinrandomslots.desc", PluginPermissions.SET_PLACE_ITEMS_IN_RANDOM_SLOTS, new SetPlaceItemsInRandomSlotsCommand(this), Parameter.bool().key("value").build());
+        registerCommand(singletonList("set_hidden_if_no_items"), "command.sethiddenifnoitems.desc", PluginPermissions.SET_HIDDEN_IF_NO_ITEMS, new SetHiddenIfNoItemsCommand(this), Parameter.bool().key("value").build());
 
         //Build all commands
         Command.Parameterized commandChestRefill = Command.builder()

@@ -25,8 +25,8 @@ public class SetContainerNameCommand extends AbstractCommand
         String containerName = context.requireOne(Parameter.string().key("name").build());
         ServerPlayer serverPlayer = requirePlayerSource(context);
         
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.SET_CONTAINER_NAME, (selectionMode, selectionMode2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.SET_CONTAINER_NAME, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             if(super.getPlugin().getContainerManager().getRefillableContainers().stream().anyMatch(x->x.equals(containerName)))

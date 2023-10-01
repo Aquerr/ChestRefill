@@ -26,9 +26,9 @@ public class AssignLootTableCommand extends AbstractCommand
 
         final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.ASSIGN_LOOT_TABLE, (selectionMode, selectionMode2) -> null);
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.ASSIGN_LOOT_TABLE, (selectionMode, selectionMode2) -> null);
         ChestRefill.PLAYER_LOOT_TABLE_ASSIGN.merge(serverPlayer.uniqueId(), lootTableName, (s, s2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.assignloottable.turned-on"));

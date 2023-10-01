@@ -23,8 +23,8 @@ public class UpdateCommand extends AbstractCommand
     {
         ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.UPDATE, (selectionMode, selectionMode2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.UPDATE, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.update.turned-on"));

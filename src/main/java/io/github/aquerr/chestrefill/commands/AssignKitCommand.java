@@ -28,9 +28,9 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
 
         final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.ASSIGN_KIT, (selectionMode, selectionMode2) -> null);
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.ASSIGN_KIT, (selectionMode, selectionMode2) -> null);
         ChestRefill.PLAYER_KIT_ASSIGN.merge(serverPlayer.uniqueId(), kit.getName(), (s, s2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.assignkit.turned-on"));

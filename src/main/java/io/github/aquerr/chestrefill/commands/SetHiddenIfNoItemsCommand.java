@@ -9,11 +9,11 @@ import org.spongepowered.api.command.parameter.CommandContext;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
-public class TimeCommand extends AbstractCommand
+public class SetHiddenIfNoItemsCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
 
-    public TimeCommand(ChestRefill plugin)
+    public SetHiddenIfNoItemsCommand(ChestRefill plugin)
     {
         super(plugin);
         this.messageSource = plugin.getMessageSource();
@@ -22,27 +22,20 @@ public class TimeCommand extends AbstractCommand
     @Override
     public CommandResult execute(CommandContext context) throws CommandException
     {
-        Integer time = context.one(Parameter.integerNumber().key("time").build()).orElse(null);
-        ServerPlayer serverPlayer = requirePlayerSource(context);
-        
-        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.TIME, (selectionMode, selectionMode2) -> null);
+        final boolean hiddenIfNoItems = context.requireOne(Parameter.bool().key("value").build());
+
+        final ServerPlayer serverPlayer = requirePlayerSource(context);
+
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.SET_HIDDEN_IF_NO_ITEMS, (selectionMode, selectionMode2) -> null);
+        ChestRefill.CONTAINER_HIDDEN_IF_NO_ITEMS.merge(serverPlayer.uniqueId(), hiddenIfNoItems, (s, s2) -> null);
         boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
-            if (time == null)
-            {
-                ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.remove(serverPlayer.uniqueId());
-            }
-            else
-            {
-                ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.put(serverPlayer.uniqueId(), time);
-            }
-            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.time.turned-on"));
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.sethiddenifnoitems.turned-on"));
         }
         else
         {
-            ChestRefill.CONTAINER_TIME_CHANGE_PLAYER.remove(serverPlayer.uniqueId());
-            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.time.turned-off"));
+            serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.sethiddenifnoitems.turned-off"));
         }
 
         return CommandResult.success();

@@ -22,8 +22,8 @@ public class RemoveCommand extends AbstractCommand
     public CommandResult execute(CommandContext context) throws CommandException
     {
         ServerPlayer serverPlayer = requirePlayerSource(context);
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.REMOVE, (selectionMode, selectionMode2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.REMOVE, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             serverPlayer.sendMessage(messageSource.resolveMessageWithPrefix("command.remove.turned-on"));

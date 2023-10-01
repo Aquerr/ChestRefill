@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.LinearComponents.linear;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
@@ -52,12 +51,13 @@ public class RightClickListener extends AbstractListener
         MODE_EXECUTORS.put(SelectionMode.ASSIGN_KIT, this::assignKit);
         MODE_EXECUTORS.put(SelectionMode.ASSIGN_LOOT_TABLE, this::assignLootTable);
         MODE_EXECUTORS.put(SelectionMode.SET_PLACE_ITEMS_IN_RANDOM_SLOTS, this::setPlaceItemsInRandomSlots);
+        MODE_EXECUTORS.put(SelectionMode.SET_HIDDEN_IF_NO_ITEMS, this::setHiddenIfNoItems);
     }
 
     @Listener
     public void onRefillableContainerEdit(final InteractBlockEvent.Secondary event, @Root final ServerPlayer player)
     {
-        if(!ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.uniqueId()))
+        if(!ChestRefill.SELECTION_MODE.containsKey(player.uniqueId()))
             return;
 
         if(!event.block().location().flatMap(Location::blockEntity).isPresent())
@@ -91,15 +91,15 @@ public class RightClickListener extends AbstractListener
 
         ModeExecutionParams params = new ModeExecutionParams(player, refillableContainer, refillableContainerAtLocation);
 
-        MODE_EXECUTORS.get(ChestRefill.PLAYER_CHEST_SELECTION_MODE.get(player.uniqueId())).accept(params);
+        MODE_EXECUTORS.get(ChestRefill.SELECTION_MODE.get(player.uniqueId())).accept(params);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.remove(player.uniqueId());
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 
     @Listener
     public void onRefillableContainerOpen(final InteractBlockEvent.Secondary event, @Root final ServerPlayer player)
     {
-        if(ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.uniqueId()))
+        if(ChestRefill.SELECTION_MODE.containsKey(player.uniqueId()))
             return;
 
         if(!event.block().location().flatMap(Location::blockEntity).isPresent())
@@ -312,7 +312,7 @@ public class RightClickListener extends AbstractListener
             player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Now select a new container which should behave in the same way!")));
         }
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.put(player.uniqueId(), SelectionMode.AFTER_COPY);
+        ChestRefill.SELECTION_MODE.put(player.uniqueId(), SelectionMode.AFTER_COPY);
     }
 
     private void afterCopyContainer(ModeExecutionParams params)
@@ -432,6 +432,29 @@ public class RightClickListener extends AbstractListener
                 player.sendMessage(linear(PLUGIN_PREFIX, RED, text("Something went wrong...")));
         }
         ChestRefill.CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS.remove(player.uniqueId());
+    }
+
+    private void setHiddenIfNoItems(ModeExecutionParams params)
+    {
+        RefillableContainer refillableContainerAtLocation = params.getRefillableContainerAtLocation();
+        ServerPlayer player = params.getServerPlayer();
+
+        if(refillableContainerAtLocation == null)
+        {
+            player.sendMessage(linear(PLUGIN_PREFIX, RED, text("This is not a refillable container!")));
+        }
+        else
+        {
+            refillableContainerAtLocation.setHiddenIfNoItems(ChestRefill.CONTAINER_HIDDEN_IF_NO_ITEMS.get(player.uniqueId()));
+            final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainerAtLocation);
+            if(didSucceed)
+            {
+                player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully updated a refilling container!")));
+            }
+            else
+                player.sendMessage(linear(PLUGIN_PREFIX, RED, text("Something went wrong...")));
+        }
+        ChestRefill.CONTAINER_HIDDEN_IF_NO_ITEMS.remove(player.uniqueId());
     }
 
     private static class ModeExecutionParams

@@ -1,7 +1,6 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.PluginInfo;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
@@ -26,8 +25,8 @@ public class SetOpenMessageCommand extends AbstractCommand
         String message = context.requireOne(Parameter.string().key("message").build());
         ServerPlayer serverPlayer = requirePlayerSource(context);
         
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.SET_OPEN_MESSAGE, (selectionMode, selectionMode2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.SET_OPEN_MESSAGE, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             ChestRefill.PLAYER_CHEST_NAME.put(serverPlayer.uniqueId(), message);

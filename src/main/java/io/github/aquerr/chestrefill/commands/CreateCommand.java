@@ -28,8 +28,8 @@ public class CreateCommand extends AbstractCommand implements CommandExecutor
         final Optional<String> optionalName = context.one(Parameter.string().key("name").build());
         final ServerPlayer serverPlayer = requirePlayerSource(context);
 
-        ChestRefill.PLAYER_CHEST_SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.CREATE, (selectionMode, selectionMode2) -> null);
-        boolean isModeActive = ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(serverPlayer.uniqueId());
+        ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), SelectionMode.CREATE, (selectionMode, selectionMode2) -> null);
+        boolean isModeActive = ChestRefill.SELECTION_MODE.containsKey(serverPlayer.uniqueId());
         if (isModeActive)
         {
             optionalName.ifPresent(s -> ChestRefill.PLAYER_CHEST_NAME.put(serverPlayer.uniqueId(), s));

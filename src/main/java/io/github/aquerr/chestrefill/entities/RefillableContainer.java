@@ -171,6 +171,11 @@ public class RefillableContainer
         return this.hiddenIfNoItems;
     }
 
+    public void setHiddenIfNoItems(boolean hiddenIfNoItems)
+    {
+        this.hiddenIfNoItems = hiddenIfNoItems;
+    }
+
     public BlockType getHidingBlock()
     {
         return this.hidingBlock;
