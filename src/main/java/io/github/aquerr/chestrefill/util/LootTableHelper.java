@@ -49,10 +49,11 @@ public class LootTableHelper
         List<ItemStack> itemStacks = lootTable.getRandomItems(new LootContext.Builder(serverWorld).create(new LootParameterSet.Builder().build()));
 
         List<RefillableItem> refillableItems = new ArrayList<>();
+        int slot = 0;
         for (final ItemStack itemStack : itemStacks)
         {
             org.spongepowered.api.item.inventory.ItemStack spongeItemStack = org.spongepowered.api.item.inventory.ItemStack.class.cast(itemStack);
-            refillableItems.add(new RefillableItem(spongeItemStack.createSnapshot().copy(), 0, 1f));
+            refillableItems.add(new RefillableItem(spongeItemStack.createSnapshot(), slot++, 1f));
         }
         return refillableItems;
     }

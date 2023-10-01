@@ -72,7 +72,7 @@ public class ContainerRefiller
             }
             else
             {
-                insertItems(containerInventory, itemsToRefill, refillableContainer.shouldRefillOneItemAtTime());
+                insertItemsInSlotOrder(containerInventory, itemsToRefill, refillableContainer.shouldRefillOneItemAtTime());
             }
         }
     }
@@ -162,7 +162,7 @@ public class ContainerRefiller
         return itemsAchievedFromRandomizer;
     }
 
-    private void insertItems(Inventory inventory, List<RefillableItem> refillableItems, boolean stopAtFirstItem)
+    private void insertItemsInSlotOrder(Inventory inventory, List<RefillableItem> refillableItems, boolean stopAtFirstItem)
     {
         for (final RefillableItem item : refillableItems)
         {
