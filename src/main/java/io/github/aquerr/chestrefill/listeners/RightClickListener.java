@@ -61,10 +61,7 @@ public class RightClickListener extends AbstractListener
         if(!ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.uniqueId()))
             return;
 
-        if(!event.block().location().isPresent())
-            return;
-
-        if(!event.block().location().get().blockEntity().isPresent())
+        if(!event.block().location().flatMap(Location::blockEntity).isPresent())
             return;
 
         final BlockEntity blockEntity = event.block().location().get().blockEntity().get();
@@ -106,10 +103,7 @@ public class RightClickListener extends AbstractListener
         if(ChestRefill.PLAYER_CHEST_SELECTION_MODE.containsKey(player.uniqueId()))
             return;
 
-        if(!event.block().location().isPresent())
-            return;
-
-        if(!event.block().location().get().blockEntity().isPresent())
+        if(!event.block().location().flatMap(Location::blockEntity).isPresent())
             return;
 
         final BlockEntity tileEntity = event.block().location()
