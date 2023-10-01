@@ -5,6 +5,7 @@ import net.kyori.adventure.text.TextComponent;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
+import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.math.vector.Vector3i;
@@ -225,6 +226,11 @@ public class RefillableContainer
     public void setItemProvider(ItemProvider itemProvider)
     {
         this.itemProvider = itemProvider;
+    }
+
+    public boolean hasPermissionToOpen(ServerPlayer player)
+    {
+        return !"".equals(getRequiredPermission()) && player.hasPermission(getRequiredPermission());
     }
 
     @Override
