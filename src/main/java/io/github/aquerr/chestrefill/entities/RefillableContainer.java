@@ -230,7 +230,10 @@ public class RefillableContainer
 
     public boolean hasPermissionToOpen(ServerPlayer player)
     {
-        return !"".equals(getRequiredPermission()) && player.hasPermission(getRequiredPermission());
+        if (requiredPermission == null || requiredPermission.equals(""))
+            return true;
+
+        return player.hasPermission(getRequiredPermission());
     }
 
     @Override
