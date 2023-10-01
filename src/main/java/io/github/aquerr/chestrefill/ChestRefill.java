@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill;
 
+import com.github.benmanes.caffeine.cache.AsyncCache;
 import com.google.inject.Inject;
 import io.github.aquerr.chestrefill.commands.AssignKitCommand;
 import io.github.aquerr.chestrefill.commands.AssignLootTableCommand;
@@ -26,8 +27,7 @@ import io.github.aquerr.chestrefill.commands.WandCommand;
 import io.github.aquerr.chestrefill.commands.arguments.ChestRefillCommandParameters;
 import io.github.aquerr.chestrefill.config.Configuration;
 import io.github.aquerr.chestrefill.config.ConfigurationImpl;
-import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.entities.SelectionMode;
+import io.github.aquerr.chestrefill.entities.SelectionParams;
 import io.github.aquerr.chestrefill.entities.SelectionPoints;
 import io.github.aquerr.chestrefill.listeners.ContainerBreakListener;
 import io.github.aquerr.chestrefill.listeners.PlayerDisconnectListener;
@@ -42,6 +42,7 @@ import io.github.aquerr.chestrefill.util.LootTableHelper;
 import io.github.aquerr.chestrefill.util.resource.Resource;
 import io.github.aquerr.chestrefill.util.resource.ResourceUtils;
 import io.github.aquerr.chestrefill.version.VersionChecker;
+import net.kyori.adventure.text.TextComponent;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -68,21 +69,15 @@ import java.util.concurrent.CompletableFuture;
 import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX_PLAIN;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static net.kyori.adventure.text.Component.text;
 
 @Plugin(PluginInfo.ID)
 public class ChestRefill
 {
-    public static final Map<List<String>, Command.Parameterized> SUBCOMMANDS = new HashMap<>();
-    public static final Map<UUID, SelectionMode> SELECTION_MODE = new HashMap<>();
-    public static final Map<UUID, String> PLAYER_CHEST_NAME = new HashMap<>();
-    public static final Map<UUID, Integer> CONTAINER_TIME_CHANGE_PLAYER = new HashMap<>();
-    public static final Map<UUID, RefillableContainer> PLAYER_COPY_REFILLABLE_CONTAINER = new HashMap<>();
-    public static final Map<UUID, String> PLAYER_KIT_NAME = new HashMap<>();
-    public static final Map<UUID, String> PLAYER_KIT_ASSIGN = new HashMap<>();
-    public static final Map<UUID, String> PLAYER_LOOT_TABLE_ASSIGN = new HashMap<>();
-    public static final Map<UUID, Boolean> CONTAINER_PLACE_ITEMS_IN_RANDOM_SLOTS = new HashMap<>();
-    public static final Map<UUID, Boolean> CONTAINER_HIDDEN_IF_NO_ITEMS = new HashMap<>();
+    public static final TextComponent SOMETHING_WENT_WRONG = text("Something went wrong...");
 
+    public static final Map<List<String>, Command.Parameterized> SUBCOMMANDS = new HashMap<>();
+    public static final Map<UUID, SelectionParams> SELECTION_MODE = new HashMap<>();
     public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
 
     private Configuration configuration;
@@ -248,7 +243,7 @@ public class ChestRefill
         registerCommand(asList("r", "remove"), "command.remove.desc", PluginPermissions.REMOVE_COMMAND, new RemoveCommand(this));
         registerCommand(singletonList("remove_all"), "command.removeall.desc", PluginPermissions.REMOVEALL_COMMAND, new RemoveAllCommand(this));
         registerCommand(asList("u", "update"), "command.removeall.desc", PluginPermissions.UPDATE_COMMAND, new UpdateCommand(this));
-        registerCommand(asList("t", "time"), "command.time.desc", PluginPermissions.TIME_COMMAND, new TimeCommand(this), Parameter.integerNumber().key("time").optional().build());
+        registerCommand(asList("t", "time"), "command.time.desc", PluginPermissions.TIME_COMMAND, new TimeCommand(this), Parameter.integerNumber().key("time").build());
         registerCommand(asList("l", "list"), "command.list.desc", PluginPermissions.LIST_COMMAND, new ListCommand(this));
         registerCommand(singletonList("refill"), "command.refill.desc", PluginPermissions.REFILL_COMMAND, new RefillCommand(this), ChestRefillCommandParameters.refillableContainer());
         registerCommand(singletonList("refill_all"), "command.refillall.desc", PluginPermissions.REFILLALL_COMMAND, new RefillAllCommand(this));

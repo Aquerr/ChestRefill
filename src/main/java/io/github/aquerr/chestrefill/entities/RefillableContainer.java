@@ -239,6 +239,27 @@ public class RefillableContainer
         return player.hasPermission(getRequiredPermission());
     }
 
+    public RefillableContainer copy()
+    {
+        return RefillableContainer.builder()
+                .name(name)
+                .location(containerLocation)
+                .blockType(containerBlockType)
+                .items(items)
+                .restoreTimeInSeconds(restoreTimeInSeconds)
+                .oneItemAtTime(refillOneItemAtTime)
+                .replaceExisitngItems(replaceExistingItems)
+                .hiddenIfNoItems(hiddenIfNoItems)
+                .hidingBlock(hidingBlock)
+                .itemProvider(itemProvider)
+                .openMessage(openMessage)
+                .requiredPermission(requiredPermission)
+                .hasBeenOpened(hasBeenOpened)
+                .firstOpenMessage(firstOpenMessage)
+                .placeItemsInRandomSlots(placeItemsInRandomSlots)
+                .build();
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -267,7 +288,7 @@ public class RefillableContainer
                 ", replaceExistingItems=" + replaceExistingItems +
                 ", hiddenIfNoItems=" + hiddenIfNoItems +
                 ", hidingBlock=" + hidingBlock +
-                ", refillSource=" + itemProvider +
+                ", itemProvider=" + itemProvider +
                 ", requiredPermission='" + requiredPermission + '\'' +
                 ", openMessage=" + openMessage +
                 ", firstOpenMessage=" + firstOpenMessage +
