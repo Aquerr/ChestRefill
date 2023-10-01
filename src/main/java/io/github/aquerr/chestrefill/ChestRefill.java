@@ -251,7 +251,7 @@ public class ChestRefill
         registerCommand(singletonList("refill"), "command.refill.desc", PluginPermissions.REFILL_COMMAND, new RefillCommand(this), ChestRefillCommandParameters.refillableContainer());
         registerCommand(singletonList("refill_all"), "command.refillall.desc", PluginPermissions.REFILLALL_COMMAND, new RefillAllCommand(this));
         registerCommand(singletonList("set_container_name"), "command.setcontainername.desc", PluginPermissions.SET_CONTAINER_NAME_COMMAND, new SetContainerNameCommand(this), Parameter.string().key("name").build());
-        registerCommand(singletonList("set_open_message"), "command.setopenmessage.desc", PluginPermissions.SET_OPEN_MESSAGE_COMMAND, new SetOpenMessageCommand(this), Parameter.string().key("message").build());
+        registerCommand(singletonList("set_open_message"), "command.setopenmessage.desc", PluginPermissions.SET_OPEN_MESSAGE_COMMAND, new SetOpenMessageCommand(this), Parameter.remainingJoinedStrings().key("message").build());
         registerCommand(singletonList("create_kit"), "command.createkit.desc", PluginPermissions.CREATE_KIT_COMMAND, new CreateKitCommand(this), Parameter.string().key("name").build());
         registerCommand(singletonList("remove_kit"), "command.removekit.desc", PluginPermissions.REMOVE_KIT_COMMAND, new RemoveKitCommand(this), Parameter.string().key("name").build());
         registerCommand(singletonList("assign_kit"), "command.assignkit.desc", PluginPermissions.ASSIGN_KIT_COMMAND, new AssignKitCommand(this), ChestRefillCommandParameters.kit());

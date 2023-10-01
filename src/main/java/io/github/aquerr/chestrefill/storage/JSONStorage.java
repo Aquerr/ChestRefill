@@ -10,8 +10,6 @@ import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.storage.serializers.ChestRefillTypeSerializers;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
@@ -165,11 +163,11 @@ public class JSONStorage implements Storage
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").set(refillableContainer.getRequiredPermission());
 
             //Set open message
-            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").set(LegacyComponentSerializer.legacyAmpersand().serialize(refillableContainer.getOpenMessage()));
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").set(refillableContainer.getOpenMessage());
 
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").set(refillableContainer.hasBeenOpened());
 
-            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").set(LegacyComponentSerializer.legacyAmpersand().serialize(refillableContainer.getFirstOpenMessage()));
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").set(refillableContainer.getFirstOpenMessage());
 
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").set(refillableContainer.shouldPlaceItemsInRandomSlots());
 
@@ -417,11 +415,14 @@ public class JSONStorage implements Storage
     {
         try
         {
-             final String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
+            final String blockPositionAndWorldUUID = containerLocation.getBlockPosition().toString() + "|" + containerLocation.getWorldUUID().toString();
 
-            final Object containersName = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").get(Objects.class);
+            final Object containersName = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "name").get(Object.class);
             String name = null;
-            if (containersName != null) name = (String)containersName;
+            if (containersName != null)
+            {
+                name = (String)containersName;
+            }
 
             final BlockType containerBlockType = RegistryTypes.BLOCK_TYPE.get()
                     .value(ResourceKey.resolve(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "container-block-type").get(String.class)));
@@ -434,9 +435,9 @@ public class JSONStorage implements Storage
             final BlockType hidingBlockType = RegistryTypes.BLOCK_TYPE.get()
                     .value(ResourceKey.resolve(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").get(String.class)));
             final String requiredPermission = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "required-permission").getString("");
-            final TextComponent openMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString(""));
+            final String openMessage = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "open-message").getString("");
             final boolean hasBeenOpened = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
-            final TextComponent firstOpenMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString(""));
+            final String firstOpenMessage = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString("");
             final boolean shouldPlaceItemsInRandomSlots = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").getBoolean(false);
 
             if(chestItems == null)

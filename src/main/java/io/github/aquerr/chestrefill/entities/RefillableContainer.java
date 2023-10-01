@@ -1,7 +1,5 @@
 package io.github.aquerr.chestrefill.entities;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
@@ -21,7 +19,7 @@ public class RefillableContainer
 
     private ContainerLocation containerLocation;
     private List<RefillableItem> items;
-    private BlockType containerBlockType;
+    private final BlockType containerBlockType;
 
     private int restoreTimeInSeconds;
     private boolean refillOneItemAtTime;
@@ -33,9 +31,9 @@ public class RefillableContainer
     private ItemProvider itemProvider;
     private String requiredPermission;
 
-    private TextComponent openMessage;
+    private String openMessage;
 
-    private TextComponent firstOpenMessage;
+    private String firstOpenMessage;
     private boolean hasBeenOpened;
 
     private boolean placeItemsInRandomSlots;
@@ -131,7 +129,7 @@ public class RefillableContainer
         this.hidingBlock = hidingBlock;
     }
 
-    public void setOpenMessage(final TextComponent openMessage)
+    public void setOpenMessage(final String openMessage)
     {
         this.openMessage = openMessage;
     }
@@ -183,12 +181,12 @@ public class RefillableContainer
         return requiredPermission;
     }
 
-    public TextComponent getOpenMessage()
+    public String getOpenMessage()
     {
         return this.openMessage;
     }
 
-    public TextComponent getFirstOpenMessage()
+    public String getFirstOpenMessage()
     {
         return this.firstOpenMessage;
     }
@@ -203,7 +201,7 @@ public class RefillableContainer
         this.hasBeenOpened = hasBeenOpened;
     }
 
-    public void setFirstOpenMessage(TextComponent firstOpenMessage)
+    public void setFirstOpenMessage(String firstOpenMessage)
     {
         this.firstOpenMessage = firstOpenMessage;
     }
@@ -292,9 +290,9 @@ public class RefillableContainer
 
         private String requiredPermission;
 
-        private TextComponent openMessage;
+        private String openMessage;
 
-        private TextComponent firstOpenMessage;
+        private String firstOpenMessage;
         private boolean hasBeenOpened;
 
         private boolean placeItemsInRandomSlots;
@@ -312,9 +310,9 @@ public class RefillableContainer
             this.hidingBlock = BlockTypes.DIRT.get();
             this.itemProvider = new ItemProvider(ItemProviderType.SELF, "");
             this.requiredPermission = "";
-            this.openMessage = Component.empty();
+            this.openMessage = null;
 
-            this.firstOpenMessage = Component.empty();
+            this.firstOpenMessage = null;
             this.hasBeenOpened = false;
 
             this.placeItemsInRandomSlots = false;
@@ -380,7 +378,7 @@ public class RefillableContainer
             return this;
         }
 
-        public Builder openMessage(final TextComponent openMessage)
+        public Builder openMessage(final String openMessage)
         {
             this.openMessage = openMessage;
             return this;
@@ -392,7 +390,7 @@ public class RefillableContainer
             return this;
         }
 
-        public Builder firstOpenMessage(final TextComponent firstOpenMessage)
+        public Builder firstOpenMessage(final String firstOpenMessage)
         {
             this.firstOpenMessage = firstOpenMessage;
             return this;

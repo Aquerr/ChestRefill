@@ -8,7 +8,6 @@ import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.util.ModSupport;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
@@ -128,17 +127,17 @@ public class RightClickListener extends AbstractListener
 
         if (!refillableContainer.hasBeenOpened())
         {
-            if (!refillableContainer.getFirstOpenMessage().equals(empty()))
-                player.sendMessage(refillableContainer.getFirstOpenMessage());
+            if (!"".equals(refillableContainer.getFirstOpenMessage()))
+                player.sendMessage(LegacyComponentSerializer.legacySection().deserialize(refillableContainer.getFirstOpenMessage()));
 
             refillableContainer.setHasBeenOpened(true);
             super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
             return;
         }
 
-        if (!refillableContainer.getOpenMessage().equals(empty()) || PlainTextComponentSerializer.plainText().serialize(refillableContainer.getOpenMessage()).equals(""))
+        if (!"".equals(refillableContainer.getOpenMessage()) || LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getOpenMessage()).equals(""))
         {
-            player.sendMessage(linear(refillableContainer.getOpenMessage()));
+            player.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getOpenMessage()));
         }
     }
 
@@ -286,7 +285,7 @@ public class RightClickListener extends AbstractListener
         }
         else
         {
-            refillableContainerAtLocation.setOpenMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(ChestRefill.PLAYER_CHEST_NAME.get(player.uniqueId())));
+            refillableContainerAtLocation.setOpenMessage(ChestRefill.PLAYER_CHEST_NAME.get(player.uniqueId()).trim());
             final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainerAtLocation);
             if(didSucceed)
             {
