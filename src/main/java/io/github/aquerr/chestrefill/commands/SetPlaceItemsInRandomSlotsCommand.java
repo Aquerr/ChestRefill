@@ -74,5 +74,6 @@ public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
         {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, text("Something went wrong...")));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

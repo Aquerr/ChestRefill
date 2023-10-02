@@ -69,7 +69,7 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
     {
         final ServerPlayer player = params.getPlayer();
         final String kitName = (String) params.getExtraData().get("KIT_NAME");
-        final Kit kit = new Kit(kitName, params.getRefillableContainer().getItems());
+        final Kit kit = new Kit(kitName, params.getBuiltContainer().getItems());
         final boolean didSucceed = super.getPlugin().getContainerManager().createKit(kit);
         if (didSucceed)
         {
@@ -79,5 +79,6 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
         {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

@@ -1,9 +1,6 @@
 package io.github.aquerr.chestrefill;
 
-/**
- * Created by Aquerr on 2018-02-15.
- */
-public abstract class PluginPermissions
+public final class PluginPermissions
 {
     public static final String HELP_COMMAND = "chestrefill.command.help";
 
@@ -12,6 +9,7 @@ public abstract class PluginPermissions
     public static final String REMOVE_COMMAND = "chestrefill.command.remove";
     public static final String REMOVEALL_COMMAND = "chestrefill.command.removeall";
     public static final String UPDATE_COMMAND = "chestrefill.command.update";
+    public static final String INFO_COMMAND = "chestrefill.command.info";
     public static final String TIME_COMMAND = "chestrefill.command.time";
     public static final String LIST_COMMAND = "chestrefill.command.list";
     public static final String REFILLALL_COMMAND = "chestrefill.command.refillall";
@@ -32,4 +30,9 @@ public abstract class PluginPermissions
     public static final String DESELECT_COMMAND = "chestrefill.command.deselect";
 
     public static final String VERSION_NOTIFY = "chestrefill.version.notify";
+
+    private PluginPermissions()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

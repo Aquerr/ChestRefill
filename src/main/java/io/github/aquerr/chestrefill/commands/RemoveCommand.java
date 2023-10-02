@@ -63,5 +63,6 @@ public class RemoveCommand extends AbstractCommand
         {
             player.sendMessage(linear(PLUGIN_PREFIX, GREEN, SOMETHING_WENT_WRONG));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

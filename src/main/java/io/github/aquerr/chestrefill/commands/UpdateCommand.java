@@ -56,7 +56,7 @@ public class UpdateCommand extends AbstractCommand
 
     private void updateContainer(ModeExecutionParams executionParams)
     {
-        RefillableContainer refillableContainer = executionParams.getRefillableContainer();
+        RefillableContainer refillableContainer = executionParams.getBuiltContainer();
         RefillableContainer refillableContainerAtLocation = executionParams.getRefillableContainerAtLocation();
         ServerPlayer player = executionParams.getPlayer();
 
@@ -76,5 +76,6 @@ public class UpdateCommand extends AbstractCommand
         {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

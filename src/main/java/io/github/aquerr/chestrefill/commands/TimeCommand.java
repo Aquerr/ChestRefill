@@ -62,7 +62,7 @@ public class TimeCommand extends AbstractCommand
     {
         final ServerPlayer player = executionParams.getPlayer();
         final Integer time = (Integer)executionParams.getExtraData().get("TIME");
-        final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillingTime(executionParams.getRefillableContainer().getContainerLocation(), time);
+        final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillingTime(executionParams.getRefillableContainerAtLocation().getContainerLocation(), time);
         if(didSucceed)
         {
             player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully updated container's refill time!")));
@@ -71,5 +71,6 @@ public class TimeCommand extends AbstractCommand
         {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

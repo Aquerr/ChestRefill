@@ -5,6 +5,7 @@ public enum SelectionMode
     CREATE,
     UPDATE,
     REMOVE,
+    INFO,
     TIME,
     SET_CONTAINER_NAME,
     COPY,

@@ -71,13 +71,17 @@ public class CreateCommand extends AbstractCommand implements CommandExecutor
 
     private void createContainer(ModeExecutionParams executionParams)
     {
-        RefillableContainer refillableContainer = executionParams.getRefillableContainer();
+        RefillableContainer refillableContainer = executionParams.getBuiltContainer();
         refillableContainer.setName(String.valueOf(executionParams.getExtraData().get("CONTAINER_NAME")));
-        final boolean didSucceed = containerManager.addRefillableContainer(executionParams.getRefillableContainer());
+        final boolean didSucceed = containerManager.addRefillableContainer(executionParams.getBuiltContainer());
         if (didSucceed)
         {
             executionParams.getPlayer().sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully created a refilling container!")));
         }
-        else executionParams.getPlayer().sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+        else
+        {
+            executionParams.getPlayer().sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+        }
+        ChestRefill.SELECTION_MODE.remove(executionParams.getPlayer().uniqueId());
     }
 }

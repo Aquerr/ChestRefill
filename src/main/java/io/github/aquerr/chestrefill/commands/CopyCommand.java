@@ -76,7 +76,7 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
     private void doCopy(ModeExecutionParams params)
     {
         final ServerPlayer player = params.getPlayer();
-        final RefillableContainer clickedContainer = params.getRefillableContainer();
+        final RefillableContainer clickedContainer = params.getBuiltContainer();
         final RefillableContainer refillableContainerAtLocation = params.getRefillableContainerAtLocation();
         final RefillableContainer copiedContainer = (RefillableContainer) params.getExtraData().get("CONTAINER_COPY");
 
@@ -103,5 +103,6 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
         {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
         }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

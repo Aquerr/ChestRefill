@@ -65,7 +65,7 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
     private void assignKit(final ModeExecutionParams params)
     {
         final ServerPlayer player = params.getPlayer();
-        final RefillableContainer refillableContainer = params.getRefillableContainer();
+        final RefillableContainer refillableContainer = params.getRefillableContainerAtLocation();
         final Kit kit = (Kit) params.getExtraData().get("KIT");
         final boolean didSucceed = super.getPlugin().getContainerManager().assignKit(refillableContainer.getContainerLocation(), kit.getName());
         if(didSucceed)
@@ -73,6 +73,9 @@ public class AssignKitCommand extends AbstractCommand implements CommandExecutor
             player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully assigned a kit to the refilling container!")));
         }
         else
+        {
             player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+        }
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

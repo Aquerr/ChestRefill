@@ -9,6 +9,7 @@ import io.github.aquerr.chestrefill.commands.CreateCommand;
 import io.github.aquerr.chestrefill.commands.CreateKitCommand;
 import io.github.aquerr.chestrefill.commands.DeselectCommand;
 import io.github.aquerr.chestrefill.commands.HelpCommand;
+import io.github.aquerr.chestrefill.commands.InfoCommand;
 import io.github.aquerr.chestrefill.commands.KitsCommand;
 import io.github.aquerr.chestrefill.commands.ListCommand;
 import io.github.aquerr.chestrefill.commands.RefillAllCommand;
@@ -243,6 +244,7 @@ public class ChestRefill
         registerCommand(asList("r", "remove"), "command.remove.desc", PluginPermissions.REMOVE_COMMAND, new RemoveCommand(this));
         registerCommand(singletonList("remove_all"), "command.removeall.desc", PluginPermissions.REMOVEALL_COMMAND, new RemoveAllCommand(this));
         registerCommand(asList("u", "update"), "command.removeall.desc", PluginPermissions.UPDATE_COMMAND, new UpdateCommand(this));
+        registerCommand(singletonList("info"), "command.info.desc", PluginPermissions.INFO_COMMAND, new InfoCommand(this));
         registerCommand(asList("t", "time"), "command.time.desc", PluginPermissions.TIME_COMMAND, new TimeCommand(this), Parameter.integerNumber().key("time").build());
         registerCommand(asList("l", "list"), "command.list.desc", PluginPermissions.LIST_COMMAND, new ListCommand(this));
         registerCommand(singletonList("refill"), "command.refill.desc", PluginPermissions.REFILL_COMMAND, new RefillCommand(this), ChestRefillCommandParameters.refillableContainer());

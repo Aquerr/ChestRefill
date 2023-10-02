@@ -7,20 +7,20 @@ import java.util.Map;
 
 public class ModeExecutionParams
 {
-    private final RefillableContainer refillableContainer;
+    private final RefillableContainer builtContainer;
     private final RefillableContainer refillableContainerAtLocation;
     private final ServerPlayer serverPlayer;
     private final Map<String, Object> extraData;
 
-    public ModeExecutionParams(ServerPlayer serverPlayer, RefillableContainer refillableContainer, RefillableContainer refillableContainerAtLocation)
+    public ModeExecutionParams(ServerPlayer serverPlayer, RefillableContainer builtContainer, RefillableContainer refillableContainerAtLocation)
     {
-        this(serverPlayer, refillableContainer, refillableContainerAtLocation, Collections.emptyMap());
+        this(serverPlayer, builtContainer, refillableContainerAtLocation, Collections.emptyMap());
     }
 
-    public ModeExecutionParams(ServerPlayer serverPlayer, RefillableContainer refillableContainer, RefillableContainer refillableContainerAtLocation, Map<String, Object> extraData)
+    public ModeExecutionParams(ServerPlayer serverPlayer, RefillableContainer builtContainer, RefillableContainer refillableContainerAtLocation, Map<String, Object> extraData)
     {
         this.serverPlayer = serverPlayer;
-        this.refillableContainer = refillableContainer;
+        this.builtContainer = builtContainer;
         this.refillableContainerAtLocation = refillableContainerAtLocation;
         this.extraData = extraData;
     }
@@ -30,9 +30,9 @@ public class ModeExecutionParams
         return refillableContainerAtLocation;
     }
 
-    public RefillableContainer getRefillableContainer()
+    public RefillableContainer getBuiltContainer()
     {
-        return refillableContainer;
+        return builtContainer;
     }
 
     public ServerPlayer getPlayer()
