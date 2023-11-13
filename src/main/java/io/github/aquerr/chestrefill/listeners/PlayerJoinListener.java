@@ -10,6 +10,8 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.network.ServerSideConnectionEvent;
 
+import java.util.concurrent.CompletableFuture;
+
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.LinearComponents.linear;
 
@@ -23,7 +25,15 @@ public class PlayerJoinListener extends AbstractListener
     @Listener
     public void onPlayerJoin(ServerSideConnectionEvent.Join event, @Root ServerPlayer player)
     {
-        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.isLatest(PluginInfo.VERSION))
+        CompletableFuture.runAsync(() -> checkVersionAndInform(player));
+    }
+
+    private void checkVersionAndInform(ServerPlayer player)
+    {
+        if (!this.getPlugin().getConfiguration().getVersionConfig().shouldPerformVersionCheck())
+            return;
+
+        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.getInstance().isLatest(PluginInfo.VERSION))
         {
             player.sendMessage(linear(
                     PluginInfo.PLUGIN_PREFIX, text("There is a new version of "),

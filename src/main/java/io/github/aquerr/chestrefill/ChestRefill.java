@@ -1,6 +1,5 @@
 package io.github.aquerr.chestrefill;
 
-import com.github.benmanes.caffeine.cache.AsyncCache;
 import com.google.inject.Inject;
 import io.github.aquerr.chestrefill.commands.AssignKitCommand;
 import io.github.aquerr.chestrefill.commands.AssignLootTableCommand;
@@ -148,13 +147,7 @@ public class ChestRefill
 
             setupManagers();
 
-            CompletableFuture.runAsync(() ->
-            {
-                if (!VersionChecker.isLatest(PluginInfo.VERSION))
-                {
-                    this.logger.info(PLUGIN_PREFIX_PLAIN + "A new version of " + PluginInfo.NAME + " is available online!");
-                }
-            });
+            CompletableFuture.runAsync(this::checkVersionAndNotify);
         }
         catch (Exception exception)
         {
@@ -300,5 +293,19 @@ public class ChestRefill
         eventManager.registerListeners(this.pluginContainer, new PlayerJoinListener(this));
         eventManager.registerListeners(this.pluginContainer, new PlayerDisconnectListener(this));
         eventManager.registerListeners(this.pluginContainer, new WandUsageListener(this));
+    }
+
+    private void checkVersionAndNotify()
+    {
+        if (!this.configuration.getVersionConfig().shouldPerformVersionCheck())
+        {
+            this.logger.info("Version check: Disabled.");
+            return;
+        }
+
+        if (!VersionChecker.getInstance().isLatest(PluginInfo.VERSION))
+        {
+            this.logger.info(PLUGIN_PREFIX_PLAIN + "A new version of " + PluginInfo.NAME + " is available online!");
+        }
     }
 }

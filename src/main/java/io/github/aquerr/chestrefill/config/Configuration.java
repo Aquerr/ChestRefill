@@ -4,4 +4,6 @@ public interface Configuration
 {
 
     LangConfig getLangConfig();
+
+    VersionConfig getVersionConfig();
 }

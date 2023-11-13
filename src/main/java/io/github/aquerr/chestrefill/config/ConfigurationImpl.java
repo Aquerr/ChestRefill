@@ -10,6 +10,8 @@ import org.spongepowered.plugin.PluginContainer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConfigurationImpl implements Configuration
 {
@@ -21,7 +23,7 @@ public class ConfigurationImpl implements Configuration
     private CommentedConfigurationNode configNode;
 
     //Configs
-    private final LangConfig langConfig;
+    private Map<Class<? extends AbstractConfig>, AbstractConfig> configs = new HashMap<>();
 
     public ConfigurationImpl(PluginContainer pluginContainer, Path configDir, Resource configAsset) throws IOException
     {
@@ -43,14 +45,18 @@ public class ConfigurationImpl implements Configuration
         this.configLoader = (HoconConfigurationLoader.builder()).path(this.configPath).build();
         loadConfiguration();
 
-        this.langConfig = new LangConfig(this.configNode);
+        this.configs.put(LangConfig.class, new LangConfig(this.configNode));
+        this.configs.put(VersionConfig.class, new VersionConfig(this.configNode));
         reloadConfiguration();
     }
 
     public void reloadConfiguration() throws IOException
     {
         loadConfiguration();
-        this.langConfig.reload(this.configNode);
+        for (AbstractConfig value : this.configs.values())
+        {
+            value.reload(this.configNode);
+        }
     }
 
     private void loadConfiguration() throws IOException
@@ -61,6 +67,18 @@ public class ConfigurationImpl implements Configuration
     @Override
     public LangConfig getLangConfig()
     {
-        return langConfig;
+        return getConfig(LangConfig.class);
+    }
+
+    @Override
+    public VersionConfig getVersionConfig()
+    {
+        return getConfig(VersionConfig.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends AbstractConfig> T getConfig(Class<T> clazz)
+    {
+        return (T)this.configs.get(clazz);
     }
 }
