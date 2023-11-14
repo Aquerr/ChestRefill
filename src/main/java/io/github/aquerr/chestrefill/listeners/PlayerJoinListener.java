@@ -11,6 +11,8 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.concurrent.CompletableFuture;
+
 public class PlayerJoinListener extends AbstractListener
 {
     public PlayerJoinListener(ChestRefill plugin)
@@ -21,7 +23,15 @@ public class PlayerJoinListener extends AbstractListener
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event, @Root Player player)
     {
-        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.isLatest(PluginInfo.VERSION))
+        CompletableFuture.runAsync(() -> checkVersionAndInform(player));
+    }
+
+    private void checkVersionAndInform(Player player)
+    {
+        if (!this.getPlugin().getConfiguration().getVersionConfig().shouldPerformVersionCheck())
+            return;
+
+        if (player.hasPermission(PluginPermissions.VERSION_NOTIFY) && !VersionChecker.getInstance().isLatest(PluginInfo.VERSION))
         {
             player.sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, "There is a new version of ", TextColors.YELLOW, "Chest Refill", TextColors.WHITE, " available online!"));
         }

@@ -21,6 +21,8 @@ import io.github.aquerr.chestrefill.commands.UpdateCommand;
 import io.github.aquerr.chestrefill.commands.WandCommand;
 import io.github.aquerr.chestrefill.commands.arguments.ContainerNameArgument;
 import io.github.aquerr.chestrefill.commands.arguments.KitNameArgument;
+import io.github.aquerr.chestrefill.config.Configuration;
+import io.github.aquerr.chestrefill.config.ConfigurationImpl;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.entities.SelectionPoints;
@@ -77,6 +79,8 @@ public class ChestRefill
     private ContainerScheduler containerScheduler;
     private ContainerManager containerManager;
 
+    private Configuration configuration;
+
     private static ChestRefill chestRefill;
 
     @Inject
@@ -100,6 +104,14 @@ public class ChestRefill
     public void onGameInitialization(GameInitializationEvent event)
     {
         chestRefill = this;
+        try
+        {
+            this.configuration = new ConfigurationImpl(getConfigDir());
+        }
+        catch (Exception exception)
+        {
+            throw new IllegalStateException(exception);
+        }
         this.containerManager = new ContainerManager(this, getConfigDir());
         this.containerScheduler = new ContainerScheduler(this);
 
@@ -114,16 +126,25 @@ public class ChestRefill
 
         Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.YELLOW, "Chest Refill is ready!"));
 
-        CompletableFuture.runAsync(() ->{
-            if (VersionChecker.isLatest(PluginInfo.VERSION))
-            {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You are using the latest version!"));
-            }
-            else
-            {
-                Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.NAME, TextColors.RED, " is available online!"));
-            }
-        });
+        CompletableFuture.runAsync(this::performVersionCheckAndNotify);
+    }
+
+    private void performVersionCheckAndNotify()
+    {
+        if (!this.configuration.getVersionConfig().shouldPerformVersionCheck())
+        {
+            this.logger.info("Version check: Disabled.");
+            return;
+        }
+
+        if (VersionChecker.getInstance().isLatest(PluginInfo.VERSION))
+        {
+            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.GREEN, "You are using the latest version!"));
+        }
+        else
+        {
+            Sponge.getServer().getConsole().sendMessage(Text.of(PluginInfo.PLUGIN_PREFIX, TextColors.RED, "An update for ", TextColors.YELLOW, PluginInfo.NAME, TextColors.RED, " is available online!"));
+        }
     }
 
     @Listener
@@ -142,6 +163,11 @@ public class ChestRefill
     public ContainerScheduler getContainerScheduler()
     {
         return this.containerScheduler;
+    }
+
+    public Configuration getConfiguration()
+    {
+        return configuration;
     }
 
     public ConsoleSource getConsole()

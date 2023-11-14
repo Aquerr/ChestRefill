@@ -8,7 +8,7 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group = 'io.github.aquerr.chestrefill'
-version = '1.12.2-1.6.2'
+version = '1.12.2-1.6.3'
 description = 'Plugin for restoring contents of a container after the specified time.'
 
 repositories {
