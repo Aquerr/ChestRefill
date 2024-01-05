@@ -28,7 +28,7 @@ public class SetOpenMessageCommand extends AbstractCommand
     @Override
     public CommandResult execute(CommandContext context) throws CommandException
     {
-        String message = context.requireOne(Parameter.string().key("message").build());
+        String message = context.one(Parameter.string().key("message").build()).orElse("");
         ServerPlayer serverPlayer = requirePlayerSource(context);
         
         ChestRefill.SELECTION_MODE.merge(serverPlayer.uniqueId(), prepareParams(message), (selectionMode, selectionMode2) -> null);
