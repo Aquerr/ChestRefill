@@ -271,7 +271,6 @@ public class ContainerManager
 
     public boolean assignKit(ContainerLocation containerLocation, String kitName)
     {
-        //We need to load items from kit and assign them to the container.
         try
         {
             final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
@@ -288,7 +287,6 @@ public class ContainerManager
 
     public boolean assignLootTable(ContainerLocation containerLocation, String lootTableName)
     {
-        //We need to load items from kit and assign them to the container.
         try
         {
             final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);

@@ -7,7 +7,6 @@ import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.entities.SelectionParams;
 import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -18,14 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.github.aquerr.chestrefill.ChestRefill.SOMETHING_WENT_WRONG;
-import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.LinearComponents.linear;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
-
-public class CreateCommand extends AbstractCommand implements CommandExecutor
+public class CreateCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
     private final ContainerManager containerManager;
@@ -76,11 +68,11 @@ public class CreateCommand extends AbstractCommand implements CommandExecutor
         final boolean didSucceed = containerManager.addRefillableContainer(executionParams.getBuiltContainer());
         if (didSucceed)
         {
-            executionParams.getPlayer().sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully created a refilling container!")));
+            executionParams.getPlayer().sendMessage(messageSource.resolveMessageWithPrefix("command.create.successful-create"));
         }
         else
         {
-            executionParams.getPlayer().sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+            executionParams.getPlayer().sendMessage(messageSource.resolveMessageWithPrefix("error.command.something-went-wrong"));
         }
         ChestRefill.SELECTION_MODE.remove(executionParams.getPlayer().uniqueId());
     }

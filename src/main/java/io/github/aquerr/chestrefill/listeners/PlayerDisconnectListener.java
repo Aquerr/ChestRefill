@@ -25,5 +25,6 @@ public class PlayerDisconnectListener extends AbstractListener
             selectionPoints.setSecondPoint(null);
         }
         ChestRefill.PLAYER_SELECTION_POINTS.remove(player.uniqueId());
+        ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }
 }

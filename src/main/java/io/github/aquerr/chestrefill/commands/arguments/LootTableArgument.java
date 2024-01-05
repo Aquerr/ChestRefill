@@ -3,7 +3,6 @@ package io.github.aquerr.chestrefill.commands.arguments;
 import com.google.common.base.Strings;
 import io.github.aquerr.chestrefill.util.LootTableHelper;
 import net.kyori.adventure.text.Component;
-import net.minecraft.loot.LootTable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.spongepowered.api.command.CommandCompletion;

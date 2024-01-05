@@ -6,7 +6,6 @@ import io.github.aquerr.chestrefill.entities.ModeExecutionParams;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.entities.SelectionParams;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -16,14 +15,7 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.aquerr.chestrefill.ChestRefill.SOMETHING_WENT_WRONG;
-import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.LinearComponents.linear;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
-
-public class CreateKitCommand extends AbstractCommand implements CommandExecutor
+public class CreateKitCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
 
@@ -73,11 +65,11 @@ public class CreateKitCommand extends AbstractCommand implements CommandExecutor
         final boolean didSucceed = super.getPlugin().getContainerManager().createKit(kit);
         if (didSucceed)
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully created a kit!")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("command.createkit.successfuly-create"));
         }
         else
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("error.command.something-went-wrong"));
         }
         ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }

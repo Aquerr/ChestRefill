@@ -156,7 +156,7 @@ public class JSONStorage implements Storage
             //Set container's should-be-hidden-if-no-items
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hidden-if-no-items").set(refillableContainer.shouldBeHiddenIfNoItems());
 
-            //Set container's hidding block
+            //Set container's hiding block
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "hiding-block").set(String.class, RegistryTypes.BLOCK_TYPE.get().valueKey(refillableContainer.getHidingBlock()).asString());
 
             //Set required permission

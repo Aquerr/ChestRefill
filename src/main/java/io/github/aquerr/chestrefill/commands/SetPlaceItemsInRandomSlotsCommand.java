@@ -15,12 +15,6 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.LinearComponents.linear;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
-
 public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
@@ -68,11 +62,11 @@ public class SetPlaceItemsInRandomSlotsCommand extends AbstractCommand
         final boolean didSucceed = super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainerAtLocation);
         if(didSucceed)
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully updated a refilling container!")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("command.successful-refillable-container-update"));
         }
         else
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, RED, text("Something went wrong...")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("error.command.something-went-wrong"));
         }
         ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }

@@ -12,12 +12,6 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.Collections;
 
-import static io.github.aquerr.chestrefill.ChestRefill.SOMETHING_WENT_WRONG;
-import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.LinearComponents.linear;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-
 public class RemoveCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
@@ -57,11 +51,11 @@ public class RemoveCommand extends AbstractCommand
         final boolean didSucceed = super.getPlugin().getContainerManager().removeRefillableContainer(params.getRefillableContainerAtLocation().getContainerLocation());
         if(didSucceed)
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully removed a refilling container!")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("command.remove.successful-remove"));
         }
         else
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, GREEN, SOMETHING_WENT_WRONG));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("error.command.something-went-wrong"));
         }
         ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }

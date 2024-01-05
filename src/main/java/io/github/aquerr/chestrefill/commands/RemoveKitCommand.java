@@ -39,7 +39,7 @@ public class RemoveKitCommand extends AbstractCommand
         }
         else
         {
-            throw messageSource.resolveExceptionWithMessage("command.removekit.failure");
+            throw messageSource.resolveExceptionWithMessage("error.command.something-went-wrong");
         }
 
         return CommandResult.success();

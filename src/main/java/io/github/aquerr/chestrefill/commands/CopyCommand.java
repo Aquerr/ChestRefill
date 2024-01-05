@@ -5,9 +5,7 @@ import io.github.aquerr.chestrefill.entities.ModeExecutionParams;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.entities.SelectionParams;
-import io.github.aquerr.chestrefill.managers.ContainerManager;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
-import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
@@ -17,23 +15,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.aquerr.chestrefill.ChestRefill.SOMETHING_WENT_WRONG;
-import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.LinearComponents.linear;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
-
-public class CopyCommand extends AbstractCommand implements CommandExecutor
+public class CopyCommand extends AbstractCommand
 {
     private final MessageSource messageSource;
-    private final ContainerManager containerManager;
 
     public CopyCommand(ChestRefill plugin)
     {
         super(plugin);
         this.messageSource = plugin.getMessageSource();
-        this.containerManager = plugin.getContainerManager();
     }
 
     @Override
@@ -70,7 +59,7 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
         final SelectionParams selectionParams = new SelectionParams(SelectionMode.AFTER_COPY, this::doCopy, extraData);
         ChestRefill.SELECTION_MODE.put(player.uniqueId(), selectionParams);
 
-        player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Now select a new container which should behave in the same way!")));
+        player.sendMessage(messageSource.resolveMessageWithPrefix("command.copy.now-select-new-container"));
     }
 
     private void doCopy(ModeExecutionParams params)
@@ -82,7 +71,7 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
 
         if(!copiedContainer.getContainerBlockType().equals(clickedContainer.getContainerBlockType()))
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, RED, text("Containers must be of the same type!")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("command.copy.error.same-type-required"));
         }
 
         copiedContainer.setContainerLocation(clickedContainer.getContainerLocation());
@@ -97,11 +86,11 @@ public class CopyCommand extends AbstractCommand implements CommandExecutor
 
         if (didSucceed)
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, GREEN, text("Successfully copied a refilling container!")));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("command.copy.successful-copy"));
         }
         else
         {
-            player.sendMessage(linear(PLUGIN_PREFIX, RED, SOMETHING_WENT_WRONG));
+            player.sendMessage(messageSource.resolveMessageWithPrefix("error.command.something-went-wrong"));
         }
         ChestRefill.SELECTION_MODE.remove(player.uniqueId());
     }

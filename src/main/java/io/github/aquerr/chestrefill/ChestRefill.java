@@ -19,6 +19,7 @@ import io.github.aquerr.chestrefill.commands.RemoveKitCommand;
 import io.github.aquerr.chestrefill.commands.SearchAndCreateCommand;
 import io.github.aquerr.chestrefill.commands.SetContainerNameCommand;
 import io.github.aquerr.chestrefill.commands.SetHiddenIfNoItemsCommand;
+import io.github.aquerr.chestrefill.commands.SetHidingBlockCommand;
 import io.github.aquerr.chestrefill.commands.SetOpenMessageCommand;
 import io.github.aquerr.chestrefill.commands.SetPlaceItemsInRandomSlotsCommand;
 import io.github.aquerr.chestrefill.commands.TimeCommand;
@@ -42,7 +43,6 @@ import io.github.aquerr.chestrefill.util.LootTableHelper;
 import io.github.aquerr.chestrefill.util.resource.Resource;
 import io.github.aquerr.chestrefill.util.resource.ResourceUtils;
 import io.github.aquerr.chestrefill.version.VersionChecker;
-import net.kyori.adventure.text.TextComponent;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -69,13 +69,10 @@ import java.util.concurrent.CompletableFuture;
 import static io.github.aquerr.chestrefill.PluginInfo.PLUGIN_PREFIX_PLAIN;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static net.kyori.adventure.text.Component.text;
 
 @Plugin(PluginInfo.ID)
 public class ChestRefill
 {
-    public static final TextComponent SOMETHING_WENT_WRONG = text("Something went wrong...");
-
     public static final Map<List<String>, Command.Parameterized> SUBCOMMANDS = new HashMap<>();
     public static final Map<UUID, SelectionParams> SELECTION_MODE = new HashMap<>();
     public static final Map<UUID, SelectionPoints> PLAYER_SELECTION_POINTS = new HashMap<>();
@@ -256,6 +253,7 @@ public class ChestRefill
         registerCommand(singletonList("wand"), "command.wand.desc", PluginPermissions.WAND_COMMAND, new WandCommand(this));
         registerCommand(singletonList("set_place_items_in_random_slots"), "command.setplaceitemsinrandomslots.desc", PluginPermissions.SET_PLACE_ITEMS_IN_RANDOM_SLOTS, new SetPlaceItemsInRandomSlotsCommand(this), Parameter.bool().key("value").build());
         registerCommand(singletonList("set_hidden_if_no_items"), "command.sethiddenifnoitems.desc", PluginPermissions.SET_HIDDEN_IF_NO_ITEMS, new SetHiddenIfNoItemsCommand(this), Parameter.bool().key("value").build());
+        registerCommand(singletonList("set_hiding_block"), "command.sethidingblock.desc", PluginPermissions.SET_HIDING_BLOCK_COMMAND, new SetHidingBlockCommand(this), Parameter.blockState().key("hiding_block").build());
 
         //Build all commands
         Command.Parameterized commandChestRefill = Command.builder()
