@@ -44,6 +44,7 @@ import io.github.aquerr.chestrefill.util.resource.Resource;
 import io.github.aquerr.chestrefill.util.resource.ResourceUtils;
 import io.github.aquerr.chestrefill.version.VersionChecker;
 import org.apache.logging.log4j.Logger;
+import org.bstats.sponge.Metrics;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.Command;
@@ -88,17 +89,23 @@ public class ChestRefill
     private final PluginContainer pluginContainer;
     private final Logger logger;
 
+    // Metrics
+    private final Metrics metrics;
+
     private MessageSource messageSource;
 
     private boolean isDisabled = false;
 
     @Inject
-    public ChestRefill(final PluginContainer pluginContainer, @ConfigDir(sharedRoot = false) final Path configDir)
+    public ChestRefill(final PluginContainer pluginContainer,
+                       @ConfigDir(sharedRoot = false) final Path configDir,
+                       Metrics.Factory factory)
     {
         chestRefill = this;
         this.pluginContainer = pluginContainer;
         this.logger = pluginContainer.logger();
         this.configDir = configDir;
+        this.metrics = factory.make(6827);
     }
 
     public static ChestRefill getInstance()

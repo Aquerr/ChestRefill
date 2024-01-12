@@ -28,6 +28,7 @@ plugins {
     `maven-publish`
     id("org.spongepowered.gradle.plugin") version "2.1.1"
     id("org.spongepowered.gradle.ore") version "2.1.1" // for Ore publishing
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "io.github.aquerr"
@@ -60,11 +61,12 @@ tasks.withType(AbstractArchiveTask::class).configureEach {
 dependencies {
     "minecraft"("net.minecraftforge:forge:${forgeVersion}")
     api("org.spongepowered:spongeapi:${spongeApiVersion}")
+    shadow("org.bstats:bstats-sponge:3.0.2")
 }
 
 tasks {
     jar {
-        finalizedBy("reobfJar")
+        finalizedBy("shadowJar")
 
         if(System.getenv("JENKINS_HOME") != null) {
             project.version = project.version.toString() + "_" + System.getenv("BUILD_NUMBER")
@@ -72,6 +74,16 @@ tasks {
         } else {
             project.version = project.version.toString() + "-SNAPSHOT"
         }
+    }
+
+    shadowJar {
+        finalizedBy("reobfJar")
+
+        archiveClassifier.set("")
+
+        relocate("org.bstats", "io.github.aquerr.chestrefill.lib.bstats")
+
+        configurations = listOf(project.configurations.shadow.get())
     }
 }
 
