@@ -6,6 +6,7 @@ import io.github.aquerr.chestrefill.entities.ItemProvider;
 import io.github.aquerr.chestrefill.entities.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
+import io.github.aquerr.chestrefill.exception.CouldNotRefillContainerException;
 import io.github.aquerr.chestrefill.scheduling.ScanForEmptyContainersTask;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
 import io.github.aquerr.chestrefill.util.LootTableHelper;
@@ -49,7 +50,7 @@ public class ContainerManager
         }
         storageHelper = new StorageHelper(configDir);
         this.lootTableHelper = lootTableHelper;
-        this.containerRefiller = new ContainerRefiller(plugin, this, lootTableHelper);
+        this.containerRefiller = new ContainerRefiller(this, lootTableHelper);
     }
 
     public boolean addRefillableContainer(RefillableContainer refillableContainer)
@@ -212,19 +213,24 @@ public class ContainerManager
 
         try
         {
-            this.containerRefiller.refillContainer(refillableContainer);
+            this.containerRefiller.refill(refillableContainer);
             return true;
         }
         catch (Exception exception)
         {
-            exception.printStackTrace();
-            this.plugin.getServer().sendMessage(linear(RED, text("Couldn't refill : " + refillableContainer.getName())));
-            this.plugin.getServer().sendMessage(linear(RED, text("Container block type : " + refillableContainer.getContainerBlockType())));
-            this.plugin.getServer().sendMessage(linear(RED, text("Container block position : " + refillableContainer.getContainerLocation().getBlockPosition() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString())));
-            this.plugin.getServer().sendMessage(linear(RED, text("Container items : " + refillableContainer.getItems())));
-            this.plugin.getServer().sendMessage(linear(RED, text("Suggestion: Remove this container from the containers.json file and restart the server.")));
+            printRefillErrorMessage(refillableContainer, exception);
             return false;
         }
+    }
+
+    private void printRefillErrorMessage(RefillableContainer refillableContainer, Exception exception)
+    {
+        this.plugin.getServer().sendMessage(linear(RED, text("Couldn't refill : " + refillableContainer.getName())));
+        this.plugin.getServer().sendMessage(linear(RED, text("Reason: " + exception.getMessage())));
+        this.plugin.getServer().sendMessage(linear(RED, text("Container block type : " + refillableContainer.getContainerBlockType())));
+        this.plugin.getServer().sendMessage(linear(RED, text("Container block position : " + refillableContainer.getContainerLocation().getBlockPosition() + "|" + refillableContainer.getContainerLocation().getWorldUUID().toString())));
+        this.plugin.getServer().sendMessage(linear(RED, text("Container items : " + refillableContainer.getItems())));
+        this.plugin.getServer().sendMessage(linear(RED, text("Suggestion: Remove this container from the containers.json file and restart the server.")));
     }
 
     public Runnable runRefillContainer(ContainerLocation containerLocation)

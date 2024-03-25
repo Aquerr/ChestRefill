@@ -1,9 +1,9 @@
 package io.github.aquerr.chestrefill.managers;
 
-import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
+import io.github.aquerr.chestrefill.exception.CouldNotRefillContainerException;
 import io.github.aquerr.chestrefill.util.LootTableHelper;
 import io.github.aquerr.chestrefill.util.ModSupport;
 import org.spongepowered.api.block.entity.BlockEntity;
@@ -20,26 +20,24 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static io.github.aquerr.chestrefill.util.WorldUtils.getWorldByUUID;
 
-public class ContainerRefiller
+class ContainerRefiller
 {
-    private final ChestRefill plugin;
     private final ContainerManager containerManager;
     private final LootTableHelper lootTableHelper;
 
-    public ContainerRefiller(ChestRefill plugin, ContainerManager containerManager, LootTableHelper lootTableHelper)
+    public ContainerRefiller(ContainerManager containerManager, LootTableHelper lootTableHelper)
     {
-        this.plugin = plugin;
         this.containerManager = containerManager;
         this.lootTableHelper = lootTableHelper;
     }
 
-    public void refillContainer(RefillableContainer refillableContainer)
+    public void refill(RefillableContainer refillableContainer) throws CouldNotRefillContainerException
     {
-        final ServerWorld world =  getWorldByUUID(refillableContainer.getContainerLocation().getWorldUUID()).orElse(null);
+        final ServerWorld world = getWorldByUUID(refillableContainer.getContainerLocation().getWorldUUID()).orElse(null);
         if (world == null)
         {
-            this.plugin.getLogger().error(String.format("World with UUID = '%s' does not exist!", refillableContainer.getContainerLocation().getWorldUUID().toString()));
-            return;
+            String worldUUID = refillableContainer.getContainerLocation().getWorldUUID().toString();
+            throw new CouldNotRefillContainerException(String.format("World with UUID = '%s' does not exist!", worldUUID));
         }
 
         final ServerLocation location = ServerLocation.of(world, refillableContainer.getContainerLocation().getBlockPosition());
@@ -49,7 +47,7 @@ public class ContainerRefiller
 
         Inventory containerInventory = getContainerInventory(location);
         if (containerInventory == null)
-            throw new IllegalStateException("Container does not have inventory!");
+            throw new CouldNotRefillContainerException("Container does not have inventory!");
 
 
         if (refillableContainer.shouldReplaceExistingItems())
@@ -57,9 +55,16 @@ public class ContainerRefiller
             containerInventory.clear();
         }
 
-        final List<RefillableItem> itemsToRefill = getItemsToRefill(refillableContainer, world);
-        insertItemsInContainer(refillableContainer, containerInventory, itemsToRefill);
-        hideContainer(refillableContainer, containerInventory, location);
+        try
+        {
+            final List<RefillableItem> itemsToRefill = getItemsToRefill(refillableContainer, world);
+            insertItemsInContainer(refillableContainer, containerInventory, itemsToRefill);
+            hideContainer(refillableContainer, containerInventory, location);
+        }
+        catch (Exception exception)
+        {
+            throw new CouldNotRefillContainerException(exception);
+        }
     }
 
     private void insertItemsInContainer(RefillableContainer refillableContainer, Inventory containerInventory, List<RefillableItem> itemsToRefill)
