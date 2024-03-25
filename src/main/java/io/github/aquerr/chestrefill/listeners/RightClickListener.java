@@ -8,6 +8,7 @@ import io.github.aquerr.chestrefill.entities.SelectionMode;
 import io.github.aquerr.chestrefill.entities.SelectionParams;
 import io.github.aquerr.chestrefill.util.ModSupport;
 import joptsimple.internal.Strings;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.spongepowered.api.block.entity.BlockEntity;
@@ -125,14 +126,15 @@ public class RightClickListener extends AbstractListener
         if (!refillableContainer.hasBeenOpened())
         {
             if (!Strings.isNullOrEmpty(refillableContainer.getFirstOpenMessage()))
-                player.sendMessage(LegacyComponentSerializer.legacySection().deserialize(refillableContainer.getFirstOpenMessage()));
+                player.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getFirstOpenMessage()));
 
             refillableContainer.setHasBeenOpened(true);
             super.getPlugin().getContainerManager().updateRefillableContainer(refillableContainer);
             return;
         }
 
-        if (!Strings.isNullOrEmpty(refillableContainer.getOpenMessage()) || LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getOpenMessage()).content().equals(""))
+        if (!Strings.isNullOrEmpty(refillableContainer.getOpenMessage())
+                && !LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getOpenMessage()).equals(Component.empty()))
         {
             player.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(refillableContainer.getOpenMessage()));
         }
