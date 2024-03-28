@@ -30,6 +30,7 @@ public final class PluginPermissions
 
     public static final String WAND_COMMAND = "chestrefill.command.wand";
     public static final String DESELECT_COMMAND = "chestrefill.command.deselect";
+    public static final String SET_INDESTRUCTIBLE = "chestrefill.command.setindestructible";
 
     public static final String VERSION_NOTIFY = "chestrefill.version.notify";
 

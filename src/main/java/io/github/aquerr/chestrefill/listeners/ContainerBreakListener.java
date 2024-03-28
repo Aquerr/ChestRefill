@@ -49,10 +49,17 @@ public class ContainerBreakListener extends AbstractListener
                 {
                     if (refillableContainer.getContainerLocation().equals(containerLocation))
                     {
-                        //TODO: If player destroyed the container, inform him/her about it.
-                        destroyedContainers.add(refillableContainer);
-                        super.getPlugin().getContainerManager().removeRefillableContainer(containerLocation);
-                        break;
+                        if (refillableContainer.isIndestructible())
+                        {
+                            event.setCancelled(true);
+                        }
+                        else
+                        {
+                            //TODO: If player destroyed the container, inform him/her about it.
+                            destroyedContainers.add(refillableContainer);
+                            super.getPlugin().getContainerManager().removeRefillableContainer(containerLocation);
+                            break;
+                        }
                     }
                 }
             }

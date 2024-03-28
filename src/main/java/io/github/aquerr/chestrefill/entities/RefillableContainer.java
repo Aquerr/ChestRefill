@@ -37,6 +37,7 @@ public class RefillableContainer
     private boolean hasBeenOpened;
 
     private boolean placeItemsInRandomSlots;
+    private boolean indestructible;
 
     public RefillableContainer(RefillableContainer.Builder builder)
     {
@@ -55,6 +56,7 @@ public class RefillableContainer
         this.firstOpenMessage = builder.firstOpenMessage;
         this.hasBeenOpened = builder.hasBeenOpened;
         this.placeItemsInRandomSlots = builder.placeItemsInRandomSlots;
+        this.indestructible = builder.indestructible;
     }
 
     public static RefillableContainer fromInventory(final Inventory inventory, final BlockType blockType, final Vector3i blockPosition, final UUID worldUUID)
@@ -231,6 +233,14 @@ public class RefillableContainer
         this.itemProvider = itemProvider;
     }
 
+    public boolean isIndestructible() {
+        return indestructible;
+    }
+
+    public void setIndestructible(boolean indestructible) {
+        this.indestructible = indestructible;
+    }
+
     public boolean hasPermissionToOpen(ServerPlayer player)
     {
         if (requiredPermission == null || requiredPermission.equals(""))
@@ -257,6 +267,7 @@ public class RefillableContainer
                 .hasBeenOpened(hasBeenOpened)
                 .firstOpenMessage(firstOpenMessage)
                 .placeItemsInRandomSlots(placeItemsInRandomSlots)
+                .indestructible(indestructible)
                 .build();
     }
 
@@ -322,6 +333,7 @@ public class RefillableContainer
         private boolean hasBeenOpened;
 
         private boolean placeItemsInRandomSlots;
+        private boolean indestructible;
 
         private Builder()
         {
@@ -342,6 +354,7 @@ public class RefillableContainer
             this.hasBeenOpened = false;
 
             this.placeItemsInRandomSlots = false;
+            this.indestructible = false;
         }
 
         public Builder name(final String name)
@@ -431,6 +444,11 @@ public class RefillableContainer
         public Builder itemProvider(ItemProvider itemProvider)
         {
             this.itemProvider = itemProvider;
+            return this;
+        }
+
+        public Builder indestructible(boolean indestructible) {
+            this.indestructible = indestructible;
             return this;
         }
 
