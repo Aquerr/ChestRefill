@@ -25,6 +25,7 @@ import io.github.aquerr.chestrefill.commands.SetPlaceItemsInRandomSlotsCommand;
 import io.github.aquerr.chestrefill.commands.TimeCommand;
 import io.github.aquerr.chestrefill.commands.UpdateCommand;
 import io.github.aquerr.chestrefill.commands.WandCommand;
+import io.github.aquerr.chestrefill.commands.SetIndestructibilityCommand;
 import io.github.aquerr.chestrefill.commands.arguments.ChestRefillCommandParameters;
 import io.github.aquerr.chestrefill.config.Configuration;
 import io.github.aquerr.chestrefill.config.ConfigurationImpl;
@@ -261,6 +262,7 @@ public class ChestRefill
         registerCommand(singletonList("set_place_items_in_random_slots"), "command.setplaceitemsinrandomslots.desc", PluginPermissions.SET_PLACE_ITEMS_IN_RANDOM_SLOTS, new SetPlaceItemsInRandomSlotsCommand(this), Parameter.bool().key("value").build());
         registerCommand(singletonList("set_hidden_if_no_items"), "command.sethiddenifnoitems.desc", PluginPermissions.SET_HIDDEN_IF_NO_ITEMS, new SetHiddenIfNoItemsCommand(this), Parameter.bool().key("value").build());
         registerCommand(singletonList("set_hiding_block"), "command.sethidingblock.desc", PluginPermissions.SET_HIDING_BLOCK_COMMAND, new SetHidingBlockCommand(this), Parameter.blockState().key("hiding_block").build());
+        registerCommand(singletonList("set_indestructible"), "command.setindestructibility.desc", PluginPermissions.SET_INDESTRUCTIBLE, new SetIndestructibilityCommand(this), Parameter.bool().key("value").build());
 
         //Build all commands
         Command.Parameterized commandChestRefill = Command.builder()

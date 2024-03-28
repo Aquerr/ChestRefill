@@ -171,6 +171,8 @@ public class JSONStorage implements Storage
 
             containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").set(refillableContainer.shouldPlaceItemsInRandomSlots());
 
+            containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "indestructible").set(refillableContainer.isIndestructible());
+
             containersLoader.save(containersNode);
 
             return true;
@@ -439,6 +441,7 @@ public class JSONStorage implements Storage
             final boolean hasBeenOpened = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "has-been-opened").getBoolean(false);
             final String firstOpenMessage = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "first-open-message").getString("");
             final boolean shouldPlaceItemsInRandomSlots = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "place-items-in-random-slots").getBoolean(false);
+            final boolean indestructible = containersNode.node(NODE_CHEST_REFILL, NODE_REFILLABLE_CONTAINERS, blockPositionAndWorldUUID, "indestructible").getBoolean(false);
 
             if(chestItems == null)
             {
@@ -461,6 +464,7 @@ public class JSONStorage implements Storage
                     .hasBeenOpened(hasBeenOpened)
                     .firstOpenMessage(firstOpenMessage)
                     .placeItemsInRandomSlots(shouldPlaceItemsInRandomSlots)
+                    .indestructible(indestructible)
                     .build();
         }
         catch (Exception e)

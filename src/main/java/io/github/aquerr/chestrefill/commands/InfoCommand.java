@@ -80,6 +80,7 @@ public class InfoCommand extends AbstractCommand
                 .append(linear(messageSource.resolveComponentWithMessage("command.list.replace-existing-items", refillableContainer.shouldReplaceExistingItems()), newline()))
                 .append(linear(messageSource.resolveComponentWithMessage("command.list.hidden-if-no-items", refillableContainer.shouldBeHiddenIfNoItems()), newline()))
                 .append(linear(messageSource.resolveComponentWithMessage("command.list.hiding-block", refillableContainer.getHidingBlock()), newline()))
+                .append(linear(messageSource.resolveComponentWithMessage("command.list.indestructible", refillableContainer.isIndestructible()), newline()))
                 .append(linear(messageSource.resolveComponentWithMessage("command.list.permission", refillableContainer.getRequiredPermission())))
                 .append(linear(newline(), messageSource.resolveComponentWithMessage("command.list.container-cooldown", refillableContainer.getRestoreTime())));
 
