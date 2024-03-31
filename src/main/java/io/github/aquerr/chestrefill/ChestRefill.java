@@ -239,7 +239,7 @@ public class ChestRefill
         registerCommand(singletonList("help"), "command.help.desc", PluginPermissions.HELP_COMMAND, new HelpCommand(this), Parameter.integerNumber().key("page").optional().build());
         registerCommand(asList("c", "create"), "command.create.desc", PluginPermissions.CREATE_COMMAND, new CreateCommand(this), Parameter.string().key("name").optional().build());
         registerCommand(singletonList("copy"), "command.copy.desc", PluginPermissions.COPY_COMMAND, new CopyCommand(this));
-        registerCommand(asList("r", "remove"), "command.remove.desc", PluginPermissions.REMOVE_COMMAND, new RemoveCommand(this));
+        registerCommand(asList("r", "remove"), "command.remove.desc", PluginPermissions.REMOVE_COMMAND, new RemoveCommand(this), Parameter.string().key("name").optional().build());
         registerCommand(singletonList("remove_all"), "command.removeall.desc", PluginPermissions.REMOVEALL_COMMAND, new RemoveAllCommand(this));
         registerCommand(asList("u", "update"), "command.removeall.desc", PluginPermissions.UPDATE_COMMAND, new UpdateCommand(this));
         registerCommand(singletonList("info"), "command.info.desc", PluginPermissions.INFO_COMMAND, new InfoCommand(this));
