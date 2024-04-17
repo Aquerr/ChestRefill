@@ -1,4 +1,4 @@
-package io.github.aquerr.chestrefill.entities;
+package io.github.aquerr.chestrefill.entities.itemprovider;
 
 public enum ItemProviderType
 {

@@ -1,5 +1,7 @@
 package io.github.aquerr.chestrefill.entities;
 
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProvider;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProviderType;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;

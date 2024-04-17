@@ -2,11 +2,10 @@ package io.github.aquerr.chestrefill.managers;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
-import io.github.aquerr.chestrefill.entities.ItemProvider;
-import io.github.aquerr.chestrefill.entities.ItemProviderType;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProvider;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
-import io.github.aquerr.chestrefill.exception.CouldNotRefillContainerException;
 import io.github.aquerr.chestrefill.scheduling.ScanForEmptyContainersTask;
 import io.github.aquerr.chestrefill.storage.StorageHelper;
 import io.github.aquerr.chestrefill.util.LootTableHelper;
@@ -297,7 +296,7 @@ public class ContainerManager
         {
             final RefillableContainer refillableContainer = getRefillableContainer(containerLocation);
             if (refillableContainer != null)
-                refillableContainer.setItemProvider(new ItemProvider(ItemProviderType.LOOT_TABLE, lootTableName));
+                refillableContainer.setItemProvider(ItemProvider.lootTable(lootTableName));
             return this.storageHelper.addOrUpdateContainer(refillableContainer);
         }
         catch (Exception exception)

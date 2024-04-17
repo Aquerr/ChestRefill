@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.storage.serializers;
 
-import io.github.aquerr.chestrefill.entities.ItemProvider;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProvider;
 import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.leangen.geantyref.TypeToken;

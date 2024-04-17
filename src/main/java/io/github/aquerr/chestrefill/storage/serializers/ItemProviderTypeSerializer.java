@@ -1,7 +1,7 @@
 package io.github.aquerr.chestrefill.storage.serializers;
 
-import io.github.aquerr.chestrefill.entities.ItemProvider;
-import io.github.aquerr.chestrefill.entities.ItemProviderType;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProvider;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProviderType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;

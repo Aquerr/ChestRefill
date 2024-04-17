@@ -2,8 +2,8 @@ package io.github.aquerr.chestrefill.caching;
 
 import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.Kit;
-import io.github.aquerr.chestrefill.entities.ItemProvider;
-import io.github.aquerr.chestrefill.entities.ItemProviderType;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProvider;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.util.HashMap;

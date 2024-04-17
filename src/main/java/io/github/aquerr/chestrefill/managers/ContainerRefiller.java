@@ -1,6 +1,6 @@
 package io.github.aquerr.chestrefill.managers;
 
-import io.github.aquerr.chestrefill.entities.ItemProviderType;
+import io.github.aquerr.chestrefill.entities.itemprovider.ItemProviderType;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
 import io.github.aquerr.chestrefill.exception.CouldNotRefillContainerException;
@@ -84,7 +84,8 @@ class ContainerRefiller
 
     private void showContainer(RefillableContainer refillableContainer, ServerLocation location)
     {
-        if (!location.blockEntity().isPresent() && refillableContainer.shouldBeHiddenIfNoItems())
+        BlockEntity blockEntityAtLocation = location.blockEntity().orElse(null);
+        if (blockEntityAtLocation == null || !location.blockType().equals(refillableContainer.getContainerBlockType()))
         {
             location.setBlockType(refillableContainer.getContainerBlockType());
         }
