@@ -1,7 +1,7 @@
 package io.github.aquerr.chestrefill.commands;
 
 import io.github.aquerr.chestrefill.ChestRefill;
-import io.github.aquerr.chestrefill.entities.ContainerLocation;
+import io.github.aquerr.chestrefill.commands.arguments.ChestRefillCommandParameters;
 import io.github.aquerr.chestrefill.entities.ModeExecutionParams;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionMode;
@@ -10,7 +10,6 @@ import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.parameter.CommandContext;
-import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 
 import java.util.Collections;
@@ -29,11 +28,11 @@ public class RemoveCommand extends AbstractCommand
     @Override
     public CommandResult execute(CommandContext context) throws CommandException
     {
-        final Optional<String> optionalChestNameToRemove = context.one(Parameter.string().key("name").build());
+        final Optional<RefillableContainer> containerToRemoveFound = context.one(ChestRefillCommandParameters.refillableContainer());
         ServerPlayer serverPlayer = requirePlayerSource(context);
-        if (optionalChestNameToRemove.isPresent())
+        if (containerToRemoveFound.isPresent())
         {
-            removeContainerByName(serverPlayer, optionalChestNameToRemove.get());
+            removeContainer(serverPlayer, containerToRemoveFound.get());
         }
         else
         {
@@ -57,21 +56,10 @@ public class RemoveCommand extends AbstractCommand
         }
     }
 
-    private void removeContainerByName(ServerPlayer player, String chestName)
+    private void removeContainer(ServerPlayer player, RefillableContainer container)
     {
-        Optional<ContainerLocation> foundContainerLocationToRemove = super.getPlugin().getContainerManager().getRefillableContainers().stream()
-                .filter(container -> chestName.equals(container.getName()))
-                .map(RefillableContainer::getContainerLocation)
-                .findFirst();
-        if (foundContainerLocationToRemove.isPresent())
-        {
-            boolean didSuccess = super.getPlugin().getContainerManager().removeRefillableContainer(foundContainerLocationToRemove.get());
-            handleDidSuccess(player, didSuccess);
-        }
-        else
-        {
-            player.sendMessage(messageSource.resolveMessageWithPrefix("command.remove-by-name.not-found"));
-        }
+        boolean didSuccess = super.getPlugin().getContainerManager().removeRefillableContainer(container.getContainerLocation());
+        handleDidSuccess(player, didSuccess);
     }
 
     private SelectionParams prepareParams()
