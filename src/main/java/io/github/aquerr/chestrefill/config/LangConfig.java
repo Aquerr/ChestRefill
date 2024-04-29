@@ -4,7 +4,7 @@ import org.spongepowered.configurate.CommentedConfigurationNode;
 
 public class LangConfig extends AbstractConfig
 {
-    private String languageTag = "en_US";
+    private String languageTag = "en";
 
     public LangConfig(CommentedConfigurationNode configNode)
     {
@@ -14,7 +14,7 @@ public class LangConfig extends AbstractConfig
     @Override
     public void reload()
     {
-        this.languageTag = getString("en_US", "language-tag");
+        this.languageTag = getString("en", "language-tag");
     }
 
     public String getLanguageTag()

@@ -23,6 +23,18 @@ Check our [Wiki](https://github.com/Aquerr/ChestRefill/wiki) to get to know how 
 - [Permissions & Commands](https://github.com/Aquerr/ChestRefill/wiki/Permissions)
 - [Discord](https://discord.gg/Zg3rWta)
 
+## Translations
+
+Chest Refill provides translation support. Changing plugin language can be done via config file. 
+The list of available translations can be found [here](https://github.com/Aquerr/ChestRefill/tree/api-8/src/main/resources/assets/chestrefill/lang).
+
+Want to add your own translation? You are more than welcome to do it! 
+
+To test your own translation in-game, you can create a folder `<server_dir>/config/chestrefill/lang` 
+and paste your `messages.properties` file there. It will be picked up by the plugin instead of the lang file inside the jar.
+
+When you are ready with your translation. Open the Pull Request! :)
+
 ## License
 [MIT](https://github.com/Aquerr/ChestRefill/blob/master/LICENSE)
 
