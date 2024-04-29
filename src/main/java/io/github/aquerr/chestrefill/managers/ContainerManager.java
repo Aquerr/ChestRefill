@@ -338,4 +338,10 @@ public class ContainerManager
     {
         return this.lootTableHelper;
     }
+
+    public void stopScheduledTasks()
+    {
+        this.plugin.getContainerScheduler().cancelAll();
+        this.storageHelper.stopStorageThread();
+    }
 }

@@ -6,7 +6,11 @@ import io.github.aquerr.chestrefill.entities.Kit;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,11 +20,14 @@ public class StorageHelper
     private final Queue<RefillableContainer> containersToSave;
     private final Storage containerStorage;
 
+    private final ExecutorService executorService;
+
     public StorageHelper(Path configDir)
     {
         containersToSave = new LinkedList<>();
-        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        this.executorService = Executors.newSingleThreadExecutor();
         executorService.execute(this::startContainerSavingThread);
+        Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
         containerStorage = new JSONStorage(configDir);
     }
 
@@ -97,9 +104,12 @@ public class StorageHelper
     {
         while(true)
         {
+            if (this.executorService.isShutdown())
+                break;
+
             synchronized(containersToSave)
             {
-                if(containersToSave.size() > 0)
+                if(!containersToSave.isEmpty())
                 {
                     this.containerStorage.addOrUpdateContainer(this.containersToSave.poll());
                 }
@@ -107,14 +117,19 @@ public class StorageHelper
                 {
                     try
                     {
-                        this.containersToSave.wait();
+                        this.containersToSave.wait(5000);
                     }
                     catch(InterruptedException exception)
                     {
-                        exception.printStackTrace();
+                        // ignored
                     }
                 }
             }
         }
+    }
+
+    public void stopStorageThread()
+    {
+        this.executorService.shutdownNow();
     }
 }

@@ -6,8 +6,10 @@ import org.spongepowered.api.scheduler.Scheduler;
 import org.spongepowered.api.scheduler.Task;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class ContainerScheduler
@@ -102,5 +104,11 @@ public class ContainerScheduler
         if(this.tasks.containsKey(taskName))
             return Optional.of(this.tasks.get(taskName));
         return Optional.empty();
+    }
+
+    public void cancelAll()
+    {
+        Set<String> taskNames = new HashSet<>(this.tasks.keySet());
+        taskNames.forEach(this::cancelTask);
     }
 }
