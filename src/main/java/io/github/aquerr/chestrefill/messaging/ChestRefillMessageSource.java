@@ -49,6 +49,8 @@ public class ChestRefillMessageSource implements MessageSource
         {
             if (Files.exists(langDir))
                 resourceBundle = loadLangFile(langDir, langTag);
+            else
+                resourceBundle = loadResourceLangFile(langTag);
         }
         catch (Exception e)
         {
