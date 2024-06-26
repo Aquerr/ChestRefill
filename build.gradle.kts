@@ -9,7 +9,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath(group = "net.minecraftforge.gradle", name = "ForgeGradle", version = "5.1.+") {
+        classpath(group = "net.minecraftforge.gradle", name = "ForgeGradle", version = "6.0.+") {
             isChanging = true
         }
     }
@@ -24,11 +24,10 @@ val spongeApiVersion = findProperty("sponge-api.version") as String
 
 plugins {
     idea
-    java
+    `java-library`
     `maven-publish`
-    id("org.spongepowered.gradle.plugin") version "2.1.1"
-    id("org.spongepowered.gradle.ore") version "2.1.1" // for Ore publishing
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.spongepowered.gradle.plugin") version "2.2.0"
+    id("io.github.goooler.shadow") version "8.1.7"
 }
 
 group = "io.github.aquerr"
@@ -42,8 +41,7 @@ repositories {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain.languageVersion.set(JavaLanguageVersion.of(JavaVersion.VERSION_21.majorVersion))
 }
 
 tasks.withType(JavaCompile::class).configureEach {
@@ -86,6 +84,8 @@ tasks {
         configurations = listOf(project.configurations.shadow.get())
     }
 }
+
+tasks.getByName("runServer").dependsOn(tasks.getByName("shadowJar"))
 
 configure<UserDevExtension> {
     mappings("official", minecraftVersion)
@@ -134,12 +134,12 @@ tasks.register("printEnvironment") {
     }
 }
 
-tasks.create("publishBuildOnDiscord") {
+tasks.register("publishBuildOnDiscord") {
     dependsOn(getGitCommitDesc)
     group = "Publishing"
     description = "Task for publishing the jar file to discord's jenkins channel"
     doLast {
-        val jarFiles: List<String> = groovy.ant.FileNameFinder().getFileNames(project.buildDir.path, "**/*.jar")
+        val jarFiles: List<String> = groovy.ant.FileNameFinder().getFileNames(project.layout.buildDirectory.get().asFile.path, "**/*.jar")
 
         if(jarFiles.size > 0) {
             println("Found jar files: " + jarFiles)
@@ -154,17 +154,6 @@ tasks.create("publishBuildOnDiscord") {
             }
         }
     }
-}
-
-oreDeployment {
-    // The default publication here is automatically configured by SpongeGradle
-    // using the first-created plugin's ID as the project ID
-    // A version body is optional, to provide additional information about the release
-    /*
-    defaultPublication {
-        // Read the version body from the file whose path is provided to the changelog gradle property
-        versionBody.set(providers.gradleProperty("changelog").map { file(it).readText(Charsets.UTF_8) }.orElse(""))
-    }*/
 }
 
 publishing {

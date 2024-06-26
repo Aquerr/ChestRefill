@@ -17,7 +17,7 @@ public class PlayerDisconnectListener extends AbstractListener
     @Listener(order = Order.POST)
     public void onPlayerDisconnect(final ServerSideConnectionEvent.Disconnect event)
     {
-        final ServerPlayer player = event.player();
+        final ServerPlayer player = event.cause().first(ServerPlayer.class).get();
         final SelectionPoints selectionPoints = ChestRefill.PLAYER_SELECTION_POINTS.get(player.uniqueId());
         if (selectionPoints != null)
         {

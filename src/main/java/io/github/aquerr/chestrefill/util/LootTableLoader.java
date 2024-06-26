@@ -1,11 +1,12 @@
 package io.github.aquerr.chestrefill.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import net.minecraft.loot.LootSerializers;
-import net.minecraft.loot.LootTable;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.ForgeHooks;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class LootTableLoader
         {
             throw new IllegalStateException(e);
         }
-        this.gson = LootSerializers.createLootTableSerializer().create();
+        this.gson = new GsonBuilder().create();
     }
 
     public LootTable loadLootTable(String path)
@@ -41,7 +42,15 @@ public class LootTableLoader
         try
         {
             JsonElement lootTableJson = gson.fromJson(new FileReader(lootTableFilePath.toAbsolutePath().toString()), JsonElement.class);
-            return ForgeHooks.loadLootTable(gson, new ResourceLocation("chestrefill", path), lootTableJson, true, null);
+            DataResult<Holder<LootTable>> dataresult = LootTable.CODEC.parse(JsonOps.INSTANCE, lootTableJson);
+            var ret = dataresult.result();
+            if (ret.orElse(null) instanceof LootTable table) {
+                return table;
+            } else {
+                return null;
+            }
+
+//            return ForgeHooks.loadLootTable(gson, new ResourceLocation("chestrefill", path), lootTableJson, true, null);
         }
         catch (Exception exception)
         {

@@ -2,12 +2,15 @@ package io.github.aquerr.chestrefill.util;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.RefillableItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameterSet;
-import net.minecraft.loot.LootTable;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.spongepowered.api.world.server.ServerWorld;
 
 import java.util.ArrayList;
@@ -30,23 +33,23 @@ public class LootTableHelper
     public List<RefillableItem> getItemsFromLootTable(String lootTableName, ServerWorld serverWorld)
     {
         ResourceLocation resourceLocation = new ResourceLocation(lootTableName);
-        if (!LOOT_TABLE_NAME_PATTERN.matcher(lootTableName).matches() || !(serverWorld instanceof net.minecraft.world.server.ServerWorld))
+        if (!LOOT_TABLE_NAME_PATTERN.matcher(lootTableName).matches() || !(serverWorld instanceof ServerLevel))
             return Collections.emptyList();
 
-        LootTable lootTable = ServerLifecycleHooks.getCurrentServer().getLootTables().get(resourceLocation);
+        LootTable lootTable = ServerLifecycleHooks.getCurrentServer().reloadableRegistries().getLootTable(ResourceKey.create(Registries.LOOT_TABLE, resourceLocation));
         if (lootTable != LootTable.EMPTY)
         {
-            return getItemsFromLootTable(lootTable, (net.minecraft.world.server.ServerWorld)serverWorld);
+            return getItemsFromLootTable(lootTable, (ServerLevel)serverWorld);
         }
         else
         {
-            return getItemsFromChestRefillLootTable(resourceLocation, (net.minecraft.world.server.ServerWorld)serverWorld);
+            return getItemsFromChestRefillLootTable(resourceLocation, (ServerLevel)serverWorld);
         }
     }
 
-    private List<RefillableItem> getItemsFromLootTable(LootTable lootTable, net.minecraft.world.server.ServerWorld serverWorld)
+    private List<RefillableItem> getItemsFromLootTable(LootTable lootTable, ServerLevel serverLevel)
     {
-        List<ItemStack> itemStacks = lootTable.getRandomItems(new LootContext.Builder(serverWorld).create(new LootParameterSet.Builder().build()));
+        List<ItemStack> itemStacks = lootTable.getRandomItems(new LootParams.Builder(serverLevel).create(new LootContextParamSet.Builder().build()));
 
         List<RefillableItem> refillableItems = new ArrayList<>();
         int slot = 0;
@@ -58,14 +61,14 @@ public class LootTableHelper
         return refillableItems;
     }
 
-    private List<RefillableItem> getItemsFromChestRefillLootTable(ResourceLocation resourceLocation, net.minecraft.world.server.ServerWorld serverWorld)
+    private List<RefillableItem> getItemsFromChestRefillLootTable(ResourceLocation resourceLocation, ServerLevel serverLevel)
     {
         String path = resourceLocation.getPath();
         LootTable lootTable = lootTableLoader.loadLootTable(path);
         if (lootTable == null)
             return Collections.emptyList();
 
-        return getItemsFromLootTable(lootTable, serverWorld);
+        return getItemsFromLootTable(lootTable, serverLevel);
     }
 
     public Collection<String> getAllChestRefillLootTablesNames()

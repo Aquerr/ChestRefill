@@ -3,8 +3,10 @@ package io.github.aquerr.chestrefill.commands.arguments;
 import com.google.common.base.Strings;
 import io.github.aquerr.chestrefill.util.LootTableHelper;
 import net.kyori.adventure.text.Component;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.spongepowered.api.command.CommandCompletion;
 import org.spongepowered.api.command.exception.ArgumentParseException;
 import org.spongepowered.api.command.parameter.ArgumentReader;
@@ -51,10 +53,14 @@ public final class LootTableArgument
         {
             List<String> lootTablesName = new ArrayList<>();
 
-            lootTablesName.addAll(ServerLifecycleHooks.getCurrentServer().getLootTables().getIds()
-                    .stream()
-                    .map(ResourceLocation::toString)
-                    .collect(Collectors.toList()));
+            Registry<LootTable> registry = ServerLifecycleHooks.getCurrentServer().reloadableRegistries().get().registry(Registries.LOOT_TABLE)
+                            .get();
+//            ServerLifecycleHooks.getCurrentServer().reloadableRegistries().get()
+//                    .registry(LootTable)
+//            lootTablesName.addAll(ServerLifecycleHooks.getCurrentServer().getLootTables().getIds()
+//                    .stream()
+//                    .map(ResourceLocation::toString)
+//                    .collect(Collectors.toList()));
 
             lootTablesName.addAll(lootTableHelper.getAllChestRefillLootTablesNames());
             return lootTablesName;
@@ -88,10 +94,10 @@ public final class LootTableArgument
         {
             List<String> lootTablesName = new ArrayList<>();
 
-            lootTablesName.addAll(ServerLifecycleHooks.getCurrentServer().getLootTables().getIds()
-                    .stream()
-                    .map(ResourceLocation::toString)
-                    .collect(Collectors.toList()));
+//            lootTablesName.addAll(ServerLifecycleHooks.getCurrentServer().reloadableRegistries().getIds()
+//                    .stream()
+//                    .map(ResourceLocation::toString)
+//                    .collect(Collectors.toList()));
 
             lootTablesName.addAll(lootTableHelper.getAllChestRefillLootTablesNames());
             return lootTablesName;
