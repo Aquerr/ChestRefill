@@ -5,6 +5,8 @@ import io.github.aquerr.chestrefill.entities.ContainerLocation;
 import io.github.aquerr.chestrefill.entities.RefillableContainer;
 import io.github.aquerr.chestrefill.entities.SelectionPoints;
 import io.github.aquerr.chestrefill.messaging.MessageSource;
+import net.minecraft.block.Block;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.block.entity.carrier.CarrierBlockEntity;
 import org.spongepowered.api.command.CommandResult;
@@ -161,7 +163,9 @@ public class SearchAndCreateCommand extends AbstractCommand
                     for (int z = startZ; z <= endZ; z++)
                     {
                         world.spawnParticles(ParticleEffect.builder().quantity(10).type(ParticleTypes.END_ROD).option(ParticleOptions.VELOCITY, new Vector3d(0, 0.15, 0)).build(), Vector3d.from(x + 0.5, y, z + 0.5));
-                        final Optional<? extends BlockEntity> optionalBlockEntity = world.blockEntity(x, y, z);
+
+                        final Vector3i position = Vector3i.from(x, y, z);
+                        final Optional<? extends BlockEntity> optionalBlockEntity = world.blockEntities(blockEntity -> blockEntity.blockPosition().equals(position)).stream().findFirst();
                         if (!optionalBlockEntity.isPresent())
                             continue;
                         final BlockEntity blockEntity = optionalBlockEntity.get();

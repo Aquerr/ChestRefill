@@ -41,7 +41,7 @@ public class WandCommand extends AbstractCommand
         final ItemStack chestRefillWand = ItemStack.builder()
                 .itemType(ItemTypes.IRON_AXE)
                 .quantity(1)
-                .add(Keys.DISPLAY_NAME, messageSource.resolveComponentWithMessage("command.wand.wand-name"))
+                .add(Keys.CUSTOM_NAME, messageSource.resolveComponentWithMessage("command.wand.wand-name"))
                 .add(Keys.LORE, wandDescriptionLines)
                 .build();
 

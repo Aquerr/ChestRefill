@@ -2,6 +2,7 @@ package io.github.aquerr.chestrefill.listeners;
 
 import io.github.aquerr.chestrefill.ChestRefill;
 import io.github.aquerr.chestrefill.entities.SelectionPoints;
+import io.github.aquerr.chestrefill.messaging.MessageSource;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HandType;
@@ -21,9 +22,12 @@ import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 
 public class WandUsageListener extends AbstractListener
 {
+    private final MessageSource messageSource;
+
     public WandUsageListener(final ChestRefill plugin)
     {
         super(plugin);
+        this.messageSource = plugin.getMessageSource();
     }
 
     @Listener
@@ -41,9 +45,7 @@ public class WandUsageListener extends AbstractListener
         if(player.itemInHand(HandTypes.MAIN_HAND).isEmpty())
             return;
 
-        final ItemStack itemInHand = player.itemInHand(HandTypes.MAIN_HAND);
-
-        if(!itemInHand.get(Keys.DISPLAY_NAME).isPresent() || !player.itemInHand(HandTypes.MAIN_HAND).get(Keys.DISPLAY_NAME).equals(text("ChestRefill Wand")))
+        if (!isHoldingChestRefillWand(player))
             return;
 
         SelectionPoints selectionPoints = ChestRefill.PLAYER_SELECTION_POINTS.get(player.uniqueId());
@@ -57,7 +59,7 @@ public class WandUsageListener extends AbstractListener
         }
 
         ChestRefill.PLAYER_SELECTION_POINTS.put(player.uniqueId(), selectionPoints);
-        player.sendMessage(linear(GOLD, text("Second point"), BLUE, text(" has been selected at "), GOLD, text(event.block().position().toString())));
+        player.sendMessage(messageSource.resolveComponentWithMessage("wand.selection.second", event.block().position().toString()));
         event.setCancelled(true);
     }
 
@@ -73,12 +75,7 @@ public class WandUsageListener extends AbstractListener
         if(event.block() == BlockSnapshot.empty())
             return;
 
-        if(player.itemInHand(HandTypes.MAIN_HAND).isEmpty())
-            return;
-
-        final ItemStack itemInHand = player.itemInHand(HandTypes.MAIN_HAND);
-
-        if(!itemInHand.get(Keys.DISPLAY_NAME).isPresent() || !player.itemInHand(HandTypes.MAIN_HAND).get(Keys.DISPLAY_NAME).equals(text("ChestRefill Wand")))
+        if (!isHoldingChestRefillWand(player))
             return;
 
         SelectionPoints selectionPoints = ChestRefill.PLAYER_SELECTION_POINTS.get(player.uniqueId());
@@ -92,7 +89,19 @@ public class WandUsageListener extends AbstractListener
         }
 
         ChestRefill.PLAYER_SELECTION_POINTS.put(player.uniqueId(), selectionPoints);
-        player.sendMessage(linear(GOLD, text("First point"), BLUE, text(" has been selected at "), GOLD, text(event.block().position().toString())));
+        player.sendMessage(messageSource.resolveComponentWithMessage("wand.selection.first", event.block().position().toString()));
         event.setCancelled(true);
+    }
+
+    private boolean isHoldingChestRefillWand(Player player)
+    {
+        final ItemStack itemInHand = player.itemInHand(HandTypes.MAIN_HAND);
+        return isChestRefillWand(itemInHand);
+    }
+
+    private boolean isChestRefillWand(ItemStack itemStack)
+    {
+        return itemStack.get(Keys.CUSTOM_NAME).isPresent() || !itemStack.get(Keys.CUSTOM_NAME).get()
+                .equals(messageSource.resolveComponentWithMessage("command.wand.wand-name"));
     }
 }
