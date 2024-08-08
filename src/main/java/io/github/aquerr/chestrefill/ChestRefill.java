@@ -106,7 +106,7 @@ public class ChestRefill
         chestRefill = this;
         try
         {
-            this.configuration = new ConfigurationImpl(getConfigDir());
+            this.configuration = new ConfigurationImpl(this, getConfigDir());
         }
         catch (Exception exception)
         {

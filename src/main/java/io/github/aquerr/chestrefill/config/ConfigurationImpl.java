@@ -1,5 +1,6 @@
 package io.github.aquerr.chestrefill.config;
 
+import io.github.aquerr.chestrefill.ChestRefill;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -25,13 +26,13 @@ public class ConfigurationImpl implements Configuration
     //Configs
     private Map<Class<? extends AbstractConfig>, AbstractConfig> configs = new HashMap<>();
 
-    public ConfigurationImpl(Path configDir) throws IOException
+    public ConfigurationImpl(ChestRefill plugin, Path configDir) throws IOException
     {
         this.configDirectoryPath = configDir;
         Files.createDirectories(this.configDirectoryPath);
 
         this.configPath = this.configDirectoryPath.resolve(CONFIG_FILE_NAME);
-        Asset asset = Sponge.getAssetManager().getAsset(this, "config.conf").orElse(null);
+        Asset asset = Sponge.getAssetManager().getAsset(plugin, "config.conf").orElse(null);
 
         try
         {
