@@ -9,6 +9,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RefillableItemListTypeSerializer implements TypeSerializer<List<RefillableItem>>
@@ -33,9 +34,11 @@ public class RefillableItemListTypeSerializer implements TypeSerializer<List<Ref
         if (obj == null)
             return;
 
+        value.setValue(Collections.emptyList());
+
         for (final RefillableItem refillableItem : obj)
         {
-            final ConfigurationNode configurationNode = value.getAppendedNode();
+            final ConfigurationNode configurationNode = value.appendListNode();
             configurationNode.setValue(ChestRefillTypeSerializers.REFILLABLE_ITEM_TYPE_TOKEN, refillableItem);
         }
     }
