@@ -8,6 +8,7 @@ import org.spongepowered.configurate.serialize.TypeSerializer;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RefillableItemListTypeSerializer implements TypeSerializer<List<RefillableItem>>
@@ -30,6 +31,8 @@ public class RefillableItemListTypeSerializer implements TypeSerializer<List<Ref
     {
         if (obj == null)
             return;
+
+        node.set(Collections.emptyList());
 
         for (final RefillableItem refillableItem : obj)
         {
